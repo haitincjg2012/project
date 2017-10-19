@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MemberTradOrderMapper">
+	<!-- 根据用户id状态id查询交易订单 -->
+	<select id="getMemberTradOrder" parameterType="cm.ph.shopping.facade.order.dto.PhMemberOrderUnlineDTO" resultType="cm.ph.shopping.facade.order.dto.PhMemberOrderUnlineDTO">
+		SELECT 
+			id,orderNo,DATE_FORMAT(createTime,'%Y-%m-%d %H:%i') as createTime,OrderMoney,merchantName,payType,type,status
+		FROM ph_member_order_unline
+			where status=#{status} and memberId=#{memberId} ORDER BY id desc
+	</select>
+</mapper>

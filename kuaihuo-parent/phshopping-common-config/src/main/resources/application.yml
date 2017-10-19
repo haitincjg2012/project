@@ -1,0 +1,146 @@
+#当前激活的环境
+spring:  
+  profiles:  
+    active: prod-test
+
+  #redis配置
+  redis:
+    host: 127.0.0.1
+    database: 0
+    port: 36379
+    password:
+    timeout: 60000
+    pool:
+      max-wait: -1
+      max-idle: 500
+      min-idle: 0
+
+#日志配置
+logging:
+  level: 
+    org.apache.zookeeper: off
+    com.alibaba: off
+
+#mybatis扫描xml路径
+mybatis:
+    type-aliases-package: com.ph.shopping.facade.entity
+    mapper-locations: classpath:com/ph/shopping/facade/mapper/*.xml
+
+#Mapper配置
+mapper:
+    mappers:
+        - com.ph.shopping.common.core.base.BaseMapper
+    not-empty: false
+    identity: MYSQL
+
+#pageHelper分页数据配置
+pagehelper:
+    helperDialect: mysql
+    reasonable: false
+    supportMethodsArguments: true
+    params: count=countSql
+
+---  
+# 开发环境配置  
+spring:  
+  profiles: dev  
+  #数据库配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/kuaihuo?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    username: root
+    password: Yst402@!
+    driver-class-name: com.mysql.jdbc.Driver
+    # 使用druid数据源
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid: 
+      filters: config
+      maxActive: 50
+      initialSize: 10
+      maxWait: 60000
+      minIdle: 1
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: select 'x'
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      connectionProperties: config.decrypt=false;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAMBqy+oGF0DhV2jiHyilb4mowR4mgQL4FSE0+GvlstTqYanSnJXYHmAffYVNO7lsAq4KU0K3Xh9e6qtGdAevFq0CAwEAAQ==
+
+---  
+#  内网测环境配置
+spring:  
+  profiles: local-test
+  #数据库配置
+  datasource:
+    url: jdbc:mysql://192.168.1.7:3302/phds-dev?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=true
+    username: root
+    password: bQRL2KLluiLfyq6M8HUHiiEtQPrLEjyxFR1k0W530X/oHu4FrYAlLdBZwoei9PAFn8Gthfm7hXk5HPvfFI9CMg==
+    driver-class-name: com.mysql.jdbc.Driver
+    # 使用druid数据源
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid: 
+      filters: config
+      maxActive: 50
+      initialSize: 10
+      maxWait: 60000
+      minIdle: 1
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: select 'x'
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      connectionProperties: config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKNvhBH2ISaQdOT8OmkCCj46sH0DePZqXR4NcCDXtkMUwNQtQnHBhFTNLMOYNWEJdAFtApfod7cKCEtxOqb6NcECAwEAAQ==
+
+---
+# 测环境配置
+spring:
+  profiles: prod-test
+  #数据库配置
+  datasource:
+    url: jdbc:mysql://123.207.173.18:3306/kuaihuo?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    username: root
+    password: Yst402@!
+    driver-class-name: com.mysql.jdbc.Driver
+    # 使用druid数据源
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      filters: config
+      maxActive: 50
+      initialSize: 10
+      maxWait: 60000
+      minIdle: 1
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: select 'x'
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      connectionProperties: config.decrypt=false;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAMH5G/RDZbaOH08JVjDNTEVj680FtBZ9W2PzlmqtkWx9douTAERuj27VxwktL1kIDMqxYgsZR+wCuYQQhpy9Jr0CAwEAAQ==
+---
+# 生产环境配置  
+spring:  
+  profiles: prod  
+  #数据库配置
+  datasource:
+    url: jdbc:mysql://10.0.13.12:6612/kuaihuo?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    username: kuaihuo1
+    password: Yst402@!
+    driver-class-name: com.mysql.jdbc.Driver
+    # 使用druid数据源
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid: 
+      filters: config
+      maxActive: 50
+      initialSize: 10
+      maxWait: 60000
+      minIdle: 1
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: select 'x'
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      connectionProperties: config.decrypt=false;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKj6GDulc4yk+bqjrTREK97xzM50WxNEIFfyTyJJB27tGXZrcCTMHyE91yqQXXG7sZnNeIbaHJayXiszPBmSaB0CAwEAAQ==
+
+

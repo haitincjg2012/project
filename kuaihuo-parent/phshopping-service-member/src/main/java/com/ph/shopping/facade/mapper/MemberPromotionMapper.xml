@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MemberPromotionMapper">
+
+    <sql id="baseSelect">
+        SELECT
+		m.telPhone,
+		m.memberName,
+		m.idCardNo,
+	   	ma.id,
+		ma.account,
+		ma.accountType,
+		ma.url,
+		ma.memberId,
+		ma.status,
+		ma.createTime,
+		ma.checkTime
+	</sql>
+
+    <sql id="baseCondition">
+        <if test="id != null and id !=''">
+            and ma.id = #{id}
+        </if>
+        <if test="memberId != null and memberId !=''">
+            and ma.memberId = #{memberId}
+		</if>
+		<if test="telPhone != null and telPhone != ''">
+            and m.telPhone = #{telPhone}
+		</if>
+		<if test="memberName != null and memberName != ''">
+            and m.memberName like concat(concat('%',#{memberName}),'%')
+		</if>
+		<if test="idCardNo != null and idCardNo != ''">
+            and m.idCardNo = #{idCardNo}
+		</if>
+		<if test="account != null and account !=''">
+            and ma.account = #{account}
+		</if>
+		<if test="accountType != null and accountType !=''">
+            and ma.accountType = #{accountType}
+		</if>
+        <if test="status != null">
+            and ma.status = #{status}
+		</if>
+        <if test="createTimeStr != null and createTimeStr != ''">
+            AND DATE_FORMAT(ma.createTime,'%Y-%m-%d') >= str_to_date(#{createTimeStr},'%Y-%m-%d')
+		</if>
+        <if test="createTimeEnd != null and createTimeEnd != ''">
+            AND DATE_FORMAT(ma.createTime,'%Y-%m-%d') &lt;= str_to_date(#{createTimeEnd},'%Y-%m-%d')
+		</if>
+        order by ma.createTime desc 
+    </sql>
+
+	<!-- 分页推广师列表 -->
+    <select id="getMemberAuthInfoByCondition" parameterType="com.ph.shopping.facade.member.dto.MemberPromotionDTO"
+            resultType="com.ph.shopping.facade.member.vo.MemberPromotionVO">
+        <include refid="baseSelect"/>
+        FROM
+        ph_member_auth ma 
+        LEFT JOIN ph_member m ON ma.memberId = m.id
+        WHERE ma.isDelete = 1
+        <include refid="baseCondition"/>
+    </select>
+
+	<!-- 查询推广师列表 -->
+    <select id="getMemberAuthList"
+            parameterType="com.ph.shopping.facade.member.dto.MemberPromotionDTO"
+            resultType="com.ph.shopping.facade.member.vo.MemberPromotionVO">
+        <include refid="baseSelect"/>
+        FROM
+        ph_member_auth ma
+        INNER JOIN
+        ph_member m
+        ON m.id = ma.memberId
+        WHERE ma.isDelete = 1
+        <include refid="baseCondition"/>
+	</select>
+
+	<!-- 查询三方账号是否已被绑定 -->
+	<select id="selectPromotionIsExist"  parameterType="com.ph.shopping.facade.member.dto.MemberPromotionDTO"  resultType="com.ph.shopping.facade.member.vo.MemberPromotionVO">
+		<include refid="baseSelect"/>
+		FROM
+			ph_member_auth ma
+		LEFT JOIN ph_member m ON ma.memberId = m.id
+		WHERE
+			ma.isDelete = 1
+		  	and ma.account = #{account}
+		  	and ma.accountType = #{accountType}
+		  	<if test="memberId != null">
+				and ma.memberId != #{memberId}
+		  	</if>
+	</select>
+
+	<!-- 审核推广师 -->
+	<update id="updateStatus" parameterType="com.ph.shopping.facade.member.entity.MemberPromotion">
+        UPDATE
+        ph_member_auth
+        SET
+        updateTime = #{updateTime},
+        status = #{status}
+        <if test="checkTime != null">
+			,checkTime = #{checkTime}
+        </if>
+        WHERE
+        memberId = #{memberId}
+	</update>
+
+	<!-- 查询推广师推广记录（推广企业） -->
+	<select id="selectPromotionRecords" parameterType="com.ph.shopping.facade.member.dto.PromotionRecordDTO" resultType="com.ph.shopping.facade.member.vo.PromotionRecordVO">
+        SELECT @row := (@row + 1)+((#{pageNum}-1)*#{pageSize}) num,a.* from (
+        SELECT
+  			ph.telPhone,
+			a.account,
+			a.accountType,
+			a.memberId promotionId,
+			ph.memberName,
+			e.roleName companyTypeName,
+			e.id companyTypeId,
+			c.telPhone companyAccount,
+			c.merchantName companyName,
+			c.status companyStatus,
+			c.createTime
+		FROM
+			ph_member_auth a
+		INNER JOIN ph_member ph ON a.memberId = ph.id
+		INNER JOIN ph_merchant c ON a.memberId = c.promoterId
+		LEFT JOIN ph_permission_user_role d ON c.userId = d.userID
+		LEFT JOIN ph_permission_role e ON d.roleID = e.id
+		WHERE
+			ph.isMarketing = 1
+        <if test="memberId != null">
+            AND a.memberId = #{memberId}
+        </if>
+        <if test="account != null and account != ''">
+            AND a.account = #{account}
+        </if>
+        <if test="companyAccount != null and companyAccount != ''">
+            AND c.telPhone = #{companyAccount}
+        </if>
+        <if test="companyName != null and companyName != ''">
+            AND c.merchantName like concat(concat('%',#{companyName}),'%')
+        </if>
+        <if test="memberName != null and memberName != ''">
+            AND ph.memberName like concat(concat('%',#{memberName}),'%')
+        </if>
+        <if test="companyTypeId != null">
+            AND e.id = #{companyTypeId}
+        </if>
+        <if test="companyStatus != null">
+            AND c.status = #{companyStatus}
+        </if>
+        UNION ALL
+
+    	SELECT
+  			ph.telPhone,
+			a.account promotionAccount,
+			a.accountType,
+			a.memberId promotionId,
+			ph.memberName,
+			e.roleName companyTypeName,
+			e.id companyTypeId,
+			b.telPhone companyAccount,
+			b.agentName companyName,
+		    b.status companyStatus,
+			b.createTime
+		FROM
+			ph_member_auth a
+		INNER JOIN ph_member ph ON a.memberId = ph.id
+		INNER JOIN ph_agent b ON a.memberId = b.promoterId
+		LEFT JOIN ph_permission_user_role d ON b.userId = d.userID
+		LEFT JOIN ph_permission_role e ON d.roleID = e.id
+		WHERE
+			ph.isMarketing = 1
+        <if test="memberId != null">
+            AND a.memberId = #{memberId}
+        </if>
+        <if test="account != null and account != ''">
+            AND a.account = #{account}
+        </if>
+        <if test="companyAccount != null and companyAccount != ''">
+            AND b.telPhone = #{companyAccount}
+        </if>
+        <if test="memberName != null and memberName != ''">
+            AND ph.memberName like concat(concat('%',#{memberName}),'%')
+        </if>
+        <if test="companyName != null and companyName != ''">
+            AND b.agentName like concat(concat('%',#{companyName}),'%')
+        </if>
+        <if test="companyTypeId != null">
+            AND e.id = #{companyTypeId}
+        </if>
+        <if test="companyStatus != null">
+            AND b.status = #{companyStatus}
+        </if>
+		)a,(SELECT @row := 0) r
+	</select>
+
+</mapper>

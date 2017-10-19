@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.productdetail.ProductDetailDao">
+	<select id="getProductDetailText" resultType="Map" parameterType="java.lang.Long">
+        SELECT 
+        
+		ROUND(spf.sale_price/100,2) as price , pro.name ,pro.imageurl,pro.sale_num,pro.start_num as startNum
+		
+		FROM alq_product_specification AS spf 
+		
+		LEFT JOIN alq_product AS pro
+		
+		ON spf.product_id=pro.id
+		
+        WHERE spf.product_id=#{productId} and pro.status=1
+ 
+ 
+    </select>
+
+
+
+	<!-- 总评价 -->
+	<select id="getCountComment" resultType="Long">
+        Select count(1) as countAll from alq_order_comment as mm where mm.content is not null
+      </select>
+
+	<!-- 差评数 -->
+	<select id="getBadCommentNum" resultType="Long">
+    Select count(1) as badCount from alq_order_comment as mm where mm.start_num between 0 and 2
+    </select>
+
+	<!-- 一般评价数 -->
+	<select id="getCommonCommentNum" resultType="Long">
+    Select count(1) as commonCount from alq_order_comment as mm where mm.start_num between 3 and 4
+    </select>
+
+	<!-- 好评的数 -->
+	<select id="getNiceCommentNum" resultType="Long">
+      Select count(1) as commonCount from alq_order_comment as mm where mm.start_num=5
+    </select>
+
+	<!-- 获取相应商品的所有的评价，时间，评价人，评价内容，评论者手机号，如果是批发商还需要匿名 -->
+
+	<select id="getProductComment" resultType="Map" parameterType="Long">
+    SELECT 
+    
+    comm.content,comm.created_time,mem.phone,mem.nickname,att.address AS logoAddress
+    
+    
+    FROM alq_order_comment AS comm
+    
+    LEFT JOIN alq_member AS mem
+    
+    ON comm.member_id=mem.id
+
+    LEFT JOIN alq_attachment AS att
+    
+    ON att.id=mem.logo_attachment_id
+   
+    WHERE comm.product_id=#{productId} and IFNULL(comm.is_delete,0) !=1 AND comm.parent_id IS NULL
+    ORDER BY comm.created_time DESC
+    </select>
+
+	<!-- 获取详情页面 -->
+	<select id="getProductDetailImage" resultType="Map" parameterType="Long">
+   select alq.product_id as pId,alq.type,alq.content as content ,
+   
+   att.address from alq_product_detail as alq  LEFT JOIN alq_attachment as att
+   
+   on att.id=alq.image_attachment_id where alq.product_id=#{productId} order by alq.sort_num ASC
+   
+    </select>
+	<!-- 通过id获取批发商的基本信息 -->
+	<select id="getHunterBaseMessage" resultType="Map" parameterType="Long">
+		SELECT
+		hun.nickName,
+		hun.service,
+		IFNULL(hun. level,0) as level,
+		hun.star,
+		IFNULL(
+		hun.good_comment_num_order,
+		0
+		) AS goodCommentNum,
+		hun.num,
+		area.letter,
+		hun.province_name AS province,
+		attch. NAME,
+		attch.address,
+		hun.city_name AS city,
+		hun.county_name AS countyname,
+		mm.im_id AS IMId,
+		hun.detail,
+		ser.title,
+		hun.major,
+		attach.address AS backgroundPiture,
+		(
+		IFNULL(
+		hun.bad_comment_num_order,
+		0
+		) + IFNULL(hun.comment_num_order, 0) + IFNULL(
+		hun.good_comment_num_order,
+		0
+		)
+		) AS countNum,
+		(select COUNT(1) from alq_collection_hunter where hunter_id=hun.id and type =0) as foucsNum,<!-- 关注数 -->
+		case when hun.city_name = '市辖区' then hun.county_name
+		ELSE hun.county_name end as sourcing_address<!-- 直辖市显示市，省级显示区或县 -->
+		FROM
+		alq_hunter AS hun
+		LEFT JOIN alq_attachment AS attch ON attch.id = hun.logo_attachment_id
+		LEFT JOIN alq_attachment AS attach ON attach.id = hun.background_attachment_id
+		LEFT JOIN alq_hunter_service AS ser ON ser.hunter_id = hun.id
+		LEFT JOIN alq_area AS area ON area.id = hun.province_id
+		LEFT JOIN alq_member AS mm ON mm.hunter_id = hun.id
+
+		WHERE hun.id=#{hId}
+	</select>
+
+	<select id="getProductDetailByProductId" resultType="com.alqsoft.vo.ProductDetailVO" parameterType="Long">
+   	 SELECT
+		 pd.`id`,
+		 pd.`type`,
+		 pd.`content`,
+		 pd.`sort_num` AS sortNum,
+		 pd.`image_attachment_id` AS pictureId,
+		 att.`address` AS imgaddress
+	FROM 
+		alq_product_detail pd LEFT JOIN alq_attachment att ON pd.`image_attachment_id`=att.`id`
+ 	WHERE 
+ 		pd.`product_id`=#{productid} ORDER BY pd.`sort_num` ASC
+    
+    </select>
+
+	<select id="getProductDetailVoByProductId" resultType="com.alqsoft.vo.ProductDetailVO" parameterType="Long">
+		SELECT
+		pd.`id`,
+		pd.`type`,
+		pd.`content`,
+		pd.`sort_num` AS sortNum,
+		pd.`image_attachment_id` AS pictureId,
+		att.`address` AS imgaddress
+		FROM
+		alq_product_detail pd LEFT JOIN alq_attachment att ON pd.`image_attachment_id`=att.`id`
+		WHERE
+		pd.`product_id`=#{productid} ORDER BY pd.`sort_num` ASC
+
+	</select>
+	<!--销售商品分类 -->
+	<select id="saleProductType" resultType="Map" parameterType="Long">
+	select pt.content as classifyone,pt.id as classId from alq_product_type as pt where  pt.id in (select DISTINCT(spn.product_type_id) from  alq_product_specification as spn WHERE spn.product_id=#{pId}) 
+
+	</select>
+	<!--销售商品的规格 -->
+	<select id="saleProductStandard" resultType="Map" parameterType="Long">
+	select pf.content as standard ,pf.num as KuNum,ROUND(pf.sale_price/100,2) as salePrice,pf.id as standardId from alq_product_specification as pf where pf.product_id=#{pId} AND (pf.is_delete=0 OR pf.is_delete IS NULL)
+    </select>
+	<!-- getProuctSaleMessage -->
+	<select id="getProuctSaleMessage" resultType="Map" parameterType="Long">
+	select pro.imageurl,pro.start_num as startNum ,pro.sale_num  as SaleSum from  alq_product pro   LEFT JOIN alq_product_specification as pf on pf.product_id=pro.id where pro.id=#{pId} and pro.status=1
+	</select>
+	<!-- 获取商品的收藏状态 -->
+	<select id="findCollectionType" resultType="Long" >
+	select count(1) from alq_collection_product where product_id=#{pId} and member_id=#{mId} and type=0
+	</select>
+	<select id="getProductNumCommentAll" resultType="Map">
+	select p.bad_comment_num as badNum ,p.common_comment_num as comNum ,p.nice_comment_num as niceNum from alq_product As p where p.id=#{pId}
+	</select>
+	<select id="saleProductImage" resultType="Map">
+	select p.address from alq_product_attachment as p where p.product_id=#{pId} order by p.sort_num ASC
+	</select>
+</mapper>

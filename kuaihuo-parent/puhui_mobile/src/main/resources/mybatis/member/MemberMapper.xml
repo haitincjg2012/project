@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.member.MemberDao">
+	<resultMap type="com.alqsoft.entity.member.Member" id="memberMap">
+		<result column="id" property="id"/>
+		<association property="hunter" javaType="com.alqsoft.entity.hunter.Hunter" foreignColumn="id" column="hunter_id" select="getEntityHunterById" autoMapping="true"/>
+	</resultMap>
+	
+	<select id="getHunteridByMemberid" resultType="java.lang.Long"  parameterType="java.lang.Long">
+		SELECT hunter_id FROM alq_member WHERE id=#{id}
+	</select>
+	
+	<select id="getMemberByIdAndUuid" resultMap="memberMap" parameterType="map">
+		SELECT * FROM alq_member WHERE phone = #{phone} AND uuid = #{uuid}
+	</select> 
+	<select id="getEntityHunterById" resultType="com.alqsoft.entity.hunter.Hunter" parameterType="Long">
+		SELECT * FROM alq_hunter WHERE id = #{hunter_id}
+	</select> 
+	
+	<select id="getMemberCenterById" resultType="map" parameterType="java.lang.Long">
+		SELECT 
+			m.`id`,
+			m.`nickname`,
+			IFNULL(m.`hunter_id`,0) AS checkhunter,
+			(SELECT att.`address` FROM alq_attachment att WHERE att.`id`=m.`logo_attachment_id`) AS address,
+			(SELECT COUNT(*) FROM alq_collection_hunter ch WHERE ch.`member_id`=m.id AND ch.type=0) AS  collectionhunter,
+			(SELECT COUNT(*) FROM alq_collection_product cp WHERE cp.`member_id`=m.id AND cp.type=0) AS collectionproduct,
+			(SELECT COUNT(*) FROM alq_order o WHERE o.`member_id`=m.id AND o.`status`=0) AS dfk,
+			(SELECT COUNT(*) FROM alq_order o WHERE o.`member_id`=m.id AND o.`status`=1) AS yfdj,
+			(SELECT COUNT(*) FROM alq_order o WHERE o.`member_id`=m.id AND o.`status`=2) AS dfh,
+			(SELECT COUNT(*) FROM alq_order o WHERE o.`member_id`=m.id AND o.`status`=3) AS dsh,
+			(SELECT COUNT(*) FROM alq_order o WHERE o.`member_id`=m.id AND (o.`status`=5 or o.`status`=6)) AS tk,
+			(SELECT COUNT(*) FROM alq_order o WHERE o.`member_id`=m.id AND (o.`status`=7 or o.`status`=4)) AS dpj
+		FROM 
+			alq_member m 
+		WHERE
+			m.`id`=#{memberid}
+	
+	</select>
+	
+	<select id="getMemberByPhone" resultType="map" parameterType="string">
+		SELECT m.id,m.name,m.phone,m.card FROM alq_member AS m WHERE m.phone = #{newphone}
+	</select> 
+
+	<select id="getMemberByHunterId" resultMap="memberMap" parameterType="java.lang.Long">
+		SELECT * FROM alq_member WHERE hunter_id=#{hunterid} limit 1
+	</select>
+
+	<!-- 通过imId获取匿名 -->
+	<select id="getNickNameByImid" resultType="map" parameterType="string">
+					SELECT
+					m.im_id,<!-- 用户imId -->
+					CASE
+				WHEN m.hunter_id IS NULL THEN
+					(
+						SELECT
+							nickname
+						FROM
+							alq_member
+							where m.im_id=im_id
+					)
+				ELSE
+					(
+						SELECT
+							nickname
+						FROM
+							alq_hunter
+						WHERE
+							id = m.hunter_id
+					)
+				END AS nickname,<!-- 昵称 -->
+				 CASE
+				WHEN m.hunter_id IS NULL THEN
+					(
+						SELECT
+							address
+						FROM
+							alq_attachment
+						WHERE
+							id = m.logo_attachment_id
+					)
+				ELSE
+					(
+						SELECT
+							address
+						FROM
+							alq_attachment
+						WHERE
+							id = (
+								SELECT
+									logo_attachment_id
+								FROM
+									alq_hunter
+								WHERE
+									id = m.hunter_id
+							)
+					)
+				END AS address <!-- 头像地址 -->
+				FROM
+					alq_member AS m
+				WHERE
+					m.im_id=#{imId}
+	
+
+	</select>
+
+
+	<select id="getMemberLogoImage" resultType="Map">
+		select m.id,ifnull(m.nickname,m.phone) nickname,m.im_id,
+		(select a.address from alq_attachment a where a.id= m.logo_attachment_id)address from
+		alq_member m  where m.id= #{mid}
+	</select>
+	
+</mapper>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IUserDrawCashMapper">
+	<select id="queryUserDrawCashes" resultType="com.ph.shopping.facade.profit.vo.UserDrawCashVO">
+		SELECT
+		d.orderNo,
+		d.createTime,
+		CASE 	d.userType
+		WHEN '2' then '供链角色-供应商'
+		WHEN '3' then '供链角色-市级代理'
+		WHEN '4' then '供链角色-县级代理'
+		WHEN '5' then '供链角色-社区代理'
+		WHEN '6' then '供链角色-商户' END
+		enterpriseType,
+		u.telPhone,
+		d.operatorCheckTime,
+		d.treasurerCheckTime,
+		d.score score1,
+		d.handingCharge handingCharge1,
+		d.auditState,
+		d.status,
+		d.id drawCashId,
+		d.bankNo,
+		d.receiver,
+		d.bankName
+		FROM
+		ph_permission_common_user u,
+		ph_user_drawcash_record d
+		WHERE d.userId = u.id
+		<trim>
+			<if test="startDate != null and startDate != ''">
+				and date_format(d.createTime, '%Y-%m-%d') &gt;=
+				#{startDate}
+			</if>
+			<if test="endDate != null and endDate != ''">
+				and date_format(d.createTime, '%Y-%m-%d') &lt;=
+				#{endDate}
+			</if>
+			<if test="orderNo != null and orderNo != ''">
+				and d.orderNo = #{orderNo}
+			</if>
+			<if test="telPhone != null and telPhone != ''">
+				and u.telPhone = #{telPhone}
+			</if>
+			<!--<if test="enterpriseName != null and enterpriseName != ''">
+				and t.enterpriseName LIKE
+				CONCAT('%',#{enterpriseName},'%')
+			</if>-->
+			<!-- <if test="enterpriseType != null"> and t.roleCode = #{enterpriseType} 
+				</if> -->
+			<if test="auditState != null">
+				and d.auditState = #{auditState}
+			</if>
+			<if test="status != null">
+				and d.status = #{status}
+			</if>
+		</trim>
+		ORDER BY d.createTime DESC
+	</select>
+
+	<update id="auditOperator">
+		UPDATE ph_user_drawcash_record d SET d.auditState=#{auditState}
+		<trim>
+			<if test="auditRgint == 7">
+				,operatorCheckTime=NOW()
+				,updaterId=#{userId}
+				,operatorCheckId=#{userId}
+			</if>
+			<if test="auditRgint == 8">
+				,treasurerCheckTime=NOW()
+				,updaterId=#{userId}
+				,treasurerCheckId=#{userId}
+			</if>
+			<!-- <if test="auditState == 4"> ,d.status = 1 </if> -->
+			<if test="type == 2">
+				,d.status = 2
+			</if>
+		</trim>
+		WHERE d.id=#{drawCashId}
+	</update>
+
+	<update id="updateStatus">
+		UPDATE ph_user_drawcash_record d SET
+		d.status=#{status}, d.tradeState=#{tradeState}
+		where d.orderNo = #{orderNo} and status = 0
+	</update>
+
+	<select id="countDrawCashTotal" parameterType="java.lang.String"
+		resultType="java.lang.Integer">
+		SELECT count(0) from ph_user_drawcash_record WHERE
+		orderNo=#{orderNo} and status=1 and tradeState is not null
+	</select>
+
+	<select id="getBackDrawCashData" resultType="com.ph.shopping.facade.profit.vo.BackUserDrawCashVO">
+		SELECT
+		r.userId,
+		r.userType,
+		(r.score + r.handingCharge) score
+		FROM
+		ph_user_drawcash_record r,
+		ph_permission_common_user c
+		WHERE
+		r.userId = c.id
+		AND r.orderNo = #{orderNo}
+	</select>
+
+	<select id="getUserDrawCashData" parameterType="java.lang.Long"
+		resultType="com.ph.shopping.facade.profit.vo.UserDrawCashDataVO">
+		SELECT
+		r.score,
+		r.handingCharge,
+		r.bankName,
+		r.bankNo,
+		r.receiver,
+		r.orderNo
+		FROM
+		ph_user_drawcash_record r,
+		ph_permission_common_user c
+		WHERE
+		r.userId = c.id
+		AND r.id = #{drawCashId}
+	</select>
+</mapper>

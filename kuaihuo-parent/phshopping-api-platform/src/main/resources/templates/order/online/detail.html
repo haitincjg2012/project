@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>订单信息</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--弹窗 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/layer/layer.css}">
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">订单管理</a>&nbsp;&gt;&nbsp;<a href="#">线上订单</a>&nbsp;&gt;&nbsp;<span>订单信息</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont" th:if="${onlineOrder.success}">
+        <!--标题-->
+        <div class="ph_subTit no_border">
+            <h2>订单信息</h2>
+        </div>
+        <!--end 标题-->
+        <!--订单信息状态-->
+        <div class="ph_infoFlow">
+            <p class="ph_infoLine" th:if="${onlineOrder.data.status==4}">
+                <span th:if="${onlineOrder.data.cancelTime !=null}" class="ph_fault ph_green"></span>
+                <span th:if="${onlineOrder.data.cancelTime ==null}" class="ph_fault"></span>
+            </p>
+            <p class="ph_infoLine" th:if="${onlineOrder.data.status!=4}">
+                <span th:if="${onlineOrder.data.payTime !=null}" class="ph_fault ph_green"></span>
+                <span th:if="${onlineOrder.data.payTime ==null}" class="ph_fault"></span>
+                <span th:if="${onlineOrder.data.sendTime !=null}" class="ph_fault ph_green"></span>
+                <span th:if="${onlineOrder.data.sendTime ==null}" class="ph_fault"></span>
+                <span th:if="${onlineOrder.data.doneTime !=null}" class="ph_fault ph_green"></span>
+                <span th:if="${onlineOrder.data.doneTime ==null}" class="ph_fault"></span>
+            </p>
+            <ul class="ph_infoList">
+                <li>
+                    <i th:if="${onlineOrder.data.createTime !=null }" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${onlineOrder.data.createTime ==null }" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">提交订单</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(onlineOrder.data.createTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+                <li th:if="${onlineOrder.data.status!=4}">
+                    <i th:if="${onlineOrder.data.payTime !=null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${onlineOrder.data.payTime ==null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">付款成功</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(onlineOrder.data.payTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+                <li th:if="${onlineOrder.data.status!=4}">
+                    <i th:if="${onlineOrder.data.sendTime !=null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${onlineOrder.data.sendTime ==null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">商品发货</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(onlineOrder.data.sendTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+                <li th:if="${onlineOrder.data.status!=4}">
+                    <i th:if="${onlineOrder.data.doneTime !=null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${onlineOrder.data.doneTime ==null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">收货完成</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(onlineOrder.data.doneTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+                <li th:if="${onlineOrder.data.status==4}">
+                    <i th:if="${onlineOrder.data.cancelTime !=null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${onlineOrder.data.cancelTime ==null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">取消订单</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(onlineOrder.data.cancelTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+
+            </ul>
+        </div>
+        <!--end 订单信息状态-->
+        <!--订单角色信息-->
+        <div class="ph_infoCon">
+            <p class="ph_infoHome"><span>会员手机号：<span th:text="${onlineOrder.data.memberTelPhone}"></span></span></p>
+            <p class="ph_infoDel"><span>收货人：<span th:text="${onlineOrder.data.memberName}"></span></span><span>联系电话：<span th:text="${onlineOrder.data.memberTelPhone}"></span></span><span>收货地址：<span th:text="${onlineOrder.data.shippingAddress}"></span></span></p>
+        </div>
+        <div class="ph_infoCon" th:if="${onlineOrder.data.shippingType==0 and onlineOrder.data.status !=4}">
+            <p class="ph_infoHome"><span>企业名称：<span th:text="${onlineOrder.data.companyName}"></span></span><span>门店名称：<span th:text="${onlineOrder.data.merchantName}"></span></span></p>
+            <p class="ph_infoDel"><span>提货人：<span th:text="${onlineOrder.data.merchantPersonName}"></span></span><span>提货点联系电话：<span th:text="${onlineOrder.data.merchantTelPhone}"></span></span><span>提货地址：<span th:text="${onlineOrder.data.takeGoodsAddress}"></span></span></p>
+        </div>
+        <div class="ph_infoCon" th:if="${onlineOrder.data.status>=2 and onlineOrder.data.status !=4}">
+            <p class="ph_infoHome"><span>企业名称：<span th:text="${onlineOrder.data.supplierName}"></span></span></p>
+            <p class="ph_infoDel"><span>联系人：<span th:text="${onlineOrder.data.supplierPersonName}"></span></span><span>联系电话：<span th:text="${onlineOrder.data.supplierTelPhone}"></span></span><span>发货地址：<span th:text="${onlineOrder.data.sendAddressName}"></span></span></p>
+        </div>
+        <!--end 订单角色信息-->
+        <!--标题-->
+        <div class="ph_subTit no_border">
+            <h2>商品信息</h2>
+        </div>
+        <!--end 标题-->
+        <!--商品信息-->
+        <div class="ph_wareBox ph_infoWare">
+            <p>订单号:<span th:text="${onlineOrder.data.orderNo}"></span></p>
+            <table class="ph_wareList">
+                <thead>
+                    <tr>
+                        <th width="50">序号</th>
+                        <th>商品名称</th>
+                        <th>商品数量</th>
+                        <th>商品总额（元）</th>
+                        <th>物流总额（元）</th>
+                        <th>总金额（元）</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="product,productStat:${onlineOrder.data.phMemberSubOrderOnlineProductVOS}">
+                    <td th:text="${productStat.count}"></td>
+                    <td><span th:text="${product.productName}"></span><br/><span th:text="${product.skuName}"></span></td>
+                    <td th:text="${product.productNum}"></td>
+                    <td th:text="${#numbers.formatDecimal(product.retailPrice/10000.0, 1, 2)}"></td>
+                    <td th:text="${#numbers.formatDecimal(product.skuFreight/10000.0, 1, 2)}"></td>
+                    <td th:text="${#numbers.formatDecimal(product.totalMoney/10000.0, 1, 2)}"></td>
+                </tr>
+                </tbody>
+            </table>
+            <p class="ph_infoTotal ">商品总额：
+                <span class="require">
+                    ￥<span th:text="${#numbers.formatDecimal(onlineOrder.data.productMoney/10000.0, 1, 2)}"></span>
+                </span>
+                &nbsp;&nbsp;&nbsp;&nbsp;快递费用：
+                <span class="require">
+                    <span th:if="${onlineOrder.data.logisticsMoney!=0}" th:text="${'￥'+#numbers.formatDecimal(onlineOrder.data.logisticsMoney/10000.0, 1, 2)}"></span>
+                    <span th:if="${onlineOrder.data.logisticsMoney==0}" th:text="免邮"></span>
+                </span>
+            </p>
+            <p class="ph_infoTotal ph_infoLarge">总计：
+                <span class="require">
+                    ￥<span th:text="${#numbers.formatDecimal(onlineOrder.data.orderMoney/10000.0, 1, 2)}"></span>
+                </span>
+            </p>
+        </div>
+        <!--end 商品信息-->
+        <!--返回按钮-->
+        <div class="PopupBtn">
+            <input name="" type="button" th:onclick="'toListPage();'" value="返回">
+        </div>
+        <!--end 返回按钮-->
+    </div>
+    <!-- 订单错误信息 -->
+    <div class="MainCont" th:if="${onlineOrder.success == false}">
+        <!--标题-->
+        <div class="ph_subTit no_border">
+            <h2>订单信息</h2>
+        </div>
+        <!--end 标题-->
+        <div class="ph_infoFlow">
+            <span th:text="${onlineOrder.message}"></span>
+        </div>
+    </div>
+    <!-- 订单错误信息 -->
+    <!--end 主体内容-->
+</div>
+<!--遮罩层-->
+<div class="maskBox"></div>
+<!--end 遮罩层-->
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<!--弹窗-->
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript">
+    $(function() {
+        $('.ph_wareBox').on('click','.lookBtn',function(){
+            layer.open({
+                type: 1,
+                title: '查看规格',
+                closeBtn : 0,
+                area: ['666px','400px'],
+                btn:['取消'],
+                btnAlign: 'c',
+                content: $('#ph_lookBox')
+            });
+        });
+    });
+    function toListPage() {
+        window.location.href="/web/orderOnline/toListPage";
+    }
+</script>
+</body>
+</html>

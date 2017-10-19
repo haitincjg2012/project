@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.SupplierMapper">
+    <resultMap id="baseResultMap" type="com.ph.shopping.facade.spm.vo.SupplierVO">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="supplierName" property="supplierName" jdbcType="VARCHAR"/>
+        <result column="supplierType" property="supplierType" jdbcType="TINYINT"/>
+        <result column="personName" property="personName" jdbcType="VARCHAR"/>
+        <result column="telPhone" property="telPhone" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="personIdCardNo" property="personIdCardNo" jdbcType="VARCHAR"/>
+        <result column="businessNo" property="businessNo" jdbcType="VARCHAR"/>
+        <result column="provinceId" property="provinceId" jdbcType="BIGINT"/>
+        <result column="cityId" property="cityId" jdbcType="BIGINT"/>
+        <result column="countyId" property="countyId" jdbcType="BIGINT"/>
+        <result column="townId" property="townId" jdbcType="BIGINT"/>
+        <result column="positionId" property="positionId" jdbcType="BIGINT"/>
+        <result column="promoterId" property="promoterId" jdbcType="BIGINT"/>
+        <result column="isDelete" property="isDelete" jdbcType="TINYINT"/>
+        <result column="isFrozen" property="isFrozen" jdbcType="TINYINT"/>
+        <result column="statusLevel" property="statusLevel" jdbcType="TINYINT"/>
+        <result column="createrId" property="createrId" jdbcType="BIGINT"/>
+        <result column="updaterId" property="updaterId" jdbcType="BIGINT"/>
+        <result column="createTime" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="userId" property="userId" jdbcType="BIGINT"/>
+    </resultMap>
+    <!-- 供应商图片返回值 -->
+    <resultMap id="imageResultMap" type="com.ph.shopping.facade.spm.vo.SupplierVO" extends="baseResultMap">
+        <collection property="supplierImageVOList" ofType="com.ph.shopping.facade.spm.vo.SupplierImageVO">
+            <id column="image_id" property="id" jdbcType="BIGINT"/>
+            <result column="image_url" property="url" jdbcType="VARCHAR"/>
+            <result column="image_supplierId" property="supplierId" jdbcType="BIGINT"/>
+            <result column="image_sort" property="sort" jdbcType="TINYINT"/>
+            <result column="image_type" property="type" jdbcType="TINYINT"/>
+            <result column="image_createTime" property="createTime" jdbcType="TIMESTAMP"/>
+            <result column="image_updateTime" property="updateTime" jdbcType="TIMESTAMP"/>
+        </collection>
+    </resultMap>
+    <!-- 扩展返回字段 -->
+    <resultMap id="extendsResultMap" type="com.ph.shopping.facade.spm.vo.SupplierVO" extends="baseResultMap">
+        <result column="addressName" property="addressName" jdbcType="VARCHAR"/>
+        <result column="userTelphone" property="userTelphone" jdbcType="VARCHAR"/>
+    </resultMap>
+    <!-- 通用查询条件 -->
+    <sql id="where_general">
+        <if test="id != null">
+            and su.id = #{id}
+        </if>
+        <if test="userId != null">
+            and su.userId = #{userId}
+        </if>
+        <if test="supplierName != null and supplierName !='' ">
+            and su.supplierName like CONCAT('%',TRIM(#{supplierName}),'%')
+        </if>
+        <if test="provinceId != null and provinceId != '' ">
+            and su.provinceId = #{provinceId}
+        </if>
+        <if test="cityId != null and cityId != '' ">
+            and su.cityId = #{cityId}
+        </if>
+        <if test="countyId != null and countyId != '' ">
+            and su.countyId = #{countyId}
+        </if>
+        <if test="townId != null and townId != '' ">
+            and su.townId = #{townId}
+        </if>
+        <if test="status != null ">
+            and su.status = #{status}
+        </if>
+        <if test="statusLevel != null ">
+            and su.statusLevel = #{statusLevel}
+        </if>
+        <if test="isDelete != null ">
+            and su.isDelete = #{isDelete}
+        </if>
+        <if test="isFrozen != null ">
+            and su.isFrozen = #{isFrozen}
+        </if>
+        <if test="createrId != null and createrId != '' ">
+            and su.createrId = #{createrId}
+        </if>
+        <if test="positionIds != null">
+            <if test="positionIds.size()>0">
+                and su.positionId in
+                <foreach collection="positionIdList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </if>
+        <if test="supplierType != null and supplierType!=''">
+            and su.supplierType = #{supplierType}
+        </if>
+        <if test="positionId != null and positionId!=''">
+            and su.positionId = #{positionId}
+        </if>
+
+        <if test="positionExtendsId != null and positionExtendsId != '' ">
+            and ( su.provinceId = #{positionExtendsId}
+            OR su.cityId = #{positionExtendsId}
+            OR su.countyId = #{positionExtendsId}
+            OR su.townId = #{positionExtendsId})
+        </if>
+
+    </sql>
+    <!-- 普通查询条件 -->
+    <sql id="where_clause">
+        <trim prefix="where" prefixOverrides="and">
+            <include refid="where_general"/>
+        </trim>
+    </sql>
+    <!-- 扩展查询条件 -->
+    <sql id="where_extends_clause">
+        <trim prefix="where" prefixOverrides="and">
+            <if test="userTelphone != null and userTelphone != '' ">
+                and ue.telphone = #{userTelphone}
+            </if>
+            <!-- 代理商登录可以看见全国和本地自己添加的 -->
+            <if test="extendsCreaterId != null and extendsCreaterId != '' ">
+                AND
+                ( CASE su.supplierType WHEN 2 THEN su.createrId = #{extendsCreaterId} ELSE 1=1 END
+                OR su.supplierType = 1 )
+            </if>
+
+            <include refid="where_general"/>
+        </trim>
+    </sql>
+    <!-- 供应商返回字段 -->
+    <sql id="base_column_list">
+    su.id, su.supplierName, su.supplierType, su.personName, su.telPhone, su.status, su.address, su.personIdCardNo, 
+    su.businessNo, su.provinceId, su.cityId, su.countyId, su.townId, su.positionId, su.promoterId, su.isDelete, 
+    su.isFrozen, su.createrId, su.updaterId, su.createTime, su.updateTime,su.userId,su.statusLevel
+  </sql>
+    <!-- 供应商图片返回字段 -->
+    <sql id="image_column_list">
+    ,image.id image_id,image.url image_url,image.supplierId image_supplierId,image.sort image_sort
+    ,image.type image_type,image.createTime image_createTime,image.updateTime image_updateTime
+  </sql>
+    <!-- 扩展字段 -->
+    <sql id="base_extends_list">
+	  ,CONCAT(p.provinceName,p.cityName,p.countyName,su.address) addressName
+    ,ue.telphone userTelphone
+  </sql>
+    <!-- 查询多条详情 -->
+    <select id="getSupplierListDateil" resultMap="imageResultMap"
+            parameterType="com.ph.shopping.facade.spm.dto.SupplierDTO">
+        select
+        <include refid="base_column_list"/>
+        <include refid="image_column_list"/>
+        from ph_supplier su LEFT JOIN ph_supplier_image image ON su.id = image.supplierId
+        <include refid="where_clause"/>
+    </select>
+
+    <select id="getHunterListDateil" resultMap="imageResultMap"
+            parameterType="com.ph.shopping.facade.spm.dto.SupplierDTO">
+		SELECT
+ah.id,ah.`name` personName,m.phone telPhone,ah.detail address,ah.nickname supplierName,
+ah.ph_province_id provinceId,ah.ph_city_id cityId,ah.ph_county_id countryId,
+img.id image_id,img.address image_url,img.type image_type,img.hunter_id image_supplierId
+
+ FROM alq_hunter ah LEFT JOIN ph_hunter_rule_attachment img ON ah.id = img.hunter_id
+ LEFT JOIN alq_member m on  m.hunter_id=ah.id
+WHERE ah.id=#{id}
+	</select>
+
+    <!-- 列表查询 -->
+    <select id="getSupplierList" resultMap="extendsResultMap"
+            parameterType="com.ph.shopping.facade.spm.dto.SupplierDTO">
+        select
+        <include refid="base_column_list"/>
+        <include refid="base_extends_list"/>
+        from ph_supplier su
+        LEFT JOIN ph_position p ON su.positionId = p.id
+        LEFT JOIN ph_permission_common_user ue ON su.userId = ue.id
+        <include refid="where_extends_clause"/>
+        ORDER BY su.createTime DESC
+    </select>
+
+    <!--@author wudi 供应商列表-->
+    <!--<select  id="getSupplierList" resultMap="extendsResultMap" parameterType="com.ph.shopping.facade.spm.dto.SupplierDTO">
+        select * from alq_hunter
+
+    </select>-->
+
+    <!--快火掌柜返回的供应商的字段-->
+    <!--<sql id="base_column_list_kf" >
+        su.id, su.supplierName, su.supplierType, su.personName, su.telPhone, su.status, su.address, su.personIdCardNo,
+        su.businessNo, su.provinceId, su.cityId, su.countyId, su.townId, su.positionId, su.promoterId, su.isDelete,
+        su.isFrozen, su.createrId, su.updaterId, su.createTime, su.updateTime,su.userId,su.statusLevel
+    </sql>-->
+    <!--供应商列表-->
+    <select id="getSupplierListMap" resultType="Map" parameterType="com.ph.shopping.facade.spm.dto.SupplierDTO">
+        select agent.id ,                             <!--供应商的id-->
+        agent.nickname as companyName,                <!--供应商的公司名-->
+        agent.province_name as provinceName,          <!--供应商的省-->
+        agent.city_name as cityName,                  <!--供应商的市-->
+        agent.detail as detail,                       <!--供应商的地址详情-->
+        agent.ph_province_id as provnceId ,           <!--供应商的省的标识-->
+        agent.ph_city_id as cityId,                   <!--供应商的市的标识-->
+        IFNULL(mm.is_frozen,0) as frozen,             <!--供应商的冻结状态，0（未冻结）,1（冻结）,2（暂冻结）-->
+        agent.position_level as level,                <!--供应商的时省还是市，省（2），市（1）-->
+        mm.phone as phone                             <!--用户的手机号-->
+        from alq_hunter agent LEFT JOIN alq_member as mm on mm.hunter_id = agent.id
+        where true
+        <if test="userTelphone !=null and userTelphone !='' ">
+          And mm.phone = #{userTelphone}
+        </if>
+        <if test="supplierName !=null and supplierName !='' ">
+         And agent.nickname = #{supplierName}
+        </if>
+        <if test="isFrozen !=null and isFrozen !='' ">
+         And mm.is_frozen = #{isFrozen}
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>商户列表</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">商户管理</a>&nbsp;&gt;&nbsp;<span>商户列表</span></div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+            <h2>商户列表</h2>
+            <div class="ph_snbBtn">
+               <!--  <shiro:hasPermission name="merchantAdd">
+                    <input type="button" onclick="window.location.href='/web/merchants/addOrUpdate'" value="添加商户">
+                </shiro:hasPermission> -->
+                <shiro:hasPermission name="merchantExport">
+                    <input type="button" onclick="getExcel();" value="导出">
+                </shiro:hasPermission>
+            </div>
+        </div>
+        <!--end 标题-->
+        <!--筛选条件-->
+        <div class="ph_screen">
+            <shiro:hasPermission name="merchantQuery">
+                <table class="ph_tableBox">
+                    <tr>
+                        <th>所属区域：</th>
+                        <td colspan="6" id="area_div"></td>
+                        <th>行业分类：</th>
+                        <td id="merchantTypeDiv" colspan="3"></td>
+                    </tr>
+                    <tr>
+                        <th>商户账号：</th>
+                        <td colspan="2"><input name="telPhone" id="telPhone" type="text"></td>
+                        <th>企业名称：</th>
+                        <td colspan="2"><input name="companyName" id="companyName" type="text"></td>
+                        <th>门店名称：</th>
+                        <td colspan="2"><input name="merchantName" id="merchantName" type="text"></td>
+                    </tr>
+                    <tr>
+                        <!--<th>审核状态：</th>
+                        <td id="selectStutas">-->
+                        </td>
+                        <th>冻结状态：</th>
+                        <td id="selectIsFrozen">
+                        </td>
+                        <td colspan="5">
+                            <input name="" type="button" value="查询" onclick="query();"><input name="" id="restButton" type="button" value="重置">
+                        </td>
+                    </tr>
+                </table>
+            </shiro:hasPermission>
+        </div>
+        <!--end 筛选条件-->
+        <!--商品列表-->
+        <div class="ph_wareBox">
+            <table id="merchantList" class="ph_wareList">
+            </table>
+        </div>
+        <!--end 商品列表-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<script type="text/javascript" th:src="@{/static/uploadfy/jquery.uploadify.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!--区域-->
+<script type="text/javascript" th:src="@{/static/js/common/cascade.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<!--分页-->
+<script type="text/javascript" th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/spm/spmExtends.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    var agentId = "[[${agentId}]]";
+    var statusLevel = "[[${statusLevel}]]";
+    //角色 code  3 市级代理 4 县级代理 5社区代理
+    var agentCodes = "3,4,5";
+    //角色 code  3 市级代理 4 县级代理 5社区代理
+    var agentCodes = "3,4,5";
+    var loginRoleCode = [[${session.login_back_session.sessionRoleVo[0].roleCode}]];
+    if (agentId == "null")//处理传值为null的时候
+        agentId = '';
+    var tb;
+    $(function () {
+var telPhone;
+        initFunction();
+        var Popupe = new PopupBase();
+        Popupe.show('.ph_wareBox', '.Js_btn', '.maskBox,.DeterBox');
+        Popupe.showHide('.submit', '.DeterBox', '.SucBox');
+        Popupe.hide('.close', '.maskBox,.DeterBox,.SucBox,.ph_lookBox');
+        $(document).ajaxStop(function () {
+            tb = $('#merchantList').DataTable({
+                "lengthChange": false,
+                "ordering": false,
+                "searching": false,
+                "bServerSide": true,
+                "sPaginationType": "full_numbers",
+                "bJQueryUI": true,
+                "sDom": '<"">t<"F"ip>',
+                "sAjaxSource": "/web/merchants/getMerchantByPage", //ajax调用接口
+                "aoColumnDefs": [{sDefaultContent: '', aTargets: ['_all']}],
+                "aoColumns": [
+                    {
+                        "sTitle": "排序", "mData": "id", "class": "sClass", "sWidth": "50px", "mRender": function (data, type, full, meta) {
+                        return meta.row + 1 + meta.settings._iDisplayStart;
+                    }
+                    },
+                    {
+                        "sTitle": "置顶顺序", "mData": "isRecommendSsss", "sWidth": "60px","mRender": function (data, type, full, meta) {
+                        	return returnVlaue(data);
+                    }
+                    },
+                    {
+                        "sTitle": "上级代理", "mData": "parentName", "mRender": function (data, type, full) {
+                        return returnVlaue(data);
+                    }
+                    },
+                    {
+                        "sTitle": "企业名称", "mData": "companyName", "mRender": function (data, type, full) {
+                        return returnVlaue(data);
+                    }
+                    },
+                    {
+                        "sTitle": "门店名称", "mData": "merchantName", "sWidth": "110px", "mRender": function (data, type, full) {
+                        return returnVlaue(data);
+                    }
+                    },
+                    {
+                        "sTitle": "商户账号", "mData": "telPhone", "mRender": function (data, type, full) {
+                        	telPhone=data
+                        return returnVlaue(data);
+                    }
+                    },
+                    {
+                        "sTitle": "行业分类", "mData": "merchantTypeName", "mRender": function (data, type, full) {
+                        return returnVlaue(data);
+                    }
+                    },
+                    {
+                        "sTitle": "所属区域", "mData": "positionName", "sWidth": "230px", "mRender": function (data, type, full) {
+                        return returnVlaue(data);
+                    }
+                    },
+                    {
+                        "sTitle": "激活码", "mData": "cdKey", "class": "sClass", "sWidth": "80px", "mRender": function (data, type, full, meta) {
+                        return data;
+                    }
+                    },
+                    {
+                        "sTitle": "激活状态", "mData": "isCdKey", "sWidth": "60px","mRender": function (data, type, full) {
+                        var text = returnVlaue(data);
+                        //0：审核中 1：审核通过 2：未通过
+                        if (data == '0') {
+                                text = "<font color='#C7C7C7'>未激活</font>";
+                        } else if (data == '1') {
+                        		 text = "<font color='#C7C7C7'>已激活</font>";
+                        }else {
+                            text = "-";
+                        }
+                        return text;
+                    }
+                    },
+                    {
+                        "sTitle": "冻结状态", "mData": "isFrozen", "mRender": function (data, type, full) {
+                        var text = returnVlaue(data);
+                        //是否冻结 0:否 1:是
+                        if (full.isFrozen == '0') {
+                            text = "正常";
+                        } else if (full.isFrozen == '1') {
+                            text = "<font color='#C7C7C7'>冻结</font>";
+                        }
+                        return text;
+                    }
+                    },
+                    {
+                        "sTitle": "置顶", "mData": "isRecommend", "class": "sClass", "sWidth": "40px", "mRender": 
+                        	function (data, type, full, meta) {
+                        	 var text = '<select  onchange="merchantTop(this.options[this.options.selectedIndex].value ,'+ telPhone +')" ><option value=""></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>';
+                       		 return text;
+                   			 }
+                    },
+                    {
+                        "sTitle": "操作", "mData": "id", "sClass": "ph_tableShow", "mRender": function (data, type, full) {
+                        var text = '<div class="ph_operateBox"><input class="ph_operate" name="" type="button" value="操作选项">';
+                        text = text + '<ul class="ph_operateList hide" role="menu">';
+                        //是否冻结 0:否 1:是;
+                        if (full.isFrozen == "0" ) {//审核通过才有冻结、解冻、暂冻操
+                            if ([[${session.merchantFreeze}]]) {
+                                text += '<li><a href="#" onclick="isFrozen(\'' + full.id + '\',\'' + full.agentId + '\',\'/web/merchants/updateMerchantByFreeze\',\'冻结\');" >冻结</a></li>';
+                            }
+                        } else if (full.isFrozen == "1" ) {
+                            if ([[${session.merchantThaw}]]) {
+                                text += '<li><a href="#"  onclick="isFrozen(\'' + full.id + '\',\'' + full.agentId + '\',\'/web/merchants/updateMerchantByThaw\',\'解冻\');" >解冻</a></li>';
+                            }
+                        }
+                        //0：审核中 1：审核通过 2：未通过
+                        if (statusLevel == full.statusLevel || statusLevel == 4) {
+                            if (full.status == "0") {
+                                text += '<li>';
+                                if ([[${session.merchantExaminationPassed}]]) {
+                                    text += '<span onclick="isStatus(\'' + full.id + '\',\'' + full.agentId + '\',\'' + full.userId + '\',\'/web/merchants/updateMerchantByExaminationPassed\',\'通过\');">通过</span>';
+                                }
+                                if ([[${session.merchantAuditNotPassed}]]) {
+                                    text += '   <span onclick="isStatus(\'' + full.id + '\',\'' + full.agentId + '\',\'' + full.userId + '\',\'/web/merchants/updateMerchantByAuditNotPassed\',\'不通过\');" >不通过</span>';
+                                }
+                                text += '</li>';
+                            } else if (full.statusLevel == 4 && full.status == "1") {//审核通过不操作
+                                //            	  text += '<li><span onclick="isStatus(\''+full.id+'\',\'2\',\'不通过\');">不通过</span></li>';
+                            } else if (full.status == "2") {
+                                if ([[${session.merchantExaminationPassed}]]) {
+                                    text += '<li><span onclick="isStatus(\'' + full.id + '\',\'' + full.agentId + '\',\'' + full.userId + '\',\'/web/merchants/updateMerchantByExaminationPassed\',\'通过\');">通过</span></li>';
+                                }
+                            }
+                        }
+                        if (full.status == "1") {
+                            if ([[${session.merchantResetPass}]]) {
+                                text += '<li><a href="#" onclick="resetPassword(\'' + full.userId + '\',\'重置密码\');" >重置密码</a></li>';
+                            }
+                        }
+                        if ([[${session.merchantDelete}]]) {
+                            if (full.status != "1") {//审核通过才有删除操作
+                                text += '<li><a href="#" onclick="isDelete(\'' + full.id + '\',\'' + full.userId + '\',\'/web/merchants/updateMerchantByDelete\',\'删除\');">删除</a></li>';
+                            }
+                        }
+                        if ([[${session.merchantUpdate}]]) {
+                            text += "<li><a href='/web/merchants/addOrUpdate?id=" + full.id + "&operateType=update'>编辑</a></li>";
+                        }
+                        if ([[${session.merchantDetail}]]) {
+                            text += "<li><a href='/web/merchants/detail?id=" + full.id + "'>商户详情</a></li>";
+                        }
+                        text = text + '</ul></div>';
+                        return text;
+                    }
+                    }
+                ],
+                "oLanguage": {
+                    "sProcessing": "数据加载中······",
+                    "sLengthMenu": "显示 _MENU_ 条记录",
+                    "sZeroRecords": "没有您要搜索的内容！",
+                    "sEmptyTable": "列表中无数据存在！",
+                    "sInfo": "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+                    "sInfoEmpty": "显示 0 到 0 条记录",
+                    "sInfoFiltered": "数据列表中共  _MAX_ 条记录",
+                    "oPaginate": {
+                        "sFirst": "首页",
+                        "sPrevious": "上一页",
+                        "sNext": "下一页",
+                        "sLast": "末页"
+                    }
+                },
+                "fnServerData": function (sSource, aoData, fnCallback, oSettings) {
+                    oSettings.jqXHR = $.ajax({
+                        "dataType": 'json',
+                        "type": "GET",
+                        "async": 'false',
+                        "url": sSource,
+                        "data": {
+                            'pageNum': (aoData[3].value / aoData[4].value) + 1,
+                            'pageSize': aoData[4].value,
+                            'telPhone': $("#telPhone").val(),
+                            'companyName': $("#companyName").val(),
+                            'merchantName': $("#merchantName").val(),
+                            'status': $("#status").val(),
+                            'isFrozen': $("#isFrozen").val(),
+                            'merchantFirstTypeId': $("select[name='merchantFirstTypeId']").val(),
+                            'merchantSecondTypeId': $("select[name='merchantSecondTypeId']").val(),
+                            'positionExtendsId': getPositionVal(),
+                            'agentId': agentId
+                        },
+                        "success": fnCallback
+                    });
+                }
+            });
+        });
+        $("#restButton").click(function () {
+            $(".ph_tableBox input[type='text']").each(function () {
+                $(this).val('');
+            });
+            $(".ph_tableBox select").each(function () {
+                $(this).val('');
+                $(this).attr('data-area-code-selected', "");
+            });
+            initFunction();
+//             query();
+        });
+    });
+    //初始加载动态查询选项
+    var initFunction = function () {
+        select("/web/enum/getEnumByMerchantStatusList", "selectStutas", "status");
+        select("/web/enum/getEnumByMerchantIsFrozenList", "selectIsFrozen", "isFrozen");
+    };
+    //条件查询重新加载数据
+    function query() {
+        tb.draw();
+    }
+    //导出
+    var getExcel = function () {
+        var data = {
+            'telPhone': $("#telPhone").val(),
+            'companyName': $("#companyName").val(),
+            'merchantName': $("#merchantName").val(),
+            'status': $("#status").val(),
+            'isFrozen': $("#isFrozen").val(),
+            'merchantFirstTypeId': $("select[name='merchantFirstTypeId']").val(),
+            'merchantSecondTypeId': $("select[name='merchantSecondTypeId']").val(),
+            'positionExtendsId': getPositionVal(),
+            'agentId': agentId
+        };
+        exportExcel("ajaxSubmit", "/web/merchants/getExport", data);
+    };
+    //返回值处理
+    var returnVlaue = function (val) {
+        var text;
+        if (val) {
+            text = val;
+        } else {
+            text = '-';
+        }
+        return text;
+    };
+    //暂冻、冻结、解冻
+    var isFrozen = function (id, agentId, url, text) {
+        var data = {
+            id: id,
+            agentId: agentId
+        };
+        auditOrFrozenOrDelete(url, data, text, "object", tb);
+    };
+    //审核通过、未通过
+    var isStatus = function (id, agentId, userId, url, text) {
+        var data = {
+            id: id,
+            agentId: agentId,
+            userId: userId
+        };
+        auditOrFrozenOrDelete(url, data, text, "object", tb);
+    };
+    //删除
+    var isDelete = function (id, userId, url, text) {
+        var data = {
+            id: id,
+            userId: userId
+        };
+        auditOrFrozenOrDelete(url, data, text, "object", tb);
+    };
+    //重置密码
+    var resetPassword = function (userId, text) {
+        var data = {
+            userId: userId,
+            codeVal: 3
+        };
+        auditOrFrozenOrDelete("/web/permission/user/resetPass", data, text, "object", tb);
+    };
+    //区域
+    cascade({
+        totalSelect: 4,
+        DivId: "area_div",
+        backFun: function () {
+            if (agentCodes.indexOf(loginRoleCode.toString()) !== -1) {
+                $("#area_div").find("select:lt(" + parseInt(loginRoleCode - 1) + ")").attr("disabled", "true");
+            }
+        }
+    });
+    //行业
+    cascade({
+        url: "/web/merchantType/getMerchantTypeByChildList",
+        totalSelect: 2,
+        frozenSelect: false,
+        DivId: "merchantTypeDiv",
+        selectNames: ["merchantFirstTypeId", "merchantSecondTypeId"],
+        requestIds: ["parentId"],
+        requestNames: ["merchantTypeName", "merchantTypeName"],
+        bindCols: ["id", "id"]
+    });
+    
+    /* 置顶  */
+    var merchantTop = function (isRecommend,telPhone) {
+     	$.ajax({  
+            url:"/web/merchants/updateIsRecommend",  
+            type:"post",
+            data:{isRecommend,telPhone},  
+            success:function(data){
+            	  window.location.reload();
+            },  
+         });   
+    };
+    
+          
+</script>
+</body>
+</html>

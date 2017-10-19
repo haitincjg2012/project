@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>商品编辑</title>
+    <link rel="stylesheet"  th:href="@{/static/css/common/models.css}" />
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet"   th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet"  th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--图片点击放大  css文件-->
+    <link rel="stylesheet"  th:href="@{/static/js/plugins/viewer/css/viewer.min.css}" />
+    <!--富文本编辑器 版本4.1.11-->
+    <link rel="stylesheet" th:href="@{/static/js/plugins/kindeditor/themes/default/default.css}" />
+    <link rel="stylesheet" th:href="@{/static/js/plugins/layer/layer.css}" />
+</head>
+<body>
+<div class="MainContent">
+    <div class="current">当前位置：<a href="#" alt="">商品管理 &gt;</a><span>商品编辑</span></div>
+    <div class="MainCont ">
+        <div class="ph_subConTit">
+            <h2>基本信息</h2>
+        </div>
+        <form  id="productForm">
+            <input th:type="hidden" th:name="id" th:value="${product.id}"/>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">供应商</span>
+                </label>
+                <select class="selectUp selectpicker" data-live-search="true"  id="supplierId" name="supplierId">
+                    <option th:each="sp:${supplierList}" th:value="${sp.id}" th:selected="${product.supplierId eq sp.id}"
+                             th:text="${sp.supplierName}"></option>
+                </select>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">商品名称</span>
+                </label>
+                <input type="text" class="left validate[required, maxSize[200]]" placeholder="商品名称" th:value="${product.productName}"  id="productName"  name="productName">
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="">商品条形码</span>
+                </label>
+                <input type="text" class="left validate[maxSize[100]]"  th:value="${product.barCode}"  id="barCode"  name="barCode"/>
+            </div>
+            <div class="ph_subConTit">
+                <h2>详细描述</h2>
+            </div>
+            <div class="content-box">
+                <textarea id="editor_id"  name="content" style="width: 800px;height: 500px;" th:text="${product.description}"></textarea>
+            </div>
+            <div class="ph_subConTit">
+                <h2><span class="require">*</span>商品相册</h2>
+            </div>
+            <div class="content-box">
+                <div class="img-box">
+                    <span>请上传商品图片，照片大小不超过5M,数量不大于5，推荐尺寸500x500px</span>
+                    <div class="img-box full">
+                        <section class=" img-section">
+
+                            <div class="z_photo upimg-div">
+                                <section class="z_file left">
+                                    <img  th:src="@{/static/images/add.png}" class="add-img">
+                                    <input type="file" name="file" id="file" class="file" value="" accept="image/jpg,image/jpeg,image/png,image/bmp" multiple/>
+                                </section>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+            </div>
+            <div class="ph_subConTit">
+                <h2>商品属性</h2>
+            </div>
+            <div class="content-box">
+                <!--商品属性组开始-->
+                <div class="attribute-box">
+                    <div class="mainFrom">
+                        <label class="left">
+                            <span class="require">*</span>
+                            <span class="mainLab">商品分类</span>
+                        </label>
+                        <select class="selectUp selectpicker"  id="first" data-live-search="true" onchange="getClass(this.options[this.selectedIndex].value,'second');" >
+                            <option th:if="${list.classifyLevel eq 1}" th:each="list:${childrenList}"  th:value="${list.id}"
+                                    th:selected="${list.classifyLevel eq 1 and list.isSelect eq 1}"  th:text="${list.classifyName}"></option>
+                        </select>
+                        <select class="selectUp selectpicker" id="second"   data-live-search="true" onchange="getClass(this.options[this.selectedIndex].value,'three');">
+                            <option th:if="${list.classifyLevel eq 2}" th:each="list:${childrenList}" th:value="${list.id}" th:text="${list.classifyName}"
+                                    th:selected="${list.classifyLevel eq 2 and list.isSelect eq 1}"></option>
+                        </select>
+                        <select class="selectUp selectpicker"  id="three"  onchange="gerProperties();"   data-live-search="true">
+                            <option th:if="${list.classifyLevel eq 3}" th:each="list:${childrenList}" th:value="${list.id}" th:text="${list.classifyName}"
+                                    th:selected="${list.classifyLevel eq 3 and list.isSelect eq 1}"></option>
+                        </select>
+                        <!--<input type="text" id="" class="left Classification" placeholder="" autocomplete="off"/>-->
+                    </div>
+                    <div id="all">
+                        <div class="ph_attr" th:each="property:${productPropertyVOList}">
+                            <div class="mainFrom">
+                                <label class="left"><span class="mainLab">属性名称</span></label>
+                                <div class="inputbox_big">
+                                    <div class="input-box relative left">
+                                        <input type="text" th:placeholder="${property.propertyName}" th:id="${property.id}"  th:value="${property.propertyName}" readonly="readonly">
+                                        <img src="/static/images/input-del.png" alt="" class="absolute del_inputbox_all">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mainFrom" >
+                                <label class="left"><span class="mainLab">属性值</span></label>
+                                <div class="inputbox_big">
+                                    <div class="input-box relative left" th:each="propertyVal:${property.productPropertyValVoList}">
+                                        <input type="text" class="validate[maxSize[100]]" th:value="${propertyVal.content}" th:ide="${property.id}" ref="proValue">
+                                        <img src="/static/images/input-del.png" alt="" class="absolute del_inputbox">
+                                    </div>
+                                    <input type="button" value="添加属性值" class="left add_inputbox add_inputbox_attribute">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--商品属性组结束-->
+                    <!--商品规格组开始-->
+                    <div class="ph_subConTit">
+                        <h2>商品规格</h2>
+                    </div>
+                    <div class="attribute-box ph_attr ph_classify">
+                        <div th:each="specification,iterStat:${productSpecificationVOList}">
+                        <div class="mainFrom">
+                            <label class="left">
+                                <span class="mainLab">规格名称</span>
+                            </label>
+                            <div class="inputbox_big">
+                                <div class="input-box relative left">
+                                    <input type="text" class="validate[required,maxSize[20]]" th:value="${specification.specificationName}"  th:id="${iterStat.index}" ref="spnValue"/>
+                                    <img src="/static/images/input-del.png" alt="" class="absolute del_inputbox_all_sp"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mainFrom">
+                            <label class="left">
+                                <span class="mainLab">规格值</span>
+                            </label>
+                            <div class="inputbox_big">
+                                <div class="input-box relative left"  th:each="specificationVal,iterStatVal:${specification.productSpecificationValVOList}">
+                                    <input th:class="${'validate[required,maxSize[100]] Specification_value1 Sp_' + iterStat.index}" type="text" th:value="${specificationVal.specificationValue}"/>
+                                    <img src="/static/images/input-del.png" alt="" class="absolute del_inputbox1"/>
+                                </div>
+                                <input type="button" value="添加规格值" class="left add_inputbox add_inputbox_Specifications">
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="PopupBtn btnLeft" style="margin-bottom: 20px;">
+                        <input class="submit add_specifications" name="" type="button" value="添加规格项">
+                        <input class="submit table_save" name="" type="button" value="生成">
+                    </div>
+                    <!--商品规格组结束-->
+                    <!--规格展示表格-->
+                    <div class="ph_subConTit">
+                        <h2>商品库存</h2>
+                    </div>
+                    <!--表格-->
+                    <div class="ph_wareBox clearfix">
+                        <table class="ph_wareList">
+                            <thead>
+                            <tr >
+                                <th>规格</th>
+                                <th><span class="require">*</span>参考价（元）</th>
+                                <th><span class="require">*</span>零售价（元）</th>
+                                <th>进货价（元）</th>
+                                <th><span class="require">*</span>结算价（元）</th>
+                                <th><span class="require">*</span>市代起批数量</th>
+                                <th><span class="require">*</span>商户起批数量</th>
+                                <th>起售数量</th>
+                                <th>包邮数量</th>
+                                <th>物流费用（元）</th>
+                                <th width="188"><span class="require">*</span>库存</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="sku,iterSku:${productSkuList}">
+                                    <td class="td_input">
+                                        <span th:text="${sku.skuName}"></span>
+                                        <input type="hidden" ref="skus" name="skuName" th:value="${sku.skuName}"/>
+                                    </td>
+                                    <td class="td_input"><input type="text" class="table_input validate[required,custom[price], min[0]]" ref="skus" name="referencePrice" th:value="${sku.referencePrice}" /></td>
+                                    <td class="td_input"><input type="text" class="table_input validate[required,custom[price], min[0]]" th:id="${iterSku.index + 'one'}" th:onblur="'javascript:setPurchasePrice(' + ${iterSku.index} +',\'' + ${iterSku.index + 'one'}+'\');'" ref="skus" name="retailPrice" th:value="${sku.retailPrice}" /></td>
+                                    <td class="td_input"><input type="text" class="table_input" th:id="${iterSku.index}" readonly="readonly" ref="skus" name="purchasePrice" th:value="${sku.purchasePrice}" /></td>
+                                    <td class="td_input"><input type="text" class="table_input validate[required,custom[price], min[0]]" ref="skus" name="settlementPrice" th:value="${sku.settlementPrice}" /></td>
+                                    <td class="td_input"><input type="text" class="table_input validate[required,custom[price], min[0]]" ref="skus" name="municipalBatchQuantity" th:value="${sku.municipalBatchQuantity}" /></td>
+                                    <td class="td_input"><input type="text" class="table_input validate[required,custom[price], min[0]]" ref="skus" name="sellerbAtchQuantity" th:value="${sku.sellerbAtchQuantity}" /></td>
+                                    <td class="td_input"><input type="text" class="table_input validate[custom[integer], min[1],max[2147483647]]" ref="skus" name="saleQuantity" th:value="${sku.saleQuantity}" /></td>
+                                    <td class="td_input"><input type="text" class="table_input validate[custom[integer], min[1],max[2147483647]]" ref="skus" name="numberOfPackages" th:value="${sku.numberOfPackages}" /></td>
+                                    <td class="td_input"><input type="text" class="table_input validate[custom[price], min[0]]" ref="skus" name="freight" th:value="${sku.freight}" /></td>
+                                    <td class="td_input"><input type="text" class="table_input validate[required, custom[integer], min[1],max[2147483647]]" ref="skus" name="skuCount" th:value="${sku.skuCount}" onblur="compute()"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="right">
+                            <span>总库存：</span>
+                            <span id="allCount" th:text="${product.productCount}"></span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="levleHidden" value=""/>
+                    <input type="hidden" id="productPropertyValJSON"  name="productPropertyValJSON" value=""/>
+                    <input type="hidden" id="imageJSON"  name="imageJSON" value=""/>
+                    <input type="hidden" id="productClassifyId"  name="productClassifyId" value=""/>
+                    <input  id="description" name="description" value=""   type="hidden" />
+                    <input  id="specificationAndValJson" name="specificationAndValJson" value=""   type="hidden" />
+                    <input  id="productSkuJSON" name="productSkuJSON" value=""   type="hidden" />
+                    <input  id="productCount" name="productCount" value=""   type="hidden" />
+        </form>
+        <!--end 表格-->
+        <div class="PopupBtn btnLeft" style="margin-bottom: 20px;">
+            <shiro:hasPermission name="productUpdate">
+            <input class="submit save" name="" type="button"  onclick="save();" value="保存">
+            </shiro:hasPermission>
+            <input class="cancel save_cancel" name="" type="button" onclick="cancel()" value="取消">
+        </div>
+    </div>
+</div>
+
+</div>
+</body>
+<!--kindeditor富文本插件-->
+<script type="text/javascript"   th:src="@{/static/js/plugins/kindeditor/kindeditor-all-min.js}"></script>
+<script type="text/javascript"   th:src="@{/static/js/plugins/kindeditor/lang/zh-CN.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<!--图片上传插件-->
+<script type="text/javascript"  th:src="@{/static/js/common/imgUp.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript"  th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<!--图片点击放大-->
+<script  type="text/javascript"  th:src="@{/static/js/plugins/viewer/viewer-jquery.min.js}"></script>
+
+<!--属性输入框的增加和删除-->
+<script type="text/javascript"  th:src="@{/static/js/common/attrbox.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/layer/layer.js}"></script>
+
+<script th:inline="JavaScript" type="text/javascript">
+//结算价比例
+var  purchasePriceRatio=[[${purchasePriceRatio}]];
+    var imgUrl = [];
+    //<![CDATA[
+        var imgUrlJsonStr = [[${productImageJsonList}]];
+        var imgUrls = JSON.parse(imgUrlJsonStr);
+        for(var i = 0; i < imgUrls.length; i++){
+            imgUrl.push(imgUrls[i].url);
+        }
+    //]]>
+    /** 回显图片
+     *  回调直接显示，获取URL往imgarr里传值
+     */
+    function showExistImg(imgUrl){
+        var imgContainer = $("#file").parents(".z_photo");
+        var numUp = imgContainer.find(".up-section").length;
+        if(imgUrl instanceof Array){
+            for(var i = 0; i < imgUrl.length; i++){
+                var $section = $("<section class='up-section left'>");
+                var $span = $("<span class='up-span'>");
+                var $inputhidden=$("<input type='hidden' name='url' value=''/>");
+                $span.appendTo($section);
+                var $img0 = $("<img class='close-upimg'>").on("click", function () {
+                    delParent = $(this).parent();
+                    var numUp1 = delParent.siblings().length;
+                    if (numUp1 < 6) {
+                        delParent.parent().find(".z_file").show();
+                    }
+                    delParent.remove();
+                });
+                $img0.attr("src", "/static/images/img-del.png").appendTo($section);
+                $inputhidden.attr('value',imgUrl[i]).appendTo($section);
+                var $img = $("<img class='up-img zoom-img'>").on("click", function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    $('.zoom-img').viewer({
+                        url: 'src',
+                        navbar: false,
+                        keyboard: true,
+                        title: true
+                    });
+                });
+                $img.attr("src", imgUrl[i]).appendTo($section);
+                $('.z_file').before($section);
+                numUp = imgContainer.find(".up-section").length;
+                if (numUp >=5 ) {
+                    $('.z_file').hide();
+                }
+            }
+
+        }
+    }
+
+    var editor;
+    $(function(){
+        //修改时默认禁用生成按钮
+        $('input.table_save').attr('disabled','disabled');
+        $('input.table_save').removeClass('submit').addClass('disable');
+        //验证初始化
+        $('form').validationEngine({
+            validationEventTrigger: 'blur'//触发验证的事件，支持事件可参考 jQuery 的事件说明。
+            ,scroll: true//	屏幕自动滚动到第一个验证不通过的位置。
+            ,focusFirstField: true//验证未通过时，是否给第一个不通过的控件获取焦点。
+            ,validateNonVisibleFields: false//是否验证不可见的元素（如 type="hidden" 的输入框，或多个输入控件在选项卡切换中）
+            ,promptPosition:'bottomLeft:20 0'
+            ,addPromptClass:'formError-text'
+
+        });
+        //调用回显图片的方法
+        showExistImg(imgUrl);
+
+        //；如果供应商直接点击添加商品
+        var supplierId="${supplierId}";
+        if(supplierId!=""){
+            $("#supplierId").val(supplierId);
+        }
+        KindEditor.ready(function(K) {
+            editor= K.create('#editor_id',{
+                uploadJson : '/uploadProductImage?module=editor',
+//        	   	    fileManagerJson : '${ctx}/uploadProductImage?module=editor',
+                allowFileManager :true,
+                allowImageUpload : true,
+                allowFlashUpload:false,
+                allowMediaUpload:false,
+                formatUploadUrl:false,
+                items:[
+                    'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'template', 'cut', 'copy', 'paste',
+                    'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
+                    'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
+                    'superscript', 'clearhtml', 'quickformat', 'selectall', '|', 'fullscreen', '/',
+                    'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
+                    'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image','multiimage',
+                    'insertfile', 'table', 'hr', 'emoticons', 'baidumap', 'pagebreak',
+                    'anchor', 'link', 'unlink', '|', 'about'
+                ],
+            });
+        });
+        //图片初始化
+        var value=$('#file').attr('value');
+        $("#file" + value).takungaeImgup({
+            formData: {
+                'module': 'product',
+                'name':'url',
+                'filesname':'urlfile'
+            },
+            url: '/web/attachment/uploadProductImage',
+            maxImage:5,
+            success: function(data) {
+                //console.info(data);
+            },
+            error: function(err) {
+                layer.alert(err, {icon: 2,btnAlign: 'c', closeBtn : 0});
+            }
+        });
+        $('.zoom-img').viewer({
+            url: 'src',
+            navbar: false,
+            keyboard: true,
+            title: true
+        });
+
+    });
+
+    //分类联动方法
+    function getClass(id,level){
+        $("#levleHidden").val("");
+        $("#levleHidden").val(level);
+        if(level=="second"){
+            document.getElementById("second").options.length=0;
+            $("#second").prepend("<option value=''>请选择</option>");
+            document.getElementById("three").options.length=0;
+            $("#three").prepend("<option value=''>请选择</option>");
+            $('.selectpicker').selectpicker('refresh');
+        }
+        if(level=="three"){
+            document.getElementById("three").options.length=0;
+            $("#three").prepend("<option value=''>请选择</option>");
+            $('.selectpicker').selectpicker('refresh');
+        }
+        if(id!=""){
+            $.ajax({url:'/web/product/productClassify/selectClass?id='+id,dataType:"json",type:"post",success:savecallbackOne,error:function(data){
+                alert("与服务器连接中断");
+            }});
+        }
+    }
+    function savecallbackOne(data){
+        var levle=$("#levleHidden").val();
+        if(levle=="second"){
+            $("#three").find("option").remove();
+            $("#three").prepend("<option value=''>请选择</option>");
+            $('.selectpicker').selectpicker('refresh');
+        }
+        $("#"+levle).find("option").remove();
+        $("#"+levle).prepend("<option value=''>请选择</option>");
+        for(var i=0; i<data.data.length;i++){
+            $("#"+levle).append("<option value='"+data.data[i].id+"'>"+data.data[i].classifyName+"</option>");
+        }
+        $('.selectpicker').selectpicker('refresh');
+    }
+    //点击三级分类获取所有属性
+    function gerProperties(){
+        var fid=$("#first").val();
+        var sid=$("#second").val();
+        var tid=$("#three").val();
+        if(fid==""||sid==""||tid==""){
+            layer.alert("请选择分类");
+            return false;
+        }
+        if(tid!=""){
+            $.ajax({url:'/web/product/getClassifiesForThreeId?fid='+fid+'&sid='+sid+'&tid='+tid,dataType:"json",type:"get",success:savecallbackForSelect,error:function(data){
+                alert("与服务器连接中断");
+            }});
+        }
+    }
+    //成功回调方法
+    function savecallbackForSelect(data){
+        $("#all").html("");
+        var html="";
+        for(var i=0; i<data.data.length;i++){
+            html+="<div class='ph_attr'>";
+            html+="<div class='mainFrom'>";
+            html+="<label class='left'>";
+            html+="<span class='mainLab'>属性名称</span>";
+            html+="</label>";
+            html+="<div class='inputbox_big'>";
+            html+="<div class='input-box relative left'>";
+            html+="<input type='text' placeholder='"+data.data[i].propertyName+"'  id='' name='' value='' readonly/>";
+            html+=" <img src='/static/images/input-del.png' alt='' class='absolute del_inputbox_all'/>";
+            html+=" </div>";
+            html+=" </div>";
+
+            html+="</div>";
+            html+="<div class='mainFrom'>";
+            html+="<label class='left'>";
+            html+="<span class='mainLab'>属性值</span>";
+            html+="</label>";
+            html+="<div class='inputbox_big'>";
+            html+="<div class='input-box relative left'>";
+            html+=" <input type='text' placeholder='' ide='"+data.data[i].id+"' ref='proValue'/>";
+            html+="<img src='/static/images/input-del.png' alt='' class='absolute del_inputbox'/>";
+            html+="</div>";
+            html+="<input type='button' value='添加属性值' class='left add_inputbox add_inputbox_attribute'>";
+            html+="</div>";
+            html+="</div>";
+            html+="</div>";
+        }
+        $("#all").append(html);
+    }
+
+    //保存方法
+    function save(){
+        var flag = $("form").validationEngine("validate");
+        if(!flag){
+            return false;
+        }
+
+        var content=editor.html();
+        if(content!=null&&content!=""){
+            $("#description").val(content);
+        }
+
+        if(	$("input[name='url']").length==0){
+            layer.alert('请上传商品图片', {
+                icon: 2,
+            });
+            return  false;
+        }
+        //组装图片 测试数据
+        var imageJSON = [];
+        $("input[name='url']").each(function(index){
+            if(null != $(this).val() && "" != $.trim($(this).val()) ){
+                var obj = new Object();
+                obj.url = $(this).val();
+                obj.sort = index + 1;
+                imageJSON.push(obj);
+            }
+        });
+        $("#imageJSON").val(JSON.stringify(imageJSON));
+        //分类id
+        $("#productClassifyId").val($("#three").val());
+        //总数量
+        $("#productCount").val($("#allCount").html());
+
+        //组装属性值
+        var productPropertyValJSON = [];
+        $("input[ref='proValue']").each(function(){
+            if($(this).val()!=""){
+                var obj = new Object();
+                obj.propertyId = $(this).attr("ide");
+                obj.content = $(this).val();
+                productPropertyValJSON.push(obj);
+            }
+        });
+        $("#productPropertyValJSON").val(JSON.stringify(productPropertyValJSON));
+        //组规格规格值
+        var specificationAndValJson = [];
+        $("input[ref='spnValue']").each(function(){
+            var id=	$(this).attr("id");
+            var  vals="";
+            $(".Sp_"+id+"").each(function(){
+                vals+=$(this).val()+",";
+            });
+            var obj = new Object();
+            obj.specificationName = $(this).val();
+            obj.specificationValue =vals ;
+            specificationAndValJson.push(obj);
+        });
+        $("#specificationAndValJson").val(JSON.stringify(specificationAndValJson));
+
+        var skuJson = [];
+        $(".ph_wareList tbody tr").each(function(){
+            var o = {};
+            o.skuName= $(this).find("input[name='skuName'][ref='skus']").val();
+            o.referencePrice= $(this).find("input[name='referencePrice'][ref='skus']").val();
+            o.retailPrice= $(this).find("input[name='retailPrice'][ref='skus']").val();
+            o.purchasePrice= $(this).find("input[name='purchasePrice'][ref='skus']").val();
+            o.settlementPrice= $(this).find("input[name='settlementPrice'][ref='skus']").val();
+            o.municipalBatchQuantity= $(this).find("input[name='municipalBatchQuantity'][ref='skus']").val();
+            o.sellerbAtchQuantity= $(this).find("input[name='sellerbAtchQuantity'][ref='skus']").val();
+            o.saleQuantity= $(this).find("input[name='saleQuantity'][ref='skus']").val();
+            o.numberOfPackages= $(this).find("input[name='numberOfPackages'][ref='skus']").val();
+            o.freight= $(this).find("input[name='freight'][ref='skus']").val();
+            o.skuCount= $(this).find("input[name='skuCount'][ref='skus']").val();
+            skuJson.push(o);
+        });
+        $("#productSkuJSON").val(JSON.stringify(skuJson));
+
+//        console.info('===========================保存===============================');
+//        console.info('图片:' + $("#imageJSON").val());
+//        console.info('属性值:' + $("#productPropertyValJSON").val());
+//        console.info('规格:' + $("#specificationAndValJson").val());
+//        console.info('SUK:' + $("#productSkuJSON").val());
+//        console.info('===========================/保存===============================');
+        $.ajax({url:'/web/product/updateProduct',data :$("#productForm").serialize(),dataType:"json",type:"post",success:savecallback,error:function(data){
+            layer.alert("与服务器连接中断");
+        }});
+    }
+    //成功回调方法
+    function savecallback(data){
+        if(data.success==true){
+// 			resetForm();
+            layer.alert('保存商品成功',{
+                    icon: 1,
+                    closeBtn : 0
+                 },
+            function(){
+                window.location.href="/web/product/toProductPage";
+            });
+
+        }else{
+            layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+        }
+    }
+
+    //取消
+    function cancel(){
+        layer.confirm('取消编辑?',{
+            icon: 3,
+            btn: ['确定', '返回'],
+            btnAlign: 'c',
+            closeBtn : 0,
+            btn1: function(){
+                window.location.href="/web/product/toProductPage";
+            },
+            btn2: function(index){
+                layer.close(index);
+            }
+        });
+    }
+
+    //计算总数
+    function compute(){
+        var count=0;
+        $("#allCount").html("");
+        $(".ph_wareList tbody tr").each(function(){
+            var oneCount=$(this).find("input[name='skuCount'][ref='skus']").val();
+            if(oneCount!=""){
+                count = Number(parseInt(count)) + Number(parseInt(oneCount));
+            }
+        });
+        $("#allCount").html(count);
+    }
+
+    //设置进货价
+    function setPurchasePrice(id,countID){
+        var retailPrice = $("#"+countID).val();
+        var purchasePrice = (retailPrice * purchasePriceRatio).toFixed(2);
+        $("input[name='purchasePrice'][id='"+id+"']").val(purchasePrice);
+    }
+</script>
+</html>

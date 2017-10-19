@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.wxpayorder.WxPayOrderDao">
+	<resultMap type="com.alqsoft.entity.wxpayorder.WxPayOrder" id="wxPayOrderMap">
+		<result column="id" property="id"/>
+	</resultMap>
+
+
+	<select id="findWxPayOrderByWxOrderNum" resultMap="wxPayOrderMap" parameterType="map">
+		SELECT * FROM alq_wx_pay_order WHERE wx_order_num=#{out_trade_no}
+	</select>
+
+	<select id="findWxPayOrderByWxOrderNumAndStatus" resultMap="wxPayOrderMap" parameterType="string">
+		SELECT * FROM alq_wx_pay_order WHERE wx_order_num=#{wxOrderNum} AND status=0 AND type!=3
+	</select>
+
+	<select id="getPayOrderByOrderId" resultMap="wxPayOrderMap" parameterType="long">
+		SELECT * FROM alq_wx_pay_order WHERE order_id=#{id} AND status=0
+	</select>
+
+	<select id="getPayBackOrderByOrderId" resultMap="wxPayOrderMap" parameterType="long">
+		SELECT * FROM alq_wx_pay_order WHERE order_id=#{id} AND status=0 AND type=3
+	</select>
+</mapper>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>商品列表</title>
+    <head th:include="header::header"></head>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/treetable/jquery.treeTable.css}">
+    <style type="text/css">
+        .searchClassify {
+            color: #10c8ef !important;
+        }
+
+        .merchantFirst {
+            text-align: left !important;
+            margin-left: 10px
+        }
+    </style>
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <!--<div class="current">当前位置：<a href="welcome.html">管理首页</a>&nbsp;&gt;&nbsp;<a href="#">系统管理</a>&nbsp;&gt;&nbsp;<span>行业列表</span></div>-->
+    <div class="current">当前位置：<a href="#">系统管理</a>&nbsp;&gt;&nbsp;<span>行业列表</span></div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+            <h2>行业列表</h2>
+            <div class="ph_snbBtn">
+                <shiro:hasPermission name="merchantTypeAdd">
+                    <input name="" type="button" onclick="window.location.href='/web/merchantType/addOrUpdate'" value="添加行业分类">
+                </shiro:hasPermission>
+            </div>
+        </div>
+        <!--end 标题-->
+        <!--筛选条件-->
+        <div class="ph_screen">
+            <shiro:hasPermission name="merchantTypeQuery">
+                <table class="ph_tableBox">
+                    <tr>
+                        <th>行业名称：</th>
+                        <td><input id="merchantTypeName" type="text"></td>
+                        <td colspan="2">
+                            <input id="search" type="button" value="查询">
+                            <input id="reset" type="button" value="重置">
+                        </td>
+                    </tr>
+                </table>
+            </shiro:hasPermission>
+        </div>
+        <!--end 筛选条件-->
+        <!--商品列表-->
+        <div class="ph_wareBox">
+            <table class="ph_wareList" id="treeTable">
+                <thead>
+                <tr>
+                    <th width="250">分类名称</th>
+                    <th width="50">ID</th>
+                    <th>分类排序</th>
+                    <th>商户数量</th>
+                    <th>创建时间</th>
+                    <th>状态</th>
+                    <th width="110">操作</th>
+                </tr>
+                </thead>
+            </table>
+            <table style="display: none">
+                <tbody id="tree_tbody">
+                <tr id="{id}" pId="{parentId}" data-merchantType-name="{merchantTypeName}">
+                    <td class="merchantFirst">{merchantTypeName}</td>
+                    <td>{id}</td>
+                    <td data-id="{id}" class="tree-table-sort">{sort}</td>
+                    <td>{merchantCount}</td>
+                    <td>{createTime}</td>
+                    <td data-fun="isDeleteHandler">{isDelete},false</td>
+                    <td class="ph_tableShow">
+                        <div class="ph_operateBox">
+                            <input class="ph_operate" type="button" value="操作选项">
+                            <ul class="ph_operateList hide">
+                                <shiro:hasPermission name="merchantTypeEnabled">
+                                    <li>
+                                        <a class="status_enable_btn" data-fun="isDeleteHandler" onclick="update('enabled',{id},this)" href="javascript:void(0);">{isDelete},true</a>
+                                    </li>
+                                </shiro:hasPermission>
+                                <shiro:hasPermission name="merchantTypeDelete">
+                                    <li>
+                                        <a class="status_enable_btn" onclick="update('delete',{id},this)" href="javascript:void(0);">删除</a>
+                                    </li>
+                                </shiro:hasPermission>
+                                <shiro:hasPermission name="merchantTypeUpdate">
+                                    <li>
+                                        <a class="status_enable_btn" onclick="update('addOrUpdate',{id})" href="javascript:void(0)">编辑</a>
+                                    </li>
+                                </shiro:hasPermission>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/rewriteAjax.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/treetable/jquery.treeTable.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!--分页-->
+<script type="text/javascript" th:inline="javascript">
+    var cacheClassifyName = [];
+    $(function () {
+        $("#search").click(function () {
+            var searchValue = $("#merchantTypeName").val().trim();
+            if (isNull(searchValue)) {
+                window.location.reload();
+                return false;
+            }
+            _treeTable.find("tr[pid]").each(function (i, tr) {
+                $(tr).css("display", "none");
+            });
+            //这是被搜索出来需要展示的分类数组
+            var showArr = Array.prototype.filterByStr.call(cacheClassifyName, searchValue);
+            _treeTable.find(".searchClassify").removeClass("searchClassify");
+            showArr.forEach(function (merchantTypeName) {
+                var $showTr = $("tr[data-merchantType-name=" + merchantTypeName + "]", _treeTable);
+                $showTr.find("td:first").addClass("searchClassify");
+                recursiveShow($showTr);
+            });
+
+            //递归展示上级分类
+            function recursiveShow($showTr) {
+                var pid = $showTr.attr("pid");
+                $showTr.css("display", "table-row");
+                if (pid === "0") {
+                    return false;
+                } else {
+                    $showTr = $("tr[id=" + pid + "]", _treeTable);
+                    recursiveShow($showTr);
+                }
+            }
+        });
+
+        $("#reset").click(function () {
+            $("#merchantTypeName").val("");
+        });
+
+        treeInit();
+        $(_treeTable).on("click", ".tree-table-sort", function () {
+            if (this.children.length > 0) {
+                return;
+            }
+
+            $(this).html("<input id='' class='tree-table-sort-input validate[required],custom[number]' type='text'  value='" + $(this).html() + "' />");
+            $(this).find('input:first').focus();
+        });
+
+        $(_treeTable).on("blur", ".tree-table-sort-input", function () {
+            var reg = /^[1-9]\d*$|^0$/;
+            if (this.value === "" || ( this.value !== "" && !reg.test(this.value) ) || this.value > 127) {
+                var errorMsg = '必须为数字且小于127';
+                $(this).css('border', '1px solid red');
+                $(this).css('color', '#ec5644');
+                layer.alert(errorMsg);
+                return false;
+            }
+            var $this = $(this);
+            $.post("/web/merchantType/update", {id: $(this).parent().attr("data-id"), sort: $this.val()}, function () {
+                $this.parent().html($this.val());
+            })
+        })
+    });
+
+    var _treeTable = $('#treeTable');
+    function treeInit() {
+        var option = {
+            theme: 'vsStyle',
+            expandLevel: 1,
+            beforeExpand: function ($treeTable, id) {
+                //判断id是否已经有了孩子节点，如果有了就不再加载，这样就可以起到缓存的作用
+                if ($('.' + id, $treeTable).length) {
+                    return false;
+                }
+            }
+        };
+
+        $.ajax({
+            type: "post",
+            dataType: "json",
+            url: "/web/merchantType/getMerchantTypeByChildListAll",
+            success: function (data) {
+                _treeTable.find('tbody').remove();
+                var treeTable = $(_treeTable).html() + "<tbody>";
+                $(data).each(function (i, _data) {
+                    treeTable += $("#tree_tbody").adapterHtmlHandler(_data);
+                    //缓存一个分类名称数组
+                    cacheClassifyName.push(_data.merchantTypeName);
+                });
+                treeTable += "</tbody>";
+                _treeTable.html(treeTable);
+                //对父级排序值相同的重新组合
+                _treeTable.treeTable(option).treeSort();
+                _treeTable.find('[data-fun],[data-type]').each(function (i, tr) {
+                    $(tr).renderElementByInnerHtml();
+                })
+            }
+        });
+
+        $.fn.treeSort = function () {
+            var pidArr = [];
+            $("tr[pid]", $(this)).each(function (i, tr) {
+                pidArr.push($(tr).attr("pid"));
+            });
+            pidArr = Array.prototype.unique.call(pidArr);
+            pidArr.forEach(function (pid) {
+                var parent = $("tr[id=" + pid + "]");
+                if (parent.length !== 0) {
+                    parent.after($("[pid=" + pid + "]"));
+                }
+            });
+        }
+    }
+
+    //状态处理
+    var enableText = ['禁用', '启用'];
+    function isDeleteHandler(isDelete, reverse, $this) {
+        if (isDelete === 1 && !reverse) $this.css("color", "#C7C7C7");
+        return reverse ? isDelete === 0 ? enableText[0] : enableText[1] : isDelete === 0 ? enableText[1] : enableText[0];
+    }
+
+    //操作
+    function update(operateType, id, _this) {
+        var url = "/web/merchantType/" + operateType;
+        var $this = $(_this);
+        var layerTitle = $this.html();
+        switch (operateType) {
+            case "addOrUpdate":
+                HtmlHelper.generateAutoSubmitForm({
+                    data: {id: id},
+                    url: url
+                });
+                break;
+            default:
+                layer.confirm('确定此操作吗？', {
+                    title: layerTitle,
+                    icon: 3,
+                    btnAlign: 'c',
+                    closeBtn: 0
+                }, function (index) {
+                    $.ajax({
+                        url: url,
+                        data: {id: id},
+                        success: function (data) {
+                            if (data.success) {
+                                layer.alert('操作成功', {icon: 1, btnAlign: 'c', closeBtn: 0},
+                                    function (_index) {
+                                        if (operateType === "delete") {
+                                            window.location.reload();
+                                        } else if (operateType === "enabled") {
+                                            var prev = $this.recursiveParentNode("td").prev();
+                                            $this.html($this.html() === enableText[0] ? enableText[1] : enableText[0]);
+                                            if (prev.html() === enableText[0]) {
+                                                prev.html(enableText[1]);
+                                                prev.css("color", "#555555");
+                                            } else {
+                                                prev.css("color", "#C7C7C7");
+                                                prev.html(enableText[0]);
+                                            }
+                                        }
+                                        layer.close(_index);
+                                    });
+                            } else {
+                                layer.alert(data.message, {icon: 2, btnAlign: 'c', closeBtn: 0});
+                                return false;
+                            }
+                        }
+                    });
+                    layer.close(index);
+                });
+        }
+    }
+</script>
+</body>
+</html>

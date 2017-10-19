@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.ph.shopping.facade.mapper.AgentDrawcashRecordMapper">
+    <!--代理商提现记录新增-->
+    <insert id="addAgentDrawcashRecord" parameterType="com.ph.shopping.facade.spm.entity.AgentDrawcashRecord"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO ph_agent_drawcash_record (
+			agentId,
+			score,
+			handingCharge,
+			STATUS,
+			expectedDate,
+			createDate,
+			drawcashNo,
+			bankName,
+			auditState,
+			drawcashIp,
+			receiver,
+			bankNo,
+			creater,
+			operater,
+			updateTime
+		)
+		VALUES
+			(#{agentId},#{score},#{handingCharge},#{status},#{expectedDate},#{createDate},#{drawcashNo},#{bankName},#{auditState},#{drawcashIp},#{receiver},#{bankNo},#{creater},#{operater},now())
+  </insert>
+    <!--查询登陆人当天的已提现总额-->
+    <select id="getDrawcashMoneyToday" parameterType="com.ph.shopping.facade.spm.entity.AgentDrawcashRecord"
+            resultType="decimal">
+       SELECT
+			sum(score)/10000 
+		FROM
+			ph_agent_drawcash_record
+		WHERE
+			agentId = #{agentId}
+		 AND to_days(createDate) = to_days(now()) 
+		GROUP BY
+			agentId
+   </select>
+    <!--查询登陆人提现待审核记录-->
+    <select id="getDrawcashStatusPendingTotal" parameterType="com.ph.shopping.facade.spm.entity.AgentDrawcashRecord"
+            resultType="decimal">
+       SELECT
+			sum(score)/10000 
+		FROM
+			ph_agent_drawcash_record
+		WHERE
+			agentId = #{agentId}
+	     AND status = #{status}
+		GROUP BY
+			agentId
+   </select>
+</mapper>

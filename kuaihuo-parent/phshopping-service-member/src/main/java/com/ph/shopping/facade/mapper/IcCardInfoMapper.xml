@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IcCardInfoMapper">
+
+    <!-- 获取会员卡列表根据状态 -->
+    <select id="getMemberCardList" parameterType="com.ph.shopping.facade.member.dto.MemberCardInfoDTO"
+            resultType="com.ph.shopping.facade.member.vo.MemberCardInfoVO">
+        SELECT
+        i.id,
+        i.innerCode,
+        i.outerCode,
+        i.createTime,
+        b.status
+        FROM
+        ph_member_ic_card_info i
+        LEFT JOIN (select icCardId,`status`  from  ph_member_ic_card_bind where updateTime in (select max(updateTime) from ph_member_ic_card_bind group by icCardId) ) b on b.icCardId = i.id
+        WHERE
+        i.isDelete != 0
+        <if test="outerCode != null and outerCode != ''">
+            and outerCode = #{outerCode}
+        </if>
+        <if test="innerCode != null and innerCode != ''">
+            and innerCode = #{innerCode}
+        </if>
+        <if test="status !=null">
+            <choose>
+                <when test="status==1">
+                    and b.status =0
+                </when>
+                <otherwise>
+                    and (b.status =1 or b.status is null)
+                </otherwise>
+            </choose>
+        </if>
+        order by i.id desc
+
+    </select>
+
+
+    <select id="selectIcinnerCodeByInnerCodes" parameterType="java.util.List" resultType="java.lang.String">
+        SELECT
+        innerCode
+        FROM
+        ph_member_ic_card_info
+        WHERE
+        isDelete != 0
+        AND
+        innerCode
+        IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="selectIcOuterCodeByOuterCodes" parameterType="java.util.List" resultType="java.lang.String">
+        SELECT
+        outerCode
+        FROM
+        ph_member_ic_card_info
+        WHERE
+        isDelete != 0
+        AND
+        outerCode
+        IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <!-- 批量新增 -->
+    <insert id="batchInsertCard" parameterType="java.util.List">
+        INSERT INTO ph_member_ic_card_info(
+        innerCode,
+        outerCode,
+        createTime,
+        updateTime,
+        createrId,
+        updaterId,
+        isDelete
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.innerCode},
+            #{item.outerCode},
+            now(),
+            now(),
+            #{item.createrId},
+            #{item.updaterId},
+            #{item.isDelete}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

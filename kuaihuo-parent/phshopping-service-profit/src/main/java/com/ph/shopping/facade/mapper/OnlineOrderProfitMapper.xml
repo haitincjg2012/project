@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IOnlineOrderProfitMapper">
+	<select id="getOnLineOrderProfitList" parameterType="com.ph.shopping.facade.profit.dto.OnlineOrderProfitDTO"
+		resultType="com.ph.shopping.facade.profit.vo.OnlineOrderProfitVO">
+		SELECT
+			id,
+			orderNo,
+			cityAgentName,
+			countyAgentName,
+			townAgentName,
+			cityAgentId,
+			countyAgentId,
+			townAgentId,
+			merchantId,
+			merchantName,
+			cityPromoterName,
+			countyPromoterName,
+			townPromoterName,
+			merchantPromoterName,
+			cityPromoterId,
+			countyPromoterId,
+			townPromoterId,
+			merchantPromoterId,
+			productMoney,
+			settlementPrice,
+			freight,
+			chargeFee,
+			phChargeFee,
+			ystChargeFee,
+			cityAgentProfit,
+			countyAgentProfit,
+			townAgentProfit,
+			cityPromoterProfit,
+			countyPromoterProfit,
+			townPromoterProfit,
+			merchantPromoterProfit,
+			chargeProfitTotal,
+			chargeProfitRemain,
+			merchantChainProfit,
+			chainProfit,
+			phIncome,
+			ystIncome,
+			cityAgentChainProfit,
+			countyAgentChainProfit,
+			townAgentChainProfit,
+			chainTotal,
+			chainRemain,
+			ystRemain,
+			phRemain,
+			DATE_FORMAT(p.orderTime,'%Y-%m-%d %H:%i:%s') orderTime,
+			DATE_FORMAT(p.createTime,'%Y-%m-%d %H:%i:%s') createTime
+		FROM
+			ph_profit_online_order  p
+		WHERE
+			1 = 1
+		<if test="orderNo !=null and orderNo !='' ">
+			AND p.orderNo = #{orderNo}
+		</if>	
+		<if test="startOrderTime !=null and startOrderTime !='' ">
+			AND  date_format(p.orderTime, '%Y-%m-%d')   &gt;=  #{startProfitTime}
+		</if>
+		<if test="stopOrderTime !=null and stopOrderTime !='' ">
+			AND  date_format(p.orderTime, '%Y-%m-%d')   &lt;=  #{stopOrderTime} 
+		</if>
+		<if test="startProfitTime !=null and startProfitTime !='' ">
+			AND  date_format(p.createTime, '%Y-%m-%d')   &gt;=  #{startProfitTime}
+		</if>
+		<if test="stopProfitTime !=null and stopProfitTime !='' ">
+			AND  date_format(p.createTime, '%Y-%m-%d')    &lt;=   #{stopProfitTime}
+		</if>
+			ORDER BY p.id DESC
+	</select>
+	<!-- 获取线上订单用于分润 -->
+	<select id="getOnlineOrderList" resultType="com.ph.shopping.facade.profit.vo.OnLineOrderVO">
+		SELECT
+			p.id,
+			p.productMoney retailPrice,
+			p.logisticsMoney freight,
+			p.settleMoney settlementPrice,
+			p.createTime orderTime,
+			p.orderNo,
+			p.shippingType,
+			p.merchantId,
+			CASE p.shippingType WHEN 0  THEN  p1.provinceId  ELSE  p.shippingProvinceId  END  shippingProvinceId,
+			CASE p.shippingType WHEN 0  THEN  p1.cityId  ELSE  p.shippingCityId  END  shippingCityId,
+			CASE p.shippingType WHEN 0  THEN  p1.countyId  ELSE  p.shippingCountyId  END  shippingCountyId,
+			CASE p.shippingType WHEN 0  THEN  p1.townId  ELSE  p.shippingTownId  END  shippingTownId,
+			p1.promoterId merchantPromoterId
+		FROM
+			ph_member_sub_order_online p
+		LEFT JOIN ph_merchant p1 ON p1.userId = p.merchantId
+		WHERE
+			p. STATUS = 3
+		AND date_add(p.doneTime, INTERVAL 7 DAY) &lt; NOW()
+		AND p.isProfit = 0
+	</select>
+	<!-- 批量入线上订单分润记录表 -->
+	<insert id="insertOnLineOrderProfitBatch" parameterType="java.util.List">
+		INSERT INTO ph_profit_online_order (
+			orderNo,
+			orderTime,
+			cityAgentName,
+			countyAgentName,
+			townAgentName,
+			cityAgentId,
+			countyAgentId,
+			townAgentId,
+			merchantId,
+			merchantName,
+			cityPromoterName,
+			countyPromoterName,
+			townPromoterName,
+			merchantPromoterName,
+			cityPromoterId,
+			countyPromoterId,
+			townPromoterId,
+			merchantPromoterId,
+			productMoney,
+			settlementPrice,
+			freight,
+			chargeFee,
+			phChargeFee,
+			ystChargeFee,
+			cityAgentProfit,
+			countyAgentProfit,
+			townAgentProfit,
+			cityPromoterProfit,
+			countyPromoterProfit,
+			townPromoterProfit,
+			merchantPromoterProfit,
+			chargeProfitTotal,
+			chargeProfitRemain,
+			merchantChainProfit,
+			chainProfit,
+			phIncome,
+			ystIncome,
+			cityAgentChainProfit,
+			countyAgentChainProfit,
+			townAgentChainProfit,
+			chainTotal,
+			chainRemain,
+			ystRemain,
+			phRemain,
+			createTime,
+			shippingProvinceId,
+			shippingCityId,
+			shippingCountyId,
+			shippingTownId
+
+			)
+		VALUES
+	    <foreach collection="list" item="item" index="index" separator=",">
+	        (
+	        #{item.orderNo},
+			#{item.orderTime},
+			#{item.cityAgentName},
+			#{item.countyAgentName},
+			#{item.townAgentName},
+			#{item.cityAgentId},
+			#{item.countyAgentId},
+			#{item.townAgentId},
+			#{item.merchantId},
+			#{item.merchantName},
+			#{item.cityPromoterName},
+			#{item.countyPromoterName},
+			#{item.townPromoterName},
+			#{item.merchantPromoterName},
+			#{item.cityPromoterId},
+			#{item.countyPromoterId},
+			#{item.townPromoterId},
+			#{item.merchantPromoterId},
+			#{item.productMoney},
+			#{item.settlementPrice},
+			#{item.freight},
+			#{item.chargeFee},
+			#{item.phChargeFee},
+			#{item.ystChargeFee},
+			#{item.cityAgentProfit},
+			#{item.countyAgentProfit},
+			#{item.townAgentProfit},
+			#{item.cityPromoterProfit},
+			#{item.countyPromoterProfit},
+			#{item.townPromoterProfit},
+			#{item.merchantPromoterProfit},
+			#{item.chargeProfitTotal},
+			#{item.chargeProfitRemain},
+			#{item.merchantChainProfit},
+			#{item.chainProfit},
+			#{item.phIncome},
+			#{item.ystIncome},
+			#{item.cityAgentChainProfit},
+			#{item.countyAgentChainProfit},
+			#{item.townAgentChainProfit},
+			#{item.chainTotal},
+			#{item.chainRemain},
+			#{item.ystRemain},
+			#{item.phRemain},
+			now(),
+			#{item.shippingProvinceId},
+			#{item.shippingCityId},
+			#{item.shippingCountyId},
+			#{item.shippingTownId}
+	        )
+	    </foreach>
+	</insert>
+	<!-- 批量改ph_member_sub_order_online表 分润状态 -->
+	<update id="updateOnLineOrderBonus" parameterType="java.util.List">
+		UPDATE ph_member_sub_order_online SET isProfit = 1 ,updateTime = now(),profitTime = now() WHERE id IN
+		<foreach collection="list" item="item" index="index" open="("
+			separator="," close=")">
+			#{item.id}
+		</foreach>
+	</update>
+</mapper>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.PurchaseSubOrderProductMapper">
+	<!--根据供应链子订单id查询子订单对应的商品信息-->
+	<select id="selPurSubOrdProBySubIdGroup" parameterType="long"
+			resultType="cm.ph.shopping.facade.order.entity.PurchaseSubOrderProduct">
+		SELECT
+			id,
+			skuNum,
+			purchasePrice,
+			retailPrice,
+			settlementPrice,
+			skuFreight,
+			skuName,
+			skuId,
+			specificationValIds,
+			subOrderId,
+			productSnapId,
+			productId,
+			productName,
+			productCode,
+			productNum,
+			totalMoney,
+			totalFreight
+		FROM
+			ph_purchase_sub_order_products
+		WHERE
+			subOrderId = #{orderId}
+		GROUP BY productId
+	</select>
+
+	<!-- 根据供应链子订单id查询子订单对应的商品信息（查询所有的sku信息）-->
+	<select id="selPurSubOrdProBySubId" parameterType="long"
+			resultType="cm.ph.shopping.facade.order.entity.PurchaseSubOrderProduct">
+		SELECT
+		id,
+		skuNum,
+		purchasePrice,
+		retailPrice,
+		settlementPrice,
+		skuFreight,
+		skuName,
+		skuId,
+		specificationValIds,
+		subOrderId,
+		productSnapId,
+		productId,
+		productName,
+		productCode,
+		productNum,
+		totalMoney,
+		totalFreight
+		FROM
+		ph_purchase_sub_order_products
+		WHERE
+		subOrderId = #{orderId}
+	</select>
+
+	<!--根据供应链商品id查询子订单对应的商品sku信息-->
+	<select id="selectPurSubOrderSkuBySubId" resultType="cm.ph.shopping.facade.order.entity.PurchaseSubOrderProduct">
+		SELECT
+			id,
+			skuNum,
+			purchasePrice,
+			retailPrice,
+			settlementPrice,
+			skuFreight,
+			skuName,
+			skuId,
+			specificationValIds,
+			subOrderId,
+			productSnapId,
+			productId,
+			productName,
+			productCode,
+			productNum,
+			totalMoney,
+			totalFreight,
+			numberOfPackages
+		FROM
+			ph_purchase_sub_order_products
+		WHERE
+			subOrderId = #{subOrderId}
+		AND
+			productId = #{productId}
+	</select>
+
+	<insert id="insertPurchaseOrderProduct">
+		INSERT INTO ph_purchase_sub_order_products(
+			skuNum,
+			purchasePrice,
+			retailPrice,
+			settlementPrice,
+			skuFreight,
+			skuName,
+			skuId,
+			specificationValIds,
+			subOrderId,
+			productSnapId,
+			productId,
+			productName,
+			productCode,
+			productNum,
+			totalMoney,
+			totalFreight,
+			numberOfPackages
+		) VALUES
+		<foreach collection="list" item="item" separator=",">
+		(
+			#{item.skuNum},
+			#{item.purchasePrice},
+			#{item.retailPrice},
+			#{item.settlementPrice},
+			#{item.skuFreight},
+			#{item.skuName},
+			#{item.skuId},
+			#{item.specificationValIds},
+			#{subOrderId},
+			#{item.productSnapId},
+			#{item.productId},
+			#{item.productName},
+			#{item.productCode},
+			#{item.productNum},
+			#{item.totalMoney},
+			#{item.totalFreight},
+			#{item.numberOfPackages}
+		)
+		</foreach>
+	</insert>
+
+</mapper>

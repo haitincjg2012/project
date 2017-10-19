@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IOrderOnlineMapper">
+	<resultMap id="BaseResultMap"
+		type="cm.ph.shopping.facade.order.entity.PhOrderOnline">
+
+		<id column="id" jdbcType="BIGINT" property="id" />
+	</resultMap>
+
+	<update id="updateOnLineOrder">
+		update ph_order_online poo set
+		poo.status=#{status},poo.updatetime=sysdate()
+		<trim>
+			<choose>
+				<when test="status == 2">
+					,poo.payDate = sysdate()
+				</when>
+				<when test="status == 3">
+					,poo.sendDate = sysdate()
+				</when>
+				<when test="status == 4">
+					,poo.acceptDate = sysdate()
+				</when>
+				<when test="status == 5">
+					,poo.closeDate = sysdate()
+				</when>
+			</choose>
+		</trim>
+
+		where
+		poo.orderNo=#{orderNo}
+	</update>
+
+	<update id="updateUnLineOrder">
+		update ph_order_online poo set
+		poo.status=#{status},poo.updatetime=sysdate() where
+		poo.orderNo=#{orderNo}
+	</update>
+
+	<select id="listOnlineOrders" resultType="cm.ph.shopping.facade.order.vo.QueryOnLineOrderVO">
+		select
+		o.id,o.orderNo,s.id supplierId,s.supplierName,s.personTel as
+		supplyerTel,p.productName,o.deliveryDate,o.contact,o.telPhone,o.price
+		price1,
+		o.num,o.postage postage1,o.payMoney
+		payMoney1,o.addrDetail,o.status
+		from ph_member m,ph_order_online o,
+		ph_product p, ph_order_address a,ph_supplier s
+		where o.productId=p.id
+		and o.addrId=a.id and m.id=o.memberId and s.id=p.supplierId
+		<if test="roleCode == 3">
+			and p.createUser=#{agentId}
+		</if>
+		<if test="roleCode == 2">
+			and p.supplierId=#{supplierId}
+		</if>
+		<if test="orderNo != null and orderNo != ''">
+			and o.orderNo = #{orderNo}
+		</if>
+	</select>
+	<!-- 查询web订单列表 -->
+	<select id="listWebOnLineOrders"
+		resultType="cm.ph.shopping.facade.order.vo.QueryWebOnLineOrderVO">
+
+		select
+		o.id,o.orderNo,s.supplierName,DATE_FORMAT(o.deliveryDate,'%Y-%m-%d %H:%i:%s') deliveryDate,
+		p.productName,i.url,o.num,o.price
+		price1,o.contact,o.payMoney
+		payMoney1,o.status,o.deliveryType
+		from ph_member m
+		left join ph_order_online o on m.id=o.memberId
+		left
+		join ph_product p on o.productId=p.id
+		left join ph_product_image i on
+		i.productId=p.id
+		left join ph_supplier s on s.id=p.supplierId
+		where
+		o.memberId = #{memberId}
+		<if test="status != 0">
+			and o.status = #{status}
+		</if>
+		group by o.orderNo
+		order by o.deliveryDate desc
+
+	</select>
+
+	<select id="getWebOnLineOrderDetail"
+		resultType="cm.ph.shopping.facade.order.vo.QueryWebOnLineOrderDetailVO">
+		select o.id,o.orderNo,o.contact,pos.provinceName AS province,
+		pos.cityName AS city,
+		pos.countyName AS area,
+		<choose>
+			<when test="deliveryType == 1">
+				p.address,p.phoneNo,
+			</when>
+			<when test="deliveryType == 2">
+				po.address,po.phoneNo,
+			</when>
+		</choose>
+
+		o.status,pr.productName,i.url,o.price price1,o.payMoney
+		payMoney1,o.telPhone,
+		o.num,o.postage postage1,o.acceptDate, o.deliveryDate, o.sendDate,
+		o.payDate,o.deliveryType
+		from ph_order_online o,
+		<choose>
+			<when test="deliveryType == 1">
+				ph_order_address p,
+			</when>
+			<when test="deliveryType == 2">
+				ph_manager_order_address po,
+			</when>
+		</choose>
+		ph_product pr,
+		ph_product_image i, ph_position pos
+		where o.productId=pr.id and i.productid = pr.id
+		<choose>
+			<when test="deliveryType == 1">
+				and p.positionId = pos.id
+				and o.addrId=p.id
+			</when>
+			<when test="deliveryType == 2">
+				and po.positionId = pos.id
+				and o.pickPointId=po.id
+			</when>
+		</choose>
+		and o.id=#{orderId}
+		GROUP BY o.orderNo
+	</select>
+
+	<select id="getSupplyerName" parameterType="java.lang.Long"
+		resultType="java.lang.String">
+		select s.supplierName from ph_product p, ph_supplier s
+		where p.supplierId=s.id and p.id=#{productId}
+	</select>
+
+	<select id="getOnLineOrderDetail" parameterType="java.lang.Long"
+		resultType="cm.ph.shopping.facade.order.vo.QueryOnLineOrderDetailVO">
+		select
+		o.id,o.status,m.id memberId,m.memberName,m.memberPhone,
+		o.contact,o.telPhone,o.addrDetail,s.id
+		supplierId,
+		s.supplierName,s.personName,s.personTel,poa.address,o.orderNo,p.id
+		productId,
+		p.productName,o.num, o.price price1,o.postage postage1,o.payMoney payMoney1,
+		o.deliveryDate,o.payDate,o.acceptDate,o.sendDate,o.logisticName,o.logisticNo
+		from ph_member m,ph_order_online o, ph_product p, ph_order_address
+		a,ph_supplier s,ph_manager_order_address poa
+		where o.productId=p.id and o.addrId=a.id and m.id=o.memberId and
+		s.id=p.supplierId and s.id=poa.userId and o.id = #{orderId}
+		group by o.orderNo
+	</select>
+
+
+	<select id="getSendAddress" parameterType="java.lang.Long"
+		resultType="cm.ph.shopping.facade.order.vo.QueryUserAddressVO">
+		select CONCAT(p.provinceName,p.cityName,p.countyName,a.address)
+		address,a.id sendAddressId from ph_manager_order_address a,ph_position p
+		where a.positionId=p.id
+		and a.userId=#{userId}
+		order by a.isDefault asc
+	</select>
+
+	<update id="updateOrderToSend">
+		update ph_order_online o set
+		o.status=#{status},o.logisticName=#{logisticName},o.logisticNo=#{logisticNo},sendDate=sysdate()
+		where o.id=#{orderId}
+	</update>
+
+	<select id="getProduct" parameterType="java.lang.Long"
+		resultType="cm.ph.shopping.facade.order.vo.OrderProVO">
+		select p.productCount,p.retailPrice retailPrice1,p.freight
+		freight1,p.numberOfPackages from ph_product p where p.id=#{productId}
+	</select>
+
+	<select id="getProductNum" resultType="cm.ph.shopping.facade.order.vo.ProductNumAndIdVO"
+		parameterType="java.lang.String">
+		select num,productId from ph_order_online where
+		orderNo=#{orderNo}
+	</select>
+</mapper>

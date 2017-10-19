@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.ProductMapper">
+	<resultMap id="baseResultMap" type="com.ph.shopping.facade.product.vo.ProductVO">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="productName" property="productName" jdbcType="VARCHAR" />
+		<result column="productCount" property="productCount" jdbcType="INTEGER" />
+		<result column="productClassifyId" property="productClassifyId"
+			jdbcType="BIGINT" />
+		<result column="saleNoSaleStatus" property="saleNoSaleStatus"
+			jdbcType="TINYINT" />
+		<result column="auditState" property="auditState" jdbcType="TINYINT" />
+		<result column="isDelete" property="isDelete" jdbcType="TINYINT" />
+		<result column="productForm" property="productForm" jdbcType="TINYINT" />
+		<result column="barCode" property="barCode" jdbcType="VARCHAR" />
+		<result column="supplierId" property="supplierId" jdbcType="BIGINT" />
+		<result column="productType" property="productType" jdbcType="TINYINT" />
+		<result column="createTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="createrId" property="createrId" jdbcType="BIGINT" />
+		<result column="updaterId" property="updaterId" jdbcType="BIGINT" />
+		<result column="description" property="description" jdbcType="LONGVARCHAR" />
+		<result column="commoditySales" property="commoditySales"
+			jdbcType="INTEGER" />
+	</resultMap>
+	<!-- 扩展返回值(分类名称) -->
+	<resultMap id="extendPhProductResultMap" type="com.ph.shopping.facade.product.vo.ProductVO"
+		extends="baseResultMap">
+		<result column="productClassifyName" property="productClassifyName"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<!-- 扩展返回值(供应商) -->
+	<resultMap id="extendProductSpResultMap" type="com.ph.shopping.facade.product.vo.ProductVO"
+		extends="extendPhProductResultMap">
+		<result column="supplierName" property="supplierName" jdbcType="VARCHAR" />
+		<result column="isFrozen" property="isFrozen" jdbcType="TINYINT" />
+	</resultMap>
+
+	<!-- 商品图片使用列 -->
+	<resultMap id="phProductResultMap" extends="extendPhProductResultMap"
+		type="com.ph.shopping.facade.product.vo.ProductVO">
+			<result column="url" property="url" jdbcType="VARCHAR" />
+			<result column="sort" property="sort" jdbcType="INTEGER" />
+	</resultMap>
+
+	<!-- 扩展返回值(零售价) -->
+	<resultMap id="extendProductSkuMap" type="com.ph.shopping.facade.product.vo.ProductVO"
+		extends="phProductResultMap">
+		<result column="retailPrice" property="retailPrice" jdbcType="DECIMAL" />
+	</resultMap>
+	
+	<!-- 扩展返回值(零售价) -->
+	<resultMap id="extendMallIndex" type="com.ph.shopping.facade.product.vo.ProductVO"
+		extends="phProductResultMap">
+		<result column="indexImageUrl" property="indexImageUrl" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<!--商品主表列 -->
+	<sql id="Base_Column_List">
+		ph.id, ph.productName AS productName , ph.productCount AS productCount,
+		ph.productClassifyId AS productClassifyId,
+		ph.saleNoSaleStatus AS saleNoSaleStatus, ph.auditState AS auditState, ph.isDelete AS
+		isDelete,
+		ph.productForm AS productForm , ph.barCode AS barCode, ph.supplierId
+		supplierId,ph.productType AS productType, ph.createTime AS createTime,
+		ph.updateTime AS updateTime, ph.createrId AS createrId,
+		ph.updaterId AS updaterId,ph.description AS description,ph.commoditySales as
+		commoditySales
+	</sql>
+	<!-- 分类扩展返回值 -->
+	<sql id="Blob_Column_List">
+		pc.classifyName as productClassifyName
+	</sql>
+	<!-- 供应商扩展返回值 -->
+	<sql id="BlobSP_Column_List">
+		sp.supplierName as supplierName ,sp.isFrozen as isFrozen
+	</sql>
+	<!-- 图片扩展返回值 -->
+	<sql id="BlobImage_Column_List"> 
+		image.url as url ,MIN(image.sort) as imageSort
+	</sql>
+	<!-- sku零售价扩展返回值 -->
+	<sql id="BlobSku_Column_List">
+		MIN(u.retailPrice) as retailPrice
+	</sql>
+	
+	<sql id="BlobIndex_Column_List">
+		MIN(u.retailPrice) as retailPrice,m.indexImageUrl as indexImageUrl,m.classifyId  as classifyIdForIndex, m.isBigImg
+	</sql>
+	
+	<!-- 动态条件 -->
+	<sql id="whereSqlDateil">
+		<trim prefix="where" prefixOverrides="and">
+			<if test="id!=null and  id!=''">
+				and ph.id =#{id}
+			</if>
+			<if test="productName !=null and productName !=''">
+				and ph.productName like
+				CONCAT('%',TRIM(#{productName}),'%')
+			</if>
+			<if test="productCount !=null ">
+				and ph.productCount =#{productCount}
+			</if>
+			<if test="productClassifyId !=null and productClassifyId !=''">
+				<!-- 递归查询 -->
+				and FIND_IN_SET(ph.productClassifyId,
+				getProductClassifyChildrenById(#{productClassifyId}))
+			</if>
+			<if test="saleNoSaleStatus !=null ">
+				and ph.saleNoSaleStatus =#{saleNoSaleStatus}
+			</if>
+			<if test="auditState !=null">
+				and ph.auditState =#{auditState}
+			</if>
+			<if test="isDelete!=null ">
+				and ph.isDelete =#{isDelete}
+			</if>
+			<if test="productForm !=null ">
+				and ph.productForm =#{productForm}
+			</if>
+			<if test="barCode !=null and barCode !=''">
+				and ph.barCode =#{barCode}
+			</if>
+			<if test="supplierId !=null and supplierId !=''">
+				and ph.supplierId =#{supplierId}
+			</if>
+			<if test="productType !=null">
+				and ph.productType =#{productType}
+			</if>
+			<if test="createTime !=null and createTime !=''">
+				and ph.createTime=#{createTime}
+			</if>
+			<if test="updateTime !=null and updateTime !=''">
+				and ph.updateTime=#{updateTime}
+			</if>
+			<if test="createrId !=null and createrId !=''">
+				and ph.createrId=#{createrId}
+			</if>
+			<if test="updaterId !=null and updaterId !=''">
+				and ph.updaterId=#{updaterId}
+			</if>
+		</trim>
+		<!-- order by ph.createTime desc -->
+	</sql>
+	
+		<!-- 商城商品动态条件 -->
+	<sql id="ForMallwhereSqlDateil">
+			<if test="id!=null and  id!=''">
+				and ph.id =#{id}
+			</if>
+			<if test="productName !=null and productName !=''">
+				and ph.productName like
+				CONCAT('%',TRIM(#{productName}),'%')
+			</if>
+			<if test="productCount !=null ">
+				and ph.productCount =#{productCount}
+			</if>
+			<if test="productClassifyId !=null and productClassifyId !=''">
+				<!-- 递归查询 -->
+				and FIND_IN_SET(ph.productClassifyId,
+				getProductClassifyChildrenById(#{productClassifyId}))
+			</if>
+			<if test="saleNoSaleStatus !=null ">
+				and ph.saleNoSaleStatus =#{saleNoSaleStatus}
+			</if>
+			<if test="auditState !=null">
+				and ph.auditState =#{auditState}
+			</if>
+			<if test="isDelete!=null ">
+				and ph.isDelete =#{isDelete}
+			</if>
+			<if test="productForm !=null ">
+				and ph.productForm =#{productForm}
+			</if>
+			<if test="barCode !=null and barCode !=''">
+				and ph.barCode =#{barCode}
+			</if>
+<!-- 			<if test="supplierId !=null and supplierId !=''"> -->
+<!-- 				and ph.supplierId =#{supplierId} -->
+<!-- 			</if> -->
+			<if test="productType !=null">
+				and ph.productType =#{productType}
+			</if>
+			<if test="createTime !=null and createTime !=''">
+				and ph.createTime=#{createTime}
+			</if>
+			<if test="updateTime !=null and updateTime !=''">
+				and ph.updateTime=#{updateTime}
+			</if>
+			<if test="createrId !=null and createrId !=''">
+				and ph.createrId=#{createrId}
+			</if>
+			<if test="updaterId !=null and updaterId !=''">
+				and ph.updaterId=#{updaterId}
+			</if>
+			
+			<if test="minPrice ==null and maxPrice !=null">
+				and u.retailPrice between 0 and #{maxPrice}
+			</if>
+			<if test="minPrice !=null and maxPrice ==null">
+					and u.retailPrice between 0 and #{minPrice}
+			</if>
+			<if test="minPrice !=null and maxPrice !=null and maxPrice >minPrice">
+					and u.retailPrice between #{minPrice} and #{maxPrice}
+			</if>
+			<if test="retailPrice !=null">
+				<![CDATA[
+					and u.retailPrice >#{retailPrice}
+			       ]]>
+			</if>
+	</sql>
+	
+	<!-- 商城排序条件 -->
+	<sql id="ForMallSqlOrderBy">
+			<if test="queryItem!=null and  queryItem==1">
+				  ORDER BY ph.commoditySales DESC 
+			</if>
+			<if test="queryItem!=null and  queryItem==2">
+				  ORDER BY ph.updateTime  DESC 
+			</if>
+			<if test="queryItem!=null and  queryItem==3">
+				  ORDER BY u.retailPrice DESC 
+			</if>
+			<if test="queryItem!=null and  queryItem==4">
+				  ORDER BY ph.commoditySales 
+			</if>
+			<if test="queryItem!=null and  queryItem==5">
+				  ORDER BY ph.updateTime  
+			</if>
+			<if test="queryItem!=null and  queryItem==6">
+				  ORDER BY u.retailPrice 
+			</if>
+	</sql>
+	
+	
+	
+	
+	<!--商品联合分类查询分页方法(后台使用) -->
+	<select id="getPhProductVoPageList" resultMap="extendProductSpResultMap"
+		parameterType="com.ph.shopping.facade.product.dto.ProductDTO">
+		SELECT
+		<include refid="Base_Column_List" />
+		,
+		<include refid="Blob_Column_List" />
+		,
+		<include refid="BlobSP_Column_List" />
+		FROM ph_product AS ph LEFT JOIN ph_product_classify AS pc ON
+		ph.productClassifyId=pc.id
+		left join ph_supplier as sp on sp.id=ph.supplierId
+		<include refid="whereSqlDateil" />
+		order by ph.createTime desc
+	</select>
+
+	<!--商品联合分类查询Conut方法后台使用) -->
+	<select id="getPhProductVoPageCount" resultType="int"
+		parameterType="com.ph.shopping.facade.product.dto.ProductDTO">
+		SELECT
+		COUNT(1) num
+		FROM ph_product AS ph LEFT JOIN ph_product_classify AS pc ON
+		ph.productClassifyId=pc.id
+		left join ph_supplier as sp on sp.id=ph.supplierId
+		<include refid="whereSqlDateil" />
+	</select>
+
+	<!--商品联合查询sku、商品图片显示最低价格查询方法（商城商品列表使用） -->
+	<select id="getProductsForMall" resultMap="extendProductSkuMap"
+		parameterType="com.ph.shopping.facade.product.dto.ProductDTO">
+		<!-- 全国本地商品查询 开始-->
+		  <if test="productType==null">
+			SELECT
+		<include refid="Base_Column_List" />
+		,
+		<include refid="BlobImage_Column_List" />
+		,
+		<include refid="BlobSku_Column_List" />
+	     FROM ph_product AS ph
+		LEFT JOIN ph_product_sku AS u ON ph.id=u.productId LEFT JOIN ph_product_image AS image ON
+		ph.id=image.productId
+		LEFT JOIN ph_product_classify AS pc ON
+		ph.productClassifyId=pc.id
+		 WHERE ph.isDelete=0 
+		   AND ph.productType=1  
+		 <include refid="ForMallwhereSqlDateil" />
+		    or (ph.supplierId IN
+		<foreach collection="supplierIds" item="item" open="(" close=")"
+			separator=",">
+			#{item}
+		</foreach> AND  ph.productType=2
+		<include refid="ForMallwhereSqlDateil" />
+		)
+		GROUP BY ph.id
+	   <include refid="ForMallSqlOrderBy" />
+		 </if>
+		 	<!-- 全国本地商品查询 结束-->
+		 	
+		 	<!-- 全国商品查询 开始-->
+	 <if test="productType!=null and productType==1">
+			SELECT
+		<include refid="Base_Column_List" />
+		,
+		<include refid="BlobImage_Column_List" />
+		,
+		<include refid="BlobSku_Column_List" />
+	     FROM ph_product AS ph
+		LEFT JOIN ph_product_sku AS u ON ph.id=u.productId LEFT JOIN ph_product_image AS image ON
+		ph.id=image.productId 
+		LEFT JOIN ph_product_classify AS pc ON
+		ph.productClassifyId=pc.id
+		WHERE ph.isDelete=0 
+		   AND ph.productType=1  
+		<include refid="ForMallwhereSqlDateil" />
+		GROUP BY ph.id
+	   <include refid="ForMallSqlOrderBy" />
+		
+		 </if>
+		 <!-- 全国商品查询 结束-->
+		 
+		  <!-- 本地商品查询 开始-->
+	 <if test="productType!=null and productType==2">
+        SELECT	
+        <include refid="Base_Column_List" />
+		,
+		<include refid="BlobImage_Column_List" />
+		,
+		<include refid="BlobSku_Column_List" /> FROM ph_product AS ph
+		LEFT JOIN ph_product_sku AS u ON ph.id=u.productId LEFT JOIN ph_product_image AS image ON
+		ph.id=image.productId
+		LEFT JOIN ph_product_classify AS pc ON
+		ph.productClassifyId=pc.id
+		 WHERE  
+		 ph.supplierId IN
+		<foreach collection="supplierIds" item="item" open="(" close=")"
+			separator=",">
+			#{item}
+		</foreach> AND  ph.productType=2
+		<include refid="ForMallwhereSqlDateil" />
+		GROUP BY ph.id 
+		 <include refid="ForMallSqlOrderBy" />
+		 </if>
+		  <!-- 本地商品查询 结束-->
+	</select>
+	
+	<!--商品联合查询商品分类、sku、商品图片显示最低价格查询方法（商城分类列表使用） -->
+	<select id="getProductsForMallClass" resultMap="extendProductSkuMap"
+		parameterType="com.ph.shopping.facade.product.dto.ProductDTO">
+		<!-- 全国本地商品查询 开始-->
+		  <if test="productType==null">
+			SELECT
+		<include refid="Base_Column_List" />
+		,
+		<include refid="BlobImage_Column_List" />
+		,
+		<include refid="BlobSku_Column_List" />
+	     FROM ph_product AS ph
+		LEFT JOIN ph_product_sku AS u ON ph.id=u.productId LEFT JOIN ph_product_image AS image ON
+		ph.id=image.productId LEFT JOIN ph_product_classify AS pc ON
+		ph.productClassifyId=pc.id
+		WHERE ph.isDelete=0 
+		   AND ph.productType=1 
+		   <include refid="ForMallwhereSqlDateil" />
+		    or (ph.supplierId IN
+		<foreach collection="supplierIds" item="item" open="(" close=")"
+			separator=",">
+			#{item}
+		</foreach> AND  ph.productType=2
+		<include refid="ForMallwhereSqlDateil" />
+		)
+		GROUP BY ph.id
+	   <include refid="ForMallSqlOrderBy" />
+		 </if>
+		 	<!-- 全国本地商品查询 结束-->
+		 	
+		 	<!-- 全国商品查询 开始-->
+	 <if test="productType!=null and productType==1">
+			SELECT
+		<include refid="Base_Column_List" />
+		,
+		<include refid="BlobImage_Column_List" />
+		,
+		<include refid="BlobSku_Column_List" />
+	     FROM ph_product AS ph
+		LEFT JOIN ph_product_sku AS u ON ph.id=u.productId LEFT JOIN ph_product_image AS image ON
+		ph.id=image.productId
+		LEFT JOIN ph_product_classify AS pc ON
+		ph.productClassifyId=pc.id
+		 WHERE ph.isDelete=0 
+		   AND ph.productType=1  
+		<include refid="ForMallwhereSqlDateil" />
+		GROUP BY ph.id
+	   <include refid="ForMallSqlOrderBy" />
+		
+		 </if>
+		 <!-- 全国商品查询 结束-->
+		 
+		  <!-- 本地商品查询 开始-->
+	 <if test="productType!=null and productType==2">
+	  	 SELECT	
+        <include refid="Base_Column_List" />
+		,
+		<include refid="BlobImage_Column_List" />
+		,
+		<include refid="BlobSku_Column_List" /> FROM ph_product AS ph
+		LEFT JOIN ph_product_sku AS u ON ph.id=u.productId LEFT JOIN ph_product_image AS image ON
+		ph.id=image.productId WHERE  
+		 ph.supplierId IN
+		<foreach collection="supplierIds" item="item" open="(" close=")"
+			separator=",">
+			#{item}
+		</foreach> AND  ph.productType=2
+		<include refid="ForMallwhereSqlDateil" />
+		GROUP BY ph.id 
+		 <include refid="ForMallSqlOrderBy" />
+		 </if>
+		  <!-- 本地商品查询 结束-->
+	</select>
+	
+		<!--商品联合查询商品分类、sku、商品图片显示最低价格查询方法（商城地区切换点击全部时候使用） -->
+	<select id="getProductsAllForMall" resultMap="extendProductSkuMap"
+		parameterType="com.ph.shopping.facade.product.dto.ProductDTO">
+			SELECT
+		<include refid="Base_Column_List" />
+		,
+		<include refid="BlobImage_Column_List" />
+		,
+		<include refid="BlobSku_Column_List" />
+	     FROM ph_product AS ph
+		LEFT JOIN ph_product_sku AS u ON ph.id=u.productId LEFT JOIN ph_product_image AS image ON
+		ph.id=image.productId
+		LEFT JOIN ph_product_classify AS pc ON
+		ph.productClassifyId=pc.id
+		 WHERE 1=1
+		<include refid="ForMallwhereSqlDateil" />
+		GROUP BY ph.id
+	   <include refid="ForMallSqlOrderBy" />
+	</select>
+	
+	
+	
+	<!-- 商城首页查询使用方法-->
+	<select id="getProductsForMallIndexPage" resultType="com.ph.shopping.facade.product.vo.ProductVO"
+		parameterType="com.ph.shopping.facade.product.dto.ProductDTO">
+		SELECT
+		<include refid="Base_Column_List" />
+		,
+		<include refid="BlobIndex_Column_List" />
+	    FROM ph_product AS ph
+		LEFT JOIN ph_product_sku AS u ON ph.id=u.productId
+		INNER JOIN  ph_mall_index AS m ON ph.id=m.productId	
+		<include refid="whereSqlDateil" />
+		 GROUP BY ph.id
+			order by m.id asc
+	</select>
+	
+
+	<!--通过商品id查询商品信息(供应链使用) -->
+	<select id="getProductListForOder" resultType="com.ph.shopping.facade.product.vo.ProductVO">
+		SELECT id,productName,productCount,barCode,supplierId
+		FROM ph_product
+		WHERE id IN
+		<foreach collection="productIds" item="item" open="(" close=")"
+			separator=",">
+			#{item}
+		</foreach>
+	</select>
+
+	<!--扣除商品数量(供应链使用) -->
+	<update id="reduceStock" parameterType="com.ph.shopping.facade.product.dto.ProductDTO">
+		UPDATE ph_product SET
+		updateTime = #{updateTime},
+		productCount = productCount -
+		#{productCount}
+		WHERE id = #{id} AND productCount -
+		#{productCount} > 0
+	</update>
+	
+	
+	<!--供应商冻结时候讲自己已经上架的商品下架 -->
+	<update id="updateForSupplier" parameterType="com.ph.shopping.facade.product.dto.ProductDTO">
+		UPDATE  ph_product  SET  saleNoSaleStatus=2 WHERE  supplierId=#{supplierId} AND  saleNoSaleStatus=0
+	</update>
+</mapper>

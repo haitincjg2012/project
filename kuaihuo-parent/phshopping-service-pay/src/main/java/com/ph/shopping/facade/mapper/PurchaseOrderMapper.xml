@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.PurchaseOrderMapper">
+
+	<!-- 根据商户进货订单号查询订单信息 -->
+	<select id="selPurSubOrderByOrderNo" resultType="cm.ph.shopping.facade.order.entity.PurchaseSubOrder">
+		SELECT
+			id,
+			orderNo,
+			totalCost,
+			md5,
+			purchaserId,
+			mainOrderId,
+			status,
+			refundStatus
+		FROM
+			ph_purchase_sub_order
+		WHERE
+			orderNo=#{orderNo}
+	</select>
+
+	<!--通过子订单号查询订单信息-->
+	<select id="selPurSubOrderByMainOrd" resultType="cm.ph.shopping.facade.order.entity.PurchaseSubOrder">
+		SELECT
+			id,
+			orderNo,
+			totalCost,
+			md5,
+			purchaserId,
+			mainOrderId,
+			status
+		FROM
+			ph_purchase_sub_order
+		WHERE
+			mainOrderId=#{mainOrderId}
+	</select>
+
+	<!--通过主订单号查询订单信息-->
+	<select id="selPurMainOrderByOrderNo" resultType="cm.ph.shopping.facade.order.entity.PurchaseMainOrder">
+		SELECT
+			id,
+			orderNo,
+			purchaserId,
+			totalCost,
+			md5
+		FROM
+			ph_purchase_main_order
+		WHERE
+			orderNo=#{orderNo}
+	</select>
+
+	<!--通过主订单修改子订单状态-->
+	<update id="updatePurSubOrder" parameterType="cm.ph.shopping.facade.order.entity.PurchaseSubOrder">
+		UPDATE ph_purchase_sub_order
+		SET STATUS = #{status},payTime = #{payTime},payment = #{payment},updateTime = #{updateTime},
+		updaterId = #{updaterId} WHERE mainOrderId = #{mainOrderId}
+	</update>
+	
+	<update id="updatePurMainOrder" parameterType="cm.ph.shopping.facade.order.entity.PurchaseMainOrder">
+		UPDATE ph_purchase_main_order
+		SET
+		<if test="payTime != null">
+			payTime = #{payTime}
+		</if>
+		<if test="md5 != null and md5 !=''">
+			md5 = #{md5}
+		</if>
+		WHERE id = #{id}
+	</update>
+
+
+	<!-- 根据供应链子订单id查询子订单对应的商品信息（查询所有的sku信息）-->
+	<select id="selPurSubOrdProBySubId" parameterType="long"
+			resultType="cm.ph.shopping.facade.order.entity.PurchaseSubOrderProduct">
+		SELECT
+		id,
+		skuNum,
+		purchasePrice,
+		retailPrice,
+		settlementPrice,
+		skuFreight,
+		skuName,
+		skuId,
+		specificationValIds,
+		subOrderId,
+		productSnapId,
+		productId,
+		productName,
+		productCode,
+		productNum,
+		totalMoney,
+		totalFreight
+		FROM
+		ph_purchase_sub_order_products
+		WHERE
+		subOrderId = #{orderId}
+	</select>
+	<!-- 根据订单id 查询支付订单(包含订单中的商品)  by 王雪洋-->
+	<resultMap type="com.ph.shopping.facade.pay.vo.UnlineOrderVO" id="UnlineOrder">
+		<id column="id" property="id"/>
+		<result column="orderNo" property="orderNo"/>
+		<result column="orderMoney" property="orderMoney"/>
+		<association property="plist" autoMapping="true" javaType="com.ph.shopping.facade.pay.vo.OrderUnlineRemarks">
+			<id column="oid" property="oid"/>
+			<result column="dishName" property="dishName"/>
+			<result column="dCount" property="dCount"/>
+		</association>
+	</resultMap>
+	<select id="selectUnlineOrderVO" resultType="com.ph.shopping.facade.pay.vo.UnlineOrderVO">
+		select
+		id , orderNo , orderMoney
+		from
+		ph_member_order_unline
+		where
+		id = #{id}
+	</select>
+</mapper>

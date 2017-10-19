@@ -1,0 +1,167 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台系统</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--富文本  css文件-->
+    <!--<link rel="stylesheet" href="css/ueditor.css">-->
+    <!--图片点击放大  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/viewer/css/viewer.min.css}"/>
+</head>
+<body>
+<div class="MainContent">
+    <div class="current">当前位置：<a href="#" alt=" ">管理首页 &gt;</a><a href="#" alt="">代理管理 &gt;</a><a
+            href="#" alt="">代理列表 &gt;</a><span>店面经理详情</span></div>
+    <div class="MainCont ">
+        <div class="ph_subConTit">
+            <h2>店面经理详情</h2>
+        </div>
+        <form id="form">
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">手机号:</span>
+                </label>
+                <input th:value="${agentVO.telPhone}" id="telPhone" name="telPhone" type="text" class="left" placeholder=""/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">店面经理:</span>
+                </label>
+                <input th:value="${agentVO.memberName}" id="memberName" name="agentName" type="text" class="left" placeholder=""/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">身份证:</span>
+                </label>
+                    <input th:value="${agentVO.personIdCardNo}" id="merchantName" name="personIdCardNo" type="text" class="left" placeholder=""/>
+            </div>
+            <div class="mainFrom imgupbox">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">门店合影:</span>
+                </label>
+                <div class="content-box">
+                    <div class="img-box addIndustry">
+                        <span class="imgup-notice">请上传您的营业执照，照片大小不超过10M.</span>
+                        <div class="img-box full">
+                            <section class="img-section">
+                                <div class="z_photo upimg-div" data-file-type=1>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mainFrom imgupbox">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">身份证:</span>
+                </label>
+                <div class="content-box">
+                    <div class="img-box addIndustry">
+                        <span class="imgup-notice">请上传您的身份证正反面，照片大小不超过10M.</span>
+                        <div class="img-box full">
+                            <section class=" img-section">
+                                <div class="z_photo upimg-div" data-file-type=2 data-file-maxImage=2>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mainFrom imgupbox">
+                <label class="left">
+                    <span class="">合同信息:</span>
+                </label>
+                <div class="content-box">
+                    <div class="img-box addIndustry">
+                        <span style="display: block;height: 16px;width: 200px;"></span>
+                        <div class="img-box full">
+                            <section class=" img-section">
+                                <div class="z_photo upimg-div" data-file-type=3 data-file-maxImage=10>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="PopupBtn btnLeft" style="margin-bottom: 20px;padding-left: 104px;">
+                <input id="cancel" class="submit addSupplier_cancel" type="button" value="返回">
+            </div>
+            <input th:value="${agentVO.id}" name="id" type="hidden"/>
+        </form>
+    </div>
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<!--属性输入框的增加和删除-->
+<script type="text/javascript" th:src="@{/static/js/common/attrbox.js}"></script><!--图片点击放大-->
+<script type="text/javascript" th:src="@{/static/js/plugins/viewer/viewer-jquery.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/imgUp.js}"></script>
+<!--区域-->
+<script type="text/javascript" th:src="@{/static/js/common/cascade.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script th:inline="javascript">
+    var bindAgent = [[${agentVO}]];
+    //回填图片
+    $(bindAgent.storeImageVOList).each(function (i, img) {
+        var section =
+            '<section class="up-section left">' +
+            '<img class="up-img zoom-img" data-img-upload-src="' + img.url + '" src="' + img.url + '">' +
+            '</section>';
+        var divDataFileType = $("div[data-file-type='" + img.type + "']");
+        $(section).appendTo(divDataFileType);
+    });
+    //代理级别
+    cascade({
+        url: "/web/agentLevel/getAgentLevelList",
+        totalSelect: 1,
+        DivId: "agent_level_div",
+        bindData: [bindAgent.agentLevelId],
+        bindCols: ["id"],
+        selectNames: ["agentLevelId"],
+        requestNames: ["levelName"],
+        backFun: function () {
+            var selectAgentLevel = $("select[name='agentLevelId']");
+            (function jurisdictionArea(totalSelect) {
+                cascade({
+                    totalSelect: totalSelect,
+                    DivId: "jurisdiction_area",
+                    bindData: [bindAgent.provinceId, bindAgent.cityId, bindAgent.countyId, bindAgent.townId],
+                    backFun: function () {
+                        $("select[name],input[name]").prop("disabled", "true");
+                    }
+                });
+            })(selectAgentLevel.find("option:selected").index() + 1);
+        }
+    });
+
+    //联系地址
+    cascade({
+        totalSelect: 3,
+        DivId: "area_div",
+        bindData: [bindAgent.contactProvinceId, bindAgent.contactCityId, bindAgent.contactCountyId],
+        selectNames: ["contactProvinceId", "contactCityId", "contactCountyId"],
+    });
+    $(function () {
+        //取消
+        $("#cancel").click(function () {
+        	window.history.back();
+        });
+        $("select[name],input[name]").prop("disabled", "true");
+
+    });
+
+</script>
+</body>
+</html>
+

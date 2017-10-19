@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:util="http://www.springframework.org/schema/util" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+	http://www.springframework.org/schema/util
+	http://www.springframework.org/schema/util/spring-util-4.1.xsd
+	http://www.springframework.org/schema/jee
+	http://www.springframework.org/schema/jee/spring-jee-4.1.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-4.1.xsd
+	http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+	http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd"
+       default-lazy-init="true">
+    <!-- 配置静态资源，直接映射到对应的文件夹，不被DispatcherServlet处理，3.04新增功能，需要重新设置spring-mvc-3.0.xsd -->
+    <mvc:resources mapping="/common/**" location="/common/" />
+    <mvc:resources mapping="/upload/**" location="/upload/" />
+    <mvc:resources mapping="/javascript/**" location="/javascript/" />
+    <mvc:resources mapping="/themes/**" location="/themes/" />
+    <mvc:resources mapping="/uploadfy/**" location="/uploadfy/" />
+    <mvc:resources mapping="/ckeditor/**" location="/ckeditor/" />
+    <mvc:resources mapping="/echarts/**" location="/echarts/" />
+    <mvc:resources mapping="/ueditor/**" location="/ueditor/" />
+    <mvc:resources mapping="/insdep/**" location="/insdep/" />
+    <mvc:resources mapping="/css/**" location="/css/" />
+    <mvc:resources mapping="/js/**" location="/js/" />
+    <mvc:resources mapping="/*.html" location="/" />
+    <mvc:resources mapping="/*.ico" location="/" />
+    <!-- 自动扫描的包名 -->
+    <context:component-scan base-package="com.alqsoft.controller" />
+
+    <aop:aspectj-autoproxy proxy-target-class="true">
+    </aop:aspectj-autoproxy>
+
+    <!-- 默认的注解映射的支持包含返回的json数据解析器 -->
+    <mvc:annotation-driven conversion-service="conversionService">
+        <mvc:message-converters register-defaults="false">
+            <!-- 将StringHttpMessageCOnverter的默认编码设为UTF-8 -->
+            <bean
+                    class="org.springframework.http.converter.ByteArrayHttpMessageConverter" />
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes" value="text/plain;charset=UTF-8" />
+            </bean>
+            <!-- json 响应的 content-type 是 application/json，而 IE 10 以前的浏览器对于这个类型是作为文件下载的 -->
+            <!-- 解决方法是只要将返回响应的 content-type 改为text/plain 即可 -->
+            <bean  class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <property name="supportedMediaTypes" value="text/plain;charset=UTF-8" />
+                <property name="objectMapper">
+                    <bean class="com.fasterxml.jackson.databind.ObjectMapper">
+                        <property name="dateFormat">
+                            <bean class="java.text.SimpleDateFormat">
+                                <constructor-arg type="java.lang.String" value="yyyy-MM-dd HH:mm:ss" />
+                            </bean>
+                        </property>
+                    </bean>
+                </property>
+            </bean>
+
+
+
+
+            <bean
+                    class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <property name="supportedMediaTypes" value="text/plain;charset=UTF-8" />
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!-- 自定义拦截器 -->
+    <mvc:interceptors>
+        <!-- 防爆拦截器 4、 在控制器 相关方法中加入注解 @AvoidDuplicateSubmission(needRemoveToken
+            = true) 5、 在页面的表单提交中加入token的隐藏域 <input type="hidden" name="token" value="${token}">,所有的非页面形态的接口不需要使用这个拦截 -->
+        <mvc:interceptor>
+            <mvc:mapping path="/**" />
+            <mvc:exclude-mapping path="/view/mobile/**" />
+            <mvc:exclude-mapping path="/themes/**" />
+            <mvc:exclude-mapping path="/javascript/**" />
+            <mvc:exclude-mapping path="/common/**" />
+            <mvc:exclude-mapping path="/uploadfy/**" />
+            <mvc:exclude-mapping path="/upload/**" />
+            <mvc:exclude-mapping path="/*.html" />
+            <mvc:exclude-mapping path="/*.ico" />
+            <mvc:exclude-mapping path="/404.jsp" />
+            <mvc:exclude-mapping path="/400.jsp" />
+            <mvc:exclude-mapping path="/500.jsp" />
+            <mvc:exclude-mapping path="/echarts/**" />
+            <mvc:exclude-mapping path="/ckeditor/**" />
+            <mvc:exclude-mapping path="/ueditor/**" />
+            <mvc:exclude-mapping path="/attachment/**" />
+            <mvc:exclude-mapping path="/insdep/**" />
+            <mvc:exclude-mapping path="/sms/**" />
+            <mvc:exclude-mapping path="/css/**" />
+            <mvc:exclude-mapping path="/js/**" />
+            <mvc:exclude-mapping path="/ydmvc/whoAreYou/shenhuiyuan.do"/>
+            <mvc:exclude-mapping path="/pay/yinlian/gzylcash/GZYLCashPay"/>
+            <bean
+                    class="org.alqframework.interceptor.AvoidDuplicateSubmissionInterceptor"></bean>
+        </mvc:interceptor>
+        <!-- 手机接口拦截器 -->
+        <mvc:interceptor>
+            <mvc:mapping path="/view/mobile/**" />
+            <bean class=" org.alqframework.interceptor.MobileAppInteceptor"></bean>
+        </mvc:interceptor>
+        <!-- 安全拦截器，xss过滤和html等 如果不需要拦截字段，请将字段以no_开头，后台接收参数不需要加前缀 -->
+        <mvc:interceptor>
+            <mvc:mapping path="/**" />
+            <mvc:exclude-mapping path="/themes/**" />
+            <mvc:exclude-mapping path="/javascript/**" />
+            <mvc:exclude-mapping path="/common/**" />
+            <mvc:exclude-mapping path="/uploadfy/**" />
+            <mvc:exclude-mapping path="/upload/**" />
+            <mvc:exclude-mapping path="/*.html" />
+            <mvc:exclude-mapping path="/*.ico" />
+            <mvc:exclude-mapping path="/404.jsp" />
+            <mvc:exclude-mapping path="/400.jsp" />
+            <mvc:exclude-mapping path="/500.jsp" />
+            <mvc:exclude-mapping path="/echarts/**" />
+            <mvc:exclude-mapping path="/ckeditor/**" />
+            <mvc:exclude-mapping path="/ueditor/**" />
+            <mvc:exclude-mapping path="/attachment/**" />
+            <mvc:exclude-mapping path="/insdep/**" />
+            <mvc:exclude-mapping path="/sms/**" />
+            <mvc:exclude-mapping path="/js/**" />
+            <mvc:exclude-mapping path="/css/**" />
+            <mvc:exclude-mapping path="/ydmvc/whoAreYou/shenhuiyuan.do"/>
+            <mvc:exclude-mapping path="/pay/yinlian/gzylcash/GZYLCashPay"/>
+            <bean class="org.alqframework.interceptor.XssAndHtmlInterceptor"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+
+
+    <bean id="conversionService"
+          class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <list>
+                <bean
+                        class="org.alqframework.json.jackson.convertor.StringToDateConvertor"></bean>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 文件上传的配置 -->
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+          p:defaultEncoding="UTF-8" p:maxUploadSize="52428800" p:uploadTempDir="upload/temp"></bean>
+
+    <!-- 视图解释类 -->
+    <bean
+            class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" /><!--可为空,方便实现自已的依据扩展名来选择视图解释类的逻辑 -->
+        <property name="viewClass"
+                  value="org.springframework.web.servlet.view.JstlView" />
+        <!-- 定义模板顺序 -->
+        <property name="order" value="1"></property>
+    </bean>
+    <!--<import resource="classpath*:/applicationContext-security.xml" />-->
+</beans>

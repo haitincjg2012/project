@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>商品详情</title>
+    <link rel="stylesheet"  th:href="@{/static/css/common/models.css}" />
+    <!--图片点击放大  css文件-->
+    <link rel="stylesheet"  th:href="@{/static/js/plugins/viewer/css/viewer.min.css}" />
+    <!--富文本编辑器 版本4.1.11-->
+    <link rel="stylesheet" th:href="@{/static/js/plugins/kindeditor/themes/default/default.css}" />
+    <link rel="stylesheet" th:href="@{/static/js/plugins/layer/layer.css}" />
+</head>
+<body>
+<div class="MainContent">
+    <div class="current">当前位置：<a href="#" alt="">商品管理 &gt;</a><span>商品详情</span></div>
+    <div class="MainCont ">
+        <div class="ph_subConTit">
+            <h2>基本信息</h2>
+        </div>
+        <form  id="productForm">
+            <input th:type="hidden" th:name="id" th:value="${product.id}"/>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="">供应商</span>
+                </label>
+                <th:block th:each="sp:${supplierList}">
+                    <input th:if="${product.supplierId eq sp.id}" readonly="readonly" type="text" class="left"  th:value="${sp.supplierName}">
+                </th:block>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="">商品名称</span>
+                </label>
+                <input readonly="readonly" type="text" class="left" placeholder="商品名称" th:value="${product.productName}"  id="productName"  name="productName">
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="">商品条形码</span>
+                </label>
+                <input readonly="readonly" type="text" class="left" placeholder="商品条形码" th:value="${product.barCode}"  id="barCode"  name="barCode"/>
+            </div>
+            <div class="ph_subConTit">
+                <h2>详细描述</h2>
+            </div>
+            <div class="content-box">
+                <textarea id="editor_id" name="content" style="width: 800px;height: 500px;" th:text="${product.description}"></textarea>
+            </div>
+            <div class="ph_subConTit">
+                <h2>商品相册</h2>
+            </div>
+            <div class="content-box">
+                <div class="img-box">
+                    <span>请上传商品图片，照片大小不超过5M,数量不大于5，推荐尺寸500x500px</span>
+                    <div class="img-box full">
+                        <section class=" img-section">
+                            <div class="z_photo upimg-div">
+                                <section class="up-section left" th:each="list:${productImageList}">
+                                    <img th:src="${list.url}" class="up-img zoom-img ">
+                                </section>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+            </div>
+            <div class="ph_subConTit">
+                <h2>商品属性</h2>
+            </div>
+            <div class="content-box">
+                <!--商品属性组开始-->
+                <div class="attribute-box">
+                    <div class="mainFrom">
+                        <label class="left">
+                            <span class="mainLab">商品分类</span>
+                        </label>
+                        <select disabled="disabled" class="selectUp selectpicker"  id="first" data-live-search="true" onchange="getClass(this.options[this.selectedIndex].value,'second');" >
+                            <option value="">请选择</option>
+                            <option th:if="${list.classifyLevel eq 1}" th:each="list:${childrenList}"  th:value="${list.id}"
+                                    th:selected="${list.classifyLevel eq 1 and list.isSelect eq 1}"  th:text="${list.classifyName}"></option>
+                        </select>
+                        <select disabled="disabled" class="selectUp selectpicker" id="second"   data-live-search="true" onchange="getClass(this.options[this.selectedIndex].value,'three');">
+                            <option value="">请选择</option>
+                            <option th:if="${list.classifyLevel eq 2}" th:each="list:${childrenList}" th:value="${list.id}" th:text="${list.classifyName}"
+                                    th:selected="${list.classifyLevel eq 2 and list.isSelect eq 1}"></option>
+                        </select>
+                        <select disabled="disabled" class="selectUp selectpicker"  id="three"  onchange="gerProperties();"   data-live-search="true">
+                            <option value="">请选择</option>
+                            <option th:if="${list.classifyLevel eq 3}" th:each="list:${childrenList}" th:value="${list.id}" th:text="${list.classifyName}"
+                                    th:selected="${list.classifyLevel eq 3 and list.isSelect eq 1}"></option>
+                        </select>
+                    </div>
+                    <div id="all">
+                        <div class="ph_attr" th:each="property:${productPropertyVOList}">
+                            <div class="mainFrom">
+                                <label class="left"><span class="mainLab">属性名称</span></label>
+                                <div class="inputbox_big">
+                                    <div class="input-box relative left">
+                                        <input readonly="readonly" type="text" th:placeholder="${property.propertyName}" th:value="${property.propertyName}" >
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mainFrom" >
+                                <label class="left"><span class="mainLab">属性值</span></label>
+                                <div class="inputbox_big">
+                                    <div class="input-box relative left" th:each="propertyVal:${property.productPropertyValVoList}">
+                                        <input readonly="readonly" type="text" th:value="${propertyVal.content}" th:ide="${propertyVal.id}" ref="proValue">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--商品属性组结束-->
+                    <!--商品规格组开始-->
+                    <div class="ph_subConTit">
+                        <h2>商品规格</h2>
+                    </div>
+                    <div class="attribute-box ph_attr ph_classify">
+                        <div th:each="specification,iterStat:${productSpecificationVOList}">
+                        <div class="mainFrom">
+                            <label class="left">
+                                <span class="mainLab">规格名称</span>
+                            </label>
+                            <div class="inputbox_big">
+                                <div class="input-box relative left">
+                                    <input readonly="readonly" type="text" th:value="${specification.specificationName}" th:placeholder="${specification.specificationName}" th:id="${iterStat.index}" ref="spnValue"/>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="mainFrom">
+                            <label class="left">
+                                <span class="mainLab">规格值</span>
+                            </label>
+                            <div class="inputbox_big">
+                                <div class="input-box relative left"  th:each="specificationVal,iterStatVal:${specification.productSpecificationValVOList}">
+                                    <input readonly="readonly" th:class="${'Specification_value1 Sp_' + iterStat.index}" type="text" th:value="${specificationVal.specificationValue}"
+                                           th:placeholder="${specificationVal.specificationValue}" />
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <!--商品规格组结束-->
+                    <!--规格展示表格-->
+                    <div class="ph_subConTit">
+                        <h2>商品库存</h2>
+                    </div>
+                    <!--表格-->
+                    <div class="ph_wareBox clearfix">
+                        <table class="ph_wareList">
+                            <thead>
+                            <tr >
+                                <th>规格</th>
+                                <th>参考价（元）</th>
+                                <th>零售价（元）</th>
+                                <th>进货价（元）</th>
+                                <th>结算价（元）</th>
+                                <th>市代起批数量</th>
+                                <th>商户起批数量</th>
+                                <th>起售数量</th>
+                                <th>包邮数量</th>
+                                <th>物流费用（元）</th>
+                                <th>库存</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="sku:${productSkuList}">
+                                    <td >
+                                        <span th:text="${sku.skuName}"></span>
+                                    </td>
+                                    <td th:text="${sku.referencePrice}"></td>
+                                    <td th:text="${sku.retailPrice}"></td>
+                                    <td th:text="${sku.purchasePrice}"></td>
+                                    <td th:text="${sku.settlementPrice}"></td>
+                                    <td th:text="${sku.municipalBatchQuantity}"></td>
+                                    <td th:text="${sku.sellerbAtchQuantity}"></td>
+                                    <td th:text="${sku.saleQuantity}"></td>
+                                    <td th:text="${sku.numberOfPackages}"></td>
+                                    <td th:text="${sku.freight}"></td>
+                                    <td th:text="${sku.skuCount}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="right">
+                            <span>总库存：</span>
+                            <span id="allCount" th:text="${product.productCount}"></span>
+                        </div>
+                    </div>
+        </form>
+        <!--end 表格-->
+        <div class="PopupBtn btnLeft" style="margin-bottom: 20px;">
+            <input class="cancel save_cancel" name="" type="button" onclick="cancel()" value="返回">
+        </div>
+    </div>
+</div>
+
+</div>
+</body>
+<!--kindeditor富文本插件-->
+<script type="text/javascript"   th:src="@{/static/js/plugins/kindeditor/kindeditor-all-min.js}"></script>
+<script type="text/javascript"   th:src="@{/static/js/plugins/kindeditor/lang/zh-CN.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+
+<!--图片点击放大-->
+<script  type="text/javascript"  th:src="@{/static/js/plugins/viewer/viewer-jquery.min.js}"></script>
+
+<script type="text/javascript"  th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/common/imgUp.js}"></script>
+
+<script th:inline="JavaScript">
+
+
+    var editor;
+    $(function(){
+        $('.zoom-img').viewer({
+            url: 'src',
+            navbar: false,
+            keyboard: true,
+            title: true
+        });
+
+        //；如果供应商直接点击添加商品
+        var supplierId="${supplierId}";
+        if(supplierId!=""){
+            $("#supplierId").val(supplierId);
+        }
+        KindEditor.ready(function(K) {
+            editor= K.create('#editor_id',{
+                uploadJson : '/uploadProductImage?module=editor',
+//        	   	    fileManagerJson : '${ctx}/uploadProductImage?module=editor',
+                allowFileManager :true,
+                allowImageUpload : true,
+                allowFlashUpload:false,
+                allowMediaUpload:false,
+                formatUploadUrl:false,
+                items:[
+                    'copy', 'paste'
+                ],
+            });
+        });
+
+    });
+
+    //取消
+    function cancel(){
+        window.history.go(-1);
+    }
+
+    //计算总数
+    function  compute(){
+        var count=0;
+        $("#allCount").html("");
+        $(".ph_wareList tbody tr").each(function(){
+            var oneCount=$(this).find("input[name='skuCount'][ref='skus']").val();
+            if(oneCount!=""){
+                count = Number(parseInt(count)) + Number(parseInt(oneCount));
+            }
+        });
+        $("#allCount").html(count);
+    }
+</script>
+</html>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.huntermessage.MessageDao">
+
+
+	<!-- 商户图片 -->
+	<select id="getHunterRuleAttachmentListByid" resultType="map" parameterType="Long" >
+	
+	SELECT pa.address phaddress, pa.id, pa.type  FROM ph_hunter_rule_attachment AS pa WHERE pa.hunter_id =#{id} 
+	</select>
+
+	<select id="HunterMessageList" resultType="java.util.Map" parameterType="Long" >
+		SELECT 
+		att.address,<!-- 1批发商LOGO -->
+		h.nickname,<!-- 2批发商昵称 -->
+		ass.`name` AS association_type,<!-- 3所属协会 -->
+		h.major,<!-- 4批发商专业 -->
+		h.ph_province_id AS province_id,h.province_name,
+		h.ph_city_id AS city_id,h.city_name,
+		h.ph_county_id AS county_id,h.county_name,
+		h.ph_town_id AS town_id,h.town_name,
+		h.detail,<!-- 5驻地 -->
+		ii.parent_id AS industry_type1_id,al.name AS industry_type1,ii.id AS industry_type2_id,ii.`name` AS industry_type2,<!-- 6行业分类 -->
+		h.service,<!-- 71批发商服务 -->
+		h.service_digest,<!-- 72服务内容详情 -->
+		hs.detail AS sourcing_service,<!-- 8货源服务 -->
+		h.position_level,<!-- 9等级 -->
+		h.latitude,<!-- 10维度 -->
+		h.longitude,<!-- 11经度 -->
+		h.station
+		FROM `alq_hunter` h 
+		LEFT JOIN alq_attachment att ON h.logo_attachment_id=att.id
+	  	LEFT JOIN alq_industry_type ii ON h.industry_type_id=ii.id
+		LEFT JOIN alq_industry_association ass ON h.industry_association_id=ass.id
+		LEFT JOIN alq_hunter_service hs ON h.id=hs.hunter_id    
+    	LEFT JOIN alq_industry_type al ON al.id=ii.parent_id
+		where h.id=#{id}
+	</select>
+
+</mapper>

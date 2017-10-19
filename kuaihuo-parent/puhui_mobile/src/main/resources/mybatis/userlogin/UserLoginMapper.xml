@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.login.LoginDao">
+
+    <!--判断用户是否存在-->
+    <select id="getLoginData" resultType="com.alqsoft.entity.member.Member" parameterType="java.lang.String">
+        SELECT * From  alq_member AS mm Where mm.phone=#{phone}
+    </select>
+    <!-- 获取用户的基本信息 -->
+    <select id="getUserBaseMessager" resultType="Map" parameterType="String">
+       SELECT mm.token,mm.id,hun.nickname,hun.name, att.address,mm.im_id as IMid,mm.hunter_id,
+       mm.im_password as IMpassword,mm.uuid as uuid,mm.im_sign as ImSign
+       from alq_member as mm 
+      
+       left join alq_hunter as hun on mm.hunter_id=null or mm.hunter_id=hun.id
+       
+       left join alq_attachment as att on hun.logo_attachment_id=att.id
+       
+       WHERE mm.phone=#{phone}
+        
+    </select>
+    
+    <!-- 根据手机号获取用户的基本信息 -->
+    <select id="getMemberByPhone" resultType="map" parameterType="string">
+       SELECT m.token,m.id,m.name,m.hunter_id AS hunterId,m.uuid AS uuid,m.im_id AS imId,
+       		  m.im_password AS imPassword,m.im_sign AS imSign
+       FROM alq_member AS m 
+       WHERE m.phone=#{phone}
+        
+    </select>
+    
+    <!--通过phone查询member实体类-->
+    <select id="getMemberByPhone2" resultType="map" parameterType="string">
+       SELECT *
+       FROM alq_member AS m 
+       WHERE m.phone=#{phone}
+        
+    </select>
+    <!-- 接口根据hunter_id查询member -->
+    <select id="getmemberinfo" resultType="com.alqsoft.entity.hunter.Hunter" parameterType="java.lang.String">
+        SELECT * From  alq_member AS h Where h.hunter_id=#{hunter_id}
+    </select>
+
+    <!--判断手机号是否存在-->
+    <select id="getMemberAndMerchant" resultType="map" parameterType="String">
+        select IFNULL(mer.isFrozen,"0") as frozen  from alq_member as mm LEFT JOIN ph_merchant as mer on mm.phone = mer.telPhone where mm.phone=#{phone}
+    </select>
+    
+</mapper>

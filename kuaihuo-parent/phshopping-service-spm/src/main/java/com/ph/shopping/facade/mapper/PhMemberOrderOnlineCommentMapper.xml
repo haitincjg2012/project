@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.PhMemberOrderOnlineCommentMapper">
+    <sql id="where_commentForParentList_sql">
+        <if test="type == 1">
+            and phc.`startNum`=5
+        </if>
+        <if test="type == 2">
+            <![CDATA[ and phc.`startNum`>=3 and phc.`startNum`<=4 ]]>
+        </if>
+        <if test="type == 3">
+            <![CDATA[and phc.`startNum`>=0 and phc.`startNum`<=2]]>
+        </if>
+    </sql>
+
+
+    <select id="getMerchantCommentNum" resultType="map" parameterType="map">
+		SELECT DISTINCT
+			(SELECT COUNT(*) AS goodsnum from ph_member_order_online_comment AS pc WHERE  pc.startNum = 5 and pc.merchantId=#{merchantid}) 
+	  	as goodnum,
+	 (SELECT COUNT(*) AS commentnum from ph_member_order_online_comment AS pc WHERE     <![CDATA[  pc.`startNum`>=3 and pc.`startNum`<=4 ]]> and pc.merchantId=#{merchantid}) 
+	  as commentnum,
+	   (SELECT COUNT(*) AS badnum from ph_member_order_online_comment AS pc WHERE    <![CDATA[ pc.`startNum`>=0 and pc.`startNum`<=2]]> and pc.merchantId=#{merchantid} ) 	
+	   as badnum
+		from ph_member_order_online_comment
+	</select>
+
+    <!-- 查询评论列表中父级评论列表 -->
+    <select id="findMerchantCommentForParentList" resultType="map" parameterType="map">
+        SELECT
+        p.commentid,p.pmemberid,p.isone,p.porderid,p.pnickname,
+        p.pstart,p.pcontent,p.pcreatedtime,p.pmercantid
+        ,p.preplynum,p.pfabulous,IFNULL(p.`attaddress`,'') as paddress
+        FROM (
+        SELECT
+        phc.id AS commentid,                 <!-- 父级游客这条评论的id -->
+        phc.`memberId` as pmemberid,            <!-- 评论人的id -->
+        IFNULL(phc.`isOne`,0) as isone,            <!-- 是否已回复该评论0或null未回复，1已回复 -->
+        IFNULL(phc.`startNum`,0) AS pstart,            <!-- 父级游客评论的星 -->
+        phc.`content` AS pcontent,                    <!-- 父级游客评论的内容 -->
+        phc.`created_time` AS pcreatedtime,            <!-- 父级游客评论的时间 -->
+        IFNULL(phc.`replyNum`,0) AS preplynum,         <!-- 父级游客下回复的数量 -->
+        IFNULL(phc.`fabulousNum`,0) AS pfabulous,     <!-- 父级游客的点赞熟数-->
+        IFNULL(pcm.memberName,'匿名用户') AS memberName,
+        pcm.headImage AS attaddress,
+        IFNULL(pcm.nikeName,'匿名用户') AS pnickname,
+        phc.merchantId AS pmercantid,
+        phc.orderId AS porderid
+        FROM
+        ph_member_order_online_comment phc,ph_merchant h,ph_member pcm
+        WHERE
+        phc.merchantId=#{merchantid} AND phc.merchantId=h.userId AND pcm.`id`=phc.`memberId` AND phc.`parentId` IS NULL
+        <include refid="where_commentForParentList_sql"></include>
+        ORDER BY phc.`created_time` DESC LIMIT #{startIndex},#{endIndex}
+        ) p ORDER BY p.pcreatedtime desc
+
+
+    </select>
+
+
+    <!-- <select id="findMerchantCommentForParentList" resultType="map" parameterType="map">
+        SELECT p.commentid,p.pmemberid,p.isone,p.goodnum,p.commentnum,p.badnum,p.pstart,p.pcontent,p.pcreatedtime,p.preplynum,p.pfabulous,p.`nickname` as pnickname,att.`address` as paddress FROM (
+            SELECT
+                phc.id AS commentid,						父级游客这条评论的id
+                phc.`member_id` as pmemberid,				评论人的id
+                IFNULL(phc.`is_one`,0) as isone,			是否已回复该评论0或null未回复，1已回复
+                IFNULL(h.`good_comment_num`,0) AS goodnum,	该批发商的好评数
+                IFNULL(h.`comment_num`,0) AS commentnum,	该批发商的中评数
+                IFNULL(h.`bad_comment_num`,0) AS badnum,	该批发商的差评数
+                IFNULL(phc.`star`,0) AS pstart,				父级游客评论的星
+                phc.`content` AS pcontent,					父级游客评论的内容
+                phc.`created_time` AS pcreatedtime,			父级游客评论的时间
+                IFNULL(phc.`reply_num`,0) AS preplynum,		父级游客下回复的数量
+                IFNULL(phc.`fabulous_num`,0) AS pfabulous,	父级游客的点赞熟数
+                pcm.`nickname`,
+                pcm.`logo_attachment_id` AS attid
+            FROM
+                alq_hunter_comment phc,alq_hunter h,alq_member pcm
+            WHERE
+                phc.`hunter_id`=#{hunterid} AND phc.`hunter_id`=h.`id`  AND pcm.`id`=phc.`member_id` AND phc.`parent_id` IS NULL
+                <include refid="where_commentForParentList_sql"></include>
+                ORDER BY phc.`created_time` DESC LIMIT #{startIndex},#{endIndex}
+        ) p LEFT JOIN alq_attachment att ON p.attid=att.`id` ORDER BY p.pcreatedtime desc
+    </select> -->
+
+    <!-- 批发商评论父级列表数量 -->
+    <select id="getHunterCommentListForParentCount" resultType="int" parameterType="java.lang.Long">
+		select count(*) FROM ph_member_order_online_comment phc where phc.`merchantId`=#{merchantid} and phc.`parentId` IS NULL
+	</select>
+
+    <!-- 父级评论下的子游客评论 -->
+    <select id="findSonHunterCommentForByParentIdList" resultType="map" parameterType="java.lang.Long">
+        SELECT
+        <!--  son.id,  -->
+        <!--  m.`id` AS meberid,  -->
+        /*m.`memberName` as memberName,*/
+        m.nikeName as memberName,
+        <!-- pm.id AS  merchantid,  -->
+        pm.`merchantName` as merchantName,
+        son.`content`
+        <!-- son.`created_time`   -->
+        FROM ph_member_order_online_comment son LEFT JOIN ph_member m ON m.`id`=son.`memberId`
+        LEFT JOIN ph_merchant pm ON pm.`userId`=son.`merchantId`
+        WHERE son.orderId=#{parentId} AND son.`parentId` IS NOT NULL
+
+
+    </select>
+
+    <!-- app首页批发商评论列表   查询该会员是否已有评价过此批发商 -->
+    <select id="getDirectHunterCommentCount" resultType="int" parameterType="map">
+		SELECT count(*) FROM alq_hunter_comment hc WHERE  hc.`hunter_id`=#{hunterid} AND hc.`member_id`=#{memberid} AND hc.`parent_id` IS NOT NULL
+	</select>
+    <!-- 查询用户对这条评论的点赞状态 -->
+    <select id="getHunterCommentParentForMemberFabulousStatus" resultType="map" parameterType="map">
+		SELECT  hcf.`id`,hcf.`type` FROM alq_hunter_comment_fabulous hcf WHERE hcf.`hunter_comment_id`=#{commentid} AND hcf.`member_id`=#{memberid}
+	</select>
+
+
+</mapper>

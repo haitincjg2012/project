@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台系统-属性添加</title>
+    <link rel="stylesheet"  th:href="@{/static/css/common/models.css}" />
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet"   th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet"  th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+     <link rel="stylesheet" th:href="@{/static/js/plugins/layer/layer.css}" />
+           
+</head>
+<body>
+
+<div class="MainContent">
+    <div class="current">当前位置：<a href="welcome.html" alt="">商品分类 &gt;</a><a href="#" alt="">属性列表 &gt;</a><span>添加属性</span></div>
+    <div class="MainCont ">
+    <form  id="operateForm">
+        <div class="mainFrom">
+            <label class="left">
+                <span class="require">*</span>
+                <span class="">商品分类:</span>
+            </label>
+            <select class="selectUp selectpicker validate[required]"   id="first"   data-live-search="true" onchange="getClass(this.options[this.selectedIndex].value,'second');">
+                 <option value="" >全部</option>
+                <option  th:each="list:${list}"   th:value="${list.id}" 
+                th:text="${list.classifyName}"></option>
+            </select>
+            <select class="selectUp selectpicker"  id="second"  data-live-search="true" onchange="getClass(this.options[this.selectedIndex].value,'three');">
+            	<option value="" >全部</option>
+            </select>
+            <select class="selectUp selectpicker"  id="three"  data-live-search="true">
+            	<option value="" >全部</option>
+            </select>
+        </div>
+        <div class="mainFrom">
+            <label class="left">
+                <span class="require">*</span>
+                <span class="">属性名称:</span>
+            </label>
+            <input type="text" class="left validate[required]"   maxlength="100"  placeholder="属性名称"  id="propertyName"  name="propertyName"/>
+        </div> 
+        <div class="mainFrom">
+            <label class="left">
+                <span class="">属性排序:</span>
+            </label>
+            <input type="text"   id="sort"  name="sort"  class="left validate[custom[integer], min[1]]"   maxlength="100"  placeholder=""/>
+        </div>
+	        <input type="hidden"    id="levleHidden"  value=""/> 
+	       	<input type="hidden"    id="classifyId"  name="classifyId" value=""/> 
+        </form>
+        <div class="PopupBtn btnLeft" style="margin-bottom: 20px;">
+            <input class="submit addIndustry_save" name="" type="button"  onclick="save();" value="保存">
+            <input class="cancel" name="" type="button"   onclick="javascript :history.back(-1);"   value="取消">
+        </div>
+    </div>
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript"  th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<script type="text/javascript">
+	  $(function () {
+	    	 $("#operateForm").validationEngine({
+	    		   addPromptClass: 'formError-text',
+	               showArrow: false,
+	               promptPosition: 'bottomLeft:20 0'
+
+	         });
+	    });
+//分类联动方法
+function getClass(id,level){
+	$("#levleHidden").val("");
+	$("#levleHidden").val(level);
+	if(level=="second"){
+		 document.getElementById("second").options.length=0;
+		$("#second").prepend("<option value=''>全部</option>");
+		 document.getElementById("three").options.length=0;
+		$("#three").prepend("<option value=''>全部</option>");
+		$('.selectpicker').selectpicker('refresh');
+	}
+	if(level=="three"){
+		 document.getElementById("three").options.length=0;
+		$("#three").prepend("<option value=''>全部</option>");
+		$('.selectpicker').selectpicker('refresh');
+	}
+	if(id!=""){
+	$.ajax({url:'/web/product/productClassify/selectClass?id='+id,dataType:"json",type:"post",success:savecallbackOne,error:function(data){
+				layer.alert('与服务器连接中断', {icon: 2,btnAlign: 'c', closeBtn : 0});
+ }});
+	}
+}
+ function savecallbackOne(data){
+			console.log(data.data); 
+			var levle=$("#levleHidden").val();
+			if(levle=="second"){
+				$("#three").find("option").remove();
+				$("#three").prepend("<option value=''>全部</option>");
+// 				$('.selectpicker').selectpicker('render');
+				$('.selectpicker').selectpicker('refresh');
+
+			}
+			$("#"+levle).find("option").remove();
+			$("#"+levle).prepend("<option value=''>全部</option>");
+			for(var i=0; i<data.data.length;i++){
+                $("#"+levle).append("<option value='"+data.data[i].id+"'>"+data.data[i].classifyName+"</option>");
+            }
+// 			$('.selectpicker').selectpicker('render');
+			$('.selectpicker').selectpicker('refresh');
+
+		}
+ 
+//保存方法
+	function save(){
+		//表单验证
+	 	var flag = $("#operateForm").validationEngine("validate");
+	 	if(!flag){
+	  		return false;
+	 	} 
+		if($("#first").val()!=""&&$("#second").val()==""&&$("#three").val()==""){
+			$("#classifyId").val($("#first").val());
+		}
+		if($("#first").val()!=""&&$("#second").val()!=""&&$("#three").val()==""){
+			$("#classifyId").val($("#second").val());
+		}
+		if($("#first").val()!=""&&$("#second").val()!=""&&$("#three").val()!=""){
+			$("#classifyId").val($("#three").val());
+		}
+		 var poststr=$('#operateForm').serialize();
+			$.ajax({url:'/web/product/property/add',data:poststr,dataType:"json",type:"post",success:savecallback,error:function(data){
+						layer.alert('与服务器连接中断', {icon: 2,btnAlign: 'c', closeBtn : 0});
+	     }});
+	}
+	//成功回调方法
+function savecallback(data){
+			if(data.success==true){
+				resteForm();
+				layer.alert('保存成功', {icon: 1,btnAlign: 'c', closeBtn : 0},function(index){
+					  window.location.href="/web/product/property/toProductPropertyPage";
+				});
+			  
+			}else{
+			if(data.code=="70004" )
+			{  
+				layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+			}
+			if(data.code=="70009" )
+			{  
+				layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+			}
+			}
+		}
+	
+ 	//清空表单方法
+ 	function  resteForm(){
+ 		$("#operateForm").find("input").val("");
+ 		$("#operateForm").find("select").val("");
+ 	}
+</script>
+</body>
+</html>

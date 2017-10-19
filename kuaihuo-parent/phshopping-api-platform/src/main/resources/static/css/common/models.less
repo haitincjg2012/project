@@ -1,0 +1,1173 @@
+//主体css文件
+
+@import "base";
+@import "variables";
+@import "public";
+
+/*
+*模块：登录、找回密码
+*时间：20170510
+*作者：梁彬
+*/
+
+.loginBox{
+  .relative;
+  .square(100%);
+  background: url("../images/bg.jpg") 0 0 no-repeat;
+  .loginCon{
+    .absolute;
+    top: 50%;
+    left: 50%;
+    .size(360px; 400px);
+    margin-top: -200px;
+    margin-left: -210px;
+    background: @title-color;
+    padding: 0 30px;
+    .border-radius(@border-radius-large);
+    -webkit-box-shadow: 0 6px 10px rgba(0,100,76,.15);
+    -moz-box-shadow: 0 6px 10px rgba(0,100,76,.15);
+    box-shadow: 0 6px 10px rgba(0,100,76,.15);
+    h2{
+      .size(100%; 24px);
+      text-align: center;
+      margin-top: 40px;
+      margin-bottom: 30px;
+    }
+    .loginTxt{
+      .relative;
+      .size(100%; 58px);
+      margin-top: 10px;
+      span{
+        display: block;
+        .size(100%; 18px;);
+        line-height: 18px;
+        text-indent: 10px;
+        &.loginErr{
+          color: @err-color;
+        }
+        &.loginSuc{
+          color: @blue-base;
+        }
+      }
+      .proving{
+        padding-right: 120px;
+      }
+      .provingImg{
+        .absolute;
+        right: 1px;
+        top: 1px;
+        .size(110px; 38px);
+        text-align: center;
+        .provingTxt{
+          display: inline-block;
+          .size(100px; 26px);
+          line-height: 26px;
+          margin-top: 6px;
+          border-left: 1px solid #dfdfdf;
+          text-align: center;
+          color: @blue-base;
+          font-size: @font-size-base;
+          &:hover{
+            color: @blue-base-bg;
+          }
+        }
+        &.provBtn{
+          right: 140px;
+        }
+      }
+    }
+    .loginBtn{
+      margin-top: 20px;
+      input[type="button"]{
+        .size(100%; 40px);
+        font-size: @font-size-large;
+      }
+    }
+    .loginConTxt{
+      .size(100%; 30px);
+      line-height: 30px;
+      font-size: @font-size-base;
+      &:extend(.clearfix all);
+      a{
+        color: @blue-base;
+        &:hover{
+          color: @blue-base-bg;
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+  .backPassword{
+    &:extend(.loginCon all);
+    .size(360px; 470px);
+    margin-top: -235px;
+    margin-left: -210px;
+  }
+}
+/*
+*模块：主页
+*时间：20170510
+*作者：梁彬
+*/
+.MainBox{
+  .absolute;
+  .square(100%);
+  background: #fafafa;
+  bottom: 0;
+  left: 0;
+  min-width: 1400px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  right: 0;
+  top: 0;
+  .mainTop{
+    .size(100%; 80px);
+    background: @blue-base;
+    &:extend(.clearfix all);
+    .logo{
+      .size(auto; 60px);
+      line-height: 60px;
+      margin: 10px 0 10px 52px;
+      padding: 0  10px 0 48px;
+      color: @title-color;
+      font-size: @font-size-large-box;
+      background: url("../images/logo_kf.png") 0 center no-repeat;
+    }
+  }
+  .userBox{
+    line-height: 80px;
+    padding-right: 30px;
+    font-size: @font-size-large-user;
+    span{
+      color: @title-color;
+      padding-right: 20px;
+    }
+    a{
+      color: @err-color;
+      display: inline-block;
+      padding: 0 10px;
+      line-height: 80px;
+    }
+  }
+  .mainContentBox{
+    .absolute;
+    top: 80px;
+    left: 250px;
+    bottom: 0;
+    right: 0;
+    //代理申请调整
+    &.agency_applicationbox{
+      top:80px;
+      left:0;
+    }
+  }
+}
+//左边菜单栏
+.leftNav{
+  .absolute;
+  top: 80px;
+  left: 0;
+  bottom: 0;
+  .size(240px; auto);
+  background: @title-color;
+  border-right: 1px solid #eee;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  .navBox{
+    .size(100%; auto);
+    padding-top: 30px;
+    .link{
+      .relative;
+      .size(auto; 40px);
+      line-height: 40px;
+      color: @nav-color;
+      cursor: pointer;
+      display: block;
+      font-size: @font-size-in;
+      padding: 5px 10px;
+      &:hover{
+        color: @blue-base;
+      }
+      .navIcon{
+        float:left;
+        .square(40px);
+        background: url("../images/leftNav_ico.png") no-repeat;
+      }
+      .nav_ware{background-position: 0 0;}
+      .nav_type{ background-position: 0 -40px;}
+      .nav_supply{background-position: 0 -80px;}
+      .nav_order{background-position: 0 -120px}
+      .nav_merchant{background-position: 0 -160px;}
+      .nav_agent{background-position: 0 -200px;}
+      .nav_supplier{background-position: 0 -240px;}
+      .nav_account{background-position: 0 -280px;}
+      .nav_system{background-position: 0 -320px;}
+      .nav_power{background-position: 0 -360px;}
+      .nav_balance{background-position: 0 -400px;}
+      .nav_run{background-position: 0 -440px;}
+      .nav_report{background-position: 0 -480px;}
+      .nav_con{background-position: 0 -520px;}
+      .nav_vip{background-position: 0 -560px;}
+      .nav_member{background-position: 0 -600px;}
+      .navIconRig{
+        float: right;
+        .size(20px; 40px);
+        background: url("../images/nav_ico.png") center center no-repeat;
+      }
+    }
+    .open{
+      .link{
+        color: @blue-base;
+        .navIconRig{
+          background: url("../images/nav_ico_h.png") center center no-repeat;
+        }
+      }
+      .nav_ware{background-position: -40px 0;}
+      .nav_type{ background-position: -40px -40px;}
+      .nav_supply{background-position: -40px -80px;}
+      .nav_order{background-position: -40px -120px}
+      .nav_merchant{background-position: -40px -160px;}
+      .nav_agent{background-position: -40px -200px;}
+      .nav_supplier{background-position: -40px -240px;}
+      .nav_account{background-position: -40px -280px;}
+      .nav_system{background-position: -40px -320px;}
+      .nav_power{background-position: -40px -360px;}
+      .nav_balance{background-position: -40px -400px;}
+      .nav_run{background-position: -40px -440px;}
+      .nav_report{background-position: -40px -480px;}
+      .nav_con{background-position: -40px -520px;}
+      .nav_vip{background-position: -40px -560px;}
+      .nav_member{background-position: -40px -600px;}
+    }
+    .submenu{
+      .display;
+      li{
+        line-height: 34px;
+        a{
+          display: block;
+          padding-left: 50px;
+          font-size: @font-size-base;
+          color: @nav-color;
+          .size(auto; 34px);
+          overflow: hidden;
+          &:hover,
+          &.link_a{
+            color: @blue-base;
+          }
+        }
+      }
+    }
+  }
+}
+
+/*
+*模块：当前位置
+*时间：20170510
+*作者：梁彬
+*/
+.MainContent{
+  .relative;
+  .square(100%);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.current{
+  .size(100%; 50px);
+  line-height: 50px;
+  background: @title-color;
+  .border(1px; @border-base);
+  border-top: none;
+  text-indent: 30px;
+  font-size: @font-size-base;
+  color: @gray-dark;
+  a{
+    color: @err-color;
+    &:hover{
+      color: @err-color-h;
+    }
+  }
+  span{
+    color: @font-size-base;
+  }
+}
+.MainCont{
+  .relative;
+  background: @title-color;
+  .border(1px; @border-base);
+  margin-top: 10px;
+  box-sizing: border-box;
+  padding: 20px;
+  min-height: 600px;
+  &.agency_applicationCont{
+    .size-small(1270px;600px);
+    margin:0 auto;
+    border:none;
+  }
+  .welcon{
+    .absolute;
+    .size(100%; 80px);
+    top: 50%;
+    left: 50%;
+    margin-left: -50%;
+    margin-top: -40px;
+    font-size: 60px;
+    text-align: center;
+    line-height: 70px;
+  }
+}
+.MainWel{
+  .absolute;
+  .size(100%; auto);
+  top: 60px;
+  bottom: 0;
+  right: 0;
+  left: 0;
+}
+/*
+*模块：添加商品页面
+*时间：20170511
+*作者：刘弘愿
+*/
+
+.mainFrom{
+  &:extend(.clearfix all);
+  &:first-child {
+    margin-bottom: 30px;
+  }
+  margin-bottom: 26px;
+  &.mainFromBot{
+    margin-bottom: 0;
+  }
+  label {
+    margin-left: 3px;
+    line-height: 40px;
+    text-align: right;
+    font-size: @font-size-base;
+    .left;
+    .size(110px; 40px);
+    //font-size: @font-size-base;
+  }
+  .mainLab {
+    color: @gray-base;
+    font-size: @font-size-base;
+  }
+  em{
+    display: inline-block;
+    line-height: 40px;
+    margin-left: 10px;
+    font-size: @font-size-base;
+  }
+  input[type='text'] {
+    .size(280px; 40px);
+    margin-left: 15px;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    //上传文件-浏览按钮样式
+    //作者：刘弘愿 时间：20170518
+    &.upload-url {
+      .border(1px;@tabel-border);
+      .size(280px;40px);
+      .border-radius(6@border-radius-large);
+      line-height: 40px;
+      text-indent: 60px;
+      z-index: @zindex-tooltip;
+    }
+  }
+  //详情页span样式
+  .detailtxt{
+    .size(280px; 40px);
+    line-height: 40px;
+    margin-left: 15px;
+    font-size: @font-size-base;
+  }
+  input[type="radio"]{
+    margin:15px 6px 0 15px!important;
+    vertical-align:text-bottom;
+  }
+  #Supplier, .Classification {
+    background: url('../images/select-arrow.png') 95% 50% no-repeat;
+    background-size: 12px 6px;
+    &::-webkit-input-placeholder { /* WebKit browsers */
+      color: @gray-base;
+      color: #000 \0;
+    }
+    &:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+      color: @gray-base;
+      color: #000 \0;
+    }
+    &::-moz-placeholder { /* Mozilla Firefox 19+ */
+      color: @gray-base;
+      color: #000 \0;
+    }
+    &:-ms-input-placeholder { /* Internet Explorer 10+ */
+      color: @gray-base;
+      color: #000 \0;
+    }
+  }
+  /*
+  *模块：上传文件样式美化
+  *时间：20170518
+  *作者：刘弘愿
+  */
+  .upload {
+    .clearfix;
+    .relative;
+    display: inline-block;
+    .size(300px;42px);
+    .border-radius(6@border-radius-large);
+    line-height: 40px;
+    //overflow: hidden;
+    vertical-align: middle;
+    cursor: pointer;
+    .upload-input-file {
+      position: absolute;
+      right: 0;
+      top: 0;
+      .size(280px; 40px);
+      opacity: 0;
+      filter: alpha(opacity=0);
+      cursor: pointer;
+      z-index:@zindex-popover;
+    }
+  }
+}
+
+.editMode {
+  color: @gray !important;
+  font-size: @font-size-base !important;
+}
+//商品各区域大标题通用样式
+.content-box {
+  p, textarea {
+    span {
+      color: @gray-base;
+      margin-left: 0;
+    }
+  }
+  margin-bottom: 40px;
+}
+//图片上传控件样式
+.img-box {
+  span {
+    &:first-child {
+      margin-left: 0;
+      font-size: @font-size-small;
+    }
+  }
+  .full {
+    min-width: 1210px;
+  }
+  .img-box .up-p {
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: #555;
+    height: 120px;
+  }
+  .z_photo {
+    &:extend(.clearfix all);
+    //padding: 18px;
+    border: none;
+    /*padding: 18px;*/
+  }
+  .z_photo .z_file {
+    position: relative;
+  }
+  .z_file .file {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    border: 1px solid #dddddd;
+  }
+  .z_photo .up-section {
+    position: relative;
+    margin-right: 20px;
+    margin-bottom: 20px;
+  }
+  .up-section .close-upimg {
+    position: absolute;
+    top: 75%+6px;
+    right: 8px;
+    display: none;
+    z-index: 10;
+  }
+  .up-section .up-span {
+    display: block;
+    width: 100%+2px;
+    height: 25%;
+    visibility: hidden;
+    position: absolute;
+    top: 75%+1px;
+    left: 0;
+    z-index: 9;
+    background: rgba(0, 0, 0, .5);
+    margin-left: 0 !important;
+    -webkit-border-radius: 0 0 6px 6px;
+    -moz-border-radius: 0 0 6px 6px;
+    border-radius: 0 0 6px 6px;
+  }
+  .up-section {
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+  }
+  .up-section .close-upimg {
+    display: block;
+  }
+  .up-section .up-span {
+    visibility: visible;
+  }
+  .z_photo .up-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #dddddd;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+  }
+  .loading {
+    border: 1px solid #D1D1D1;
+    background: url(../images/loading.gif) no-repeat center;
+  }
+  .up-opcity {
+    opacity: 0;
+  }
+  .img-name-p {
+    display: none;
+  }
+  .upimg-div .up-section {
+    width: 120px;
+    height: 120px;
+  }
+  .img-box .upimg-div .z_file {
+    width: 120px;
+    height: 120px;
+  }
+  .z_file .add-img {
+    display: block;
+    width: 120px;
+    height: 120px;
+  }
+  .z_file .show-img {
+    display: block;
+    width: 200px;
+    height: 120px;
+  }
+  .mask {
+    z-index: 1000;
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, .4);
+  }
+  .mask .mask-content {
+    width: 500px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -250px;
+    margin-top: -80px;
+    background: white;
+    height: 160px;
+    text-align: center;
+  }
+  .mask .mask-content .del-p {
+    color: #555;
+    height: 94px;
+    line-height: 94px;
+    font-size: 18px;
+    border-bottom: 1px solid #D1D1D1;
+  }
+  .mask-content .check-p {
+    height: 66px;
+    line-height: 66px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
+  .mask-content .check-p span {
+    width: 49%;
+    display: inline-block;
+    text-align: center;
+    color: #d4361d;
+    font-size: 18px;
+  }
+  .check-p .del-com {
+    border-right: 1px solid #D1D1D1;
+  }
+  margin-top: 9px;
+  #file_upload {
+    .square(120px);
+    .border(1px; @border-base);
+    background: url('../images/add.png') center center no-repeat;
+  }
+}
+/*
+*模块：添加商品页面-商品属性
+*时间：20170512
+*作者：刘弘愿
+*/
+//商品属性区域样式
+.Classification {
+  background: url('../images/select-arrow.png') 95% 50% no-repeat;
+  background-size: 12px 6px;
+  &::-webkit-input-placeholder { /* WebKit browsers */
+    color: @gray-base;
+    color: #000 \0;
+  }
+  &:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+    color: @gray-base;
+    color: #000 \0;
+  }
+  &::-moz-placeholder { /* Mozilla Firefox 19+ */
+    color: @gray-base;
+    color: #000 \0;
+  }
+  &:-ms-input-placeholder { /* Internet Explorer 10+ */
+    color: @gray-base;
+    color: #000 \0;
+  }
+}
+.attribute-box {
+  margin-top: 52px;
+  &:nth-child(4) {
+    .mainFrom {
+      &:first-child {
+        margin-bottom: 26px;
+      }
+    }
+  }
+  .mainFrom {
+    margin-top: -26px;
+    &:first-child {
+      margin-bottom: 52px;
+    }
+    .mainLab {
+      color: @gray-base;
+      font-size: @font-size-base;
+      margin-left: 0;
+    }
+  }
+  div.inputbox_big {
+    max-width: 1360px;
+    margin-left: 100px;
+    min-height: 40px;
+
+    div.input-box {
+      .size(300px; 40px);
+      margin-bottom: 26px;
+
+    }
+    .add_inputbox {
+      .size(280px; 40px);
+      margin-left: 18px;
+      .border(1px; @blue-base);
+      font-size: @font-size-base;
+      color: @blue-base;
+      background: url('../images/add_inputbox.png') 30% center no-repeat;
+    }
+  }
+
+  img {
+    .square(12px);
+    display: block;
+    top: 15px;
+    right: 18px;
+  }
+}
+.ph_attr{
+  .mainFrom{
+    &:first-child{
+      margin-bottom: 26px;
+    }
+  }
+}
+.add_specifications, .table_save {
+  margin-left: 20px;
+  .size(100px; 30px);
+  background: @title-color;
+  color: @blue-base;
+  .border(1px; @blue-base);
+  &:hover {
+    background: @blue-base;
+    color: @title-color;
+  }
+}
+.add_specifications{
+  margin-left: 118px;
+}
+/*
+*模块：规格商品表格下文字描述
+*时间：20170515
+*作者：刘弘愿
+*/
+.ph_wareBox{
+  div{
+    margin-top: 10px;
+    margin-right: 9px;
+    span{
+      font-size: @font-size-base;
+      &:nth-child(even){
+        color:@err-color;
+        margin-right: 20px;
+      }
+      &:nth-child(odd),&:last-child{
+        color: @gray-base;
+        margin-right: 0;
+      }
+    }
+    &.dataTables_paginate{
+      span{
+        margin-right: 0;
+      }
+    }
+    &.dataTables_wrapper{
+      margin: 0;
+      padding-bottom: 15px;
+    }
+  }
+}
+.ph_tabScroll{
+  overflow-x: auto;
+}
+
+/*
+*模块：添加行业
+*时间：20170515
+*作者：刘弘愿
+*/
+.addIndustry{
+  .up-section,.z_file:first-child{
+    margin-left: 15px;
+  }
+  .agentdetail_img {
+    margin-left: 100px;
+  }
+
+}
+.addIndustry_save{
+  margin-left: 120px!important;
+}
+/*
+*模块：添加行业
+*时间：20170516
+*作者：刘弘愿
+*/
+#map_container{
+  margin-left: 118px;
+  .size(620px;400px);
+  .border(1px;@border-base);
+  -webkit-border-radius:6px;
+  -moz-border-radius:6px;
+  border-radius:6px;
+
+}
+
+#tipinput{
+  width:500px;
+}
+.linkage{
+  width: 140px!important;
+}
+.location_span{
+  line-height: 40px;
+  padding-left: 15px;
+  .size(620px;40px);
+  top:0;
+  left:0;
+  z-index: 1000;
+  background: #fafafa;
+  border-bottom:1px solid #dddddd;
+  -webkit-border-radius:6px 6px 0 0;
+  -moz-border-radius:6px 6px 0 0;
+  border-radius:6px 6px 0 0;
+}
+.imgupbox {
+  margin-bottom: -40px;
+  label{
+    height: 120px;
+    line-height: 120px;
+    margin-top: 36px;
+  }
+  .imgup-notice{
+    color:@gray-cont;
+  }
+}
+/*
+*模块：代理申请调整
+*时间：20170517
+*作者：刘弘愿
+*/
+
+.agency_applicationMainbox{
+  background: #ffffff;
+}
+/*
+*模块：营业执照、法人身份证、其他认证资料框架设置
+*时间：20170517
+*作者：刘弘愿
+*/
+.agency_application{
+  .upimg-div .up-section {
+    .size(200px;120px);
+  }
+  .img-box .upimg-div .z_file {
+    .size(200px;120px);
+  }
+
+  .up-section:first-child, .z_file:first-child {
+    margin-left: 15px;
+  }
+}
+.addIndustry_save {
+  margin-left: 120px !important;
+}
+/*
+*模块：代理申请页面验证码框
+*时间：20170517
+*作者：刘弘愿
+*/
+.ph_applyTxt{
+  &:extend(.loginBox .loginCon .loginConTxt all);
+  padding-left: 130px;
+  input[type="checkbox"]{
+    margin-right: 5px;
+    margin-top: -2px;
+    vertical-align: middle;
+  }
+}
+/*
+*模块：代理申请页面验证码框
+*时间：20170517
+*作者：刘弘愿
+*/
+.yzmTxt {
+  &:extend(.loginBox .loginCon .loginTxt all);
+  width:45%;
+}
+.yzmlabel{
+  margin-top: 10px;
+}
+//推广师页面下账号类型框样式
+//作者：刘弘愿 时间：20170518
+#accountType{
+  height:30px;
+  padding-left: 10px !important;
+}
+//发卡页面短信验证码框
+//作者：刘弘愿 时间：20170518
+.card_issuing{
+  width:410px!important;
+}
+.yzmlabel{
+  margin-top: 10px;
+}
+/*
+*模块：查看物流
+*时间：20170515
+*作者：梁彬
+*/
+.ph_logistics{
+  .border-bottom(1px;@border-base);
+  padding: 10px 0 20px 0;
+  p{
+    height: 40px;
+    line-height: 40px;
+    font-size: @font-size-base;
+    span{
+      float:left;
+      width: 100px;
+      height: 40px;
+      text-align: right;
+    }
+  }
+}
+.ph_logisticsList{
+  .relative;
+  padding-left: 24px;
+  border-left: 1px solid #eee;
+  margin: 30px 0 0 30px;
+  li{
+    .relative;
+    line-height: 40px;
+    font-size: @font-size-base;
+    .ph_logIcon{
+      display: block;
+      .absolute;
+      .square(18px);
+      top: 11px;
+      left: -34px;
+      background: url("../images/logIcon.png") center center no-repeat;
+    }
+    .ph_logImg{
+      background: url("../images/logIcon_h.png") center center no-repeat;
+    }
+  }
+  .ph_topbor,.ph_topbot{
+    display: block;
+    .absolute;
+    .square(20px);
+    left: -10px;
+    background: @title-color;
+  }
+  .ph_topbor{
+    top: 0;
+  }
+  .ph_topbot{
+    bottom: 0;
+  }
+}
+/*
+*模块：订单信息
+*时间：20170516
+*作者：梁彬
+*/
+.ph_infoFlow{
+  .relative;
+  .size(100%; auto);
+  margin: @margin-30  auto 0 auto;
+  .ph_infoLine{
+    .absolute;
+    .size(798px; 6px);
+    top: 12px;
+    left: 50%;
+    margin-left: -399px;
+    z-index: @zindex-navbar;
+    &:extend(.clearfix all);
+    .ph_fault{
+      float:left;
+      .size(266px; 6px);
+      background: @info-base;
+    }
+    .ph_green{
+      background: @blue-base;
+    }
+  }
+  .ph_infoList{
+    .relative;
+    .size(1060px; 100px);
+    margin: 0 auto;
+    z-index: @zindex-navbar-fixed;
+    &:extend(.clearfix all);
+    li{
+      float: left;
+      .size(25%; 100px);
+      text-align: center;
+      .ph_infoIco{
+        display: block;
+        .square(32px);
+        margin: 0 auto 15px auto;
+        background: url("../images/info_ico.png") 0 0 no-repeat;
+      }
+      .ph_infoPos{
+        background-position: 0 -32px;
+      }
+      .ph_infoTit{
+        line-height: 30px;
+        font-size: @font-size-base;
+        color: @gray-dark;
+        font-weight: 700;
+      }
+      .ph_infoDay{
+        line-height: 24px;
+        font-size: @font-size-small;
+        color: @gray-light;
+      }
+    }
+  }
+  .ph_infoLineTwo{
+    .size(266px; 6px);
+    margin-left: -133px;
+  }
+  .ph_infoListTwo{
+    .size(490px; 100px);
+    li{
+      .size(50%; 100px);
+    }
+  }
+}
+.ph_infoCon{
+  margin: @margin-20 0;
+  padding-bottom: @padding-20;
+  .border-bottom(1px; @border-base);
+  .ph_infoHome{
+    line-height: 40px;
+    font-size: @font-size-in;
+    color: @gray;
+  }
+  .ph_infoDel{
+    line-height: 40px;
+    font-size: @font-size-base;
+    color: @gray;
+  }
+  span{
+    display: inline-block;
+    margin-right: @margin-30;
+  }
+}
+.ph_infoWare{
+  margin-top: @margin-10;
+  p{
+    line-height: 30px;
+    font-size: @font-size-small;
+    &.ph_infoTotal{
+      margin-top: @margin-10;
+      font-size: @font-size-in;
+      text-align: right;
+    }
+    &.ph_infoLarge{
+      font-size: @font-size-large;
+    }
+  }
+}
+//订单付款
+.ph_payment{
+  padding:@padding-20 0;
+  line-height: 40px;
+  .ph_paymentTxt{
+    font-size: @font-size-large-user;
+  }
+}
+//付款方式
+.ph_methodBox{
+  padding: @padding-10 0;
+  p{
+    line-height: 40px;
+    font-size: @font-size-in;
+    color: @gray;
+    margin: @margin-10 0;
+    input[type="radio"]{
+      margin: 8px;
+      vertical-align: middle;
+    }
+    span{
+      font-size: @font-size-small;
+      color: @gray-cont;
+      margin-left: @margin-20;
+      &.require{
+        margin: 0 5px 0 0;
+        &:extend(.require all);
+      }
+      &.ph_setUpTxt{
+        font-size: @font-size-base;
+        margin: 0 20px 0 0;
+        color: @gray;
+      }
+      &.provingImg{
+        display: inline-block;
+        line-height: 40px;
+        padding: 0 5px;
+        margin-left: 10px;
+        a{
+          display: inline-block;
+          line-height: 40px;
+          color: @blue-base;
+          font-size: @font-size-base;
+        }
+      }
+      &.ph_carryTxt{
+        margin: 0  0 0 20px;
+        font-size: @font-size-base;
+        color: @gray;
+        display: inline-block;
+        line-height: 40px;
+      }
+    }
+    label{
+      display: inline-block;
+      .size(100px; 40px);
+      line-height: 40px;
+      font-size: @font-size-base;
+      text-align: right;
+    }
+    input[type="password"],
+    input[type="text"]{
+      display: inline-block;
+      .size(300px; 40px);
+    }
+  }
+}
+.ph_setUp{
+  p{
+
+  }
+}
+//提交订单 - 收货地址
+.ph_collect{
+  .border-bottom(1px; @tabel-border);
+  margin-bottom: @margin-10;
+  .size(100%; 150px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+//提交订单 - 新增收货地址
+.ph_distpicker{
+  &:extend(.clearfix all);
+  .ph_dist{
+    .left;
+    .size(27%; 30px);
+    line-height: 30px;
+    margin-left: 1.5%;
+  }
+}
+//提交订单 - 编辑商品数量
+.ph_spinnerBox{
+  .size(95%; 30px);
+  .decrease,
+  .increase{
+    margin: 0;
+    .square(20px);
+    .border(1px; @tabel-border);
+    background: none;
+    line-height: 10px;
+  }
+}
+/*
+*模块：帐户管理
+*时间：20170517
+*作者：梁彬
+*/
+//帐户余额
+.balanceCon{
+  line-height: 60px;
+  font-size:@font-size-large-box;
+}
+.ph_btnBor{
+  padding-bottom: 30px;
+  .border-bottom(1px; @border-base);
+}
+//安全管理
+.ph_tabBox{
+  .size(100%; 40px);
+  .border-bottom(1px; @border-base);
+  margin-top: 20px;
+  box-sizing: border-box;
+  .ph_tabLine{
+    .require;
+    .left;
+    .size(100px; 40px);
+    line-height: 40px;
+    text-align: center;
+    font-size: @font-size-in;
+    color: @gray;
+    .border-top-radius(@border-radius-large);
+    .border(1px; @border-base);
+    box-sizing: border-box;
+    margin-right: 10px;
+    cursor: pointer;
+    &.on{
+      color: @blue-base;
+      .border-bottom(1px; @title-color);
+    }
+  }
+}

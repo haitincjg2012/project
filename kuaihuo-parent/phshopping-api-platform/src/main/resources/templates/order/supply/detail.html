@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>订单信息</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--弹窗 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/layer/layer.css}">
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">订单管理</a>&nbsp;&gt;&nbsp;<a href="#">供货订单</a>&nbsp;&gt;&nbsp;<span>订单信息</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit no_border">
+            <h2>订单信息</h2>
+        </div>
+        <!--end 标题-->
+        <!--订单信息状态-->
+        <div class="ph_infoFlow">
+            <p class="ph_infoLine" th:if="${purchaseOrder.status != 4}">
+                <span th:if="${purchaseOrder.payTime != null}" class="ph_fault ph_green"></span>
+                <span th:if="${purchaseOrder.payTime == null}" class="ph_fault"></span>
+                <span th:if="${purchaseOrder.sendTime != null}" class="ph_fault ph_green"></span>
+                <span th:if="${purchaseOrder.sendTime == null}" class="ph_fault"></span>
+                <span th:if="${purchaseOrder.doneTime != null}" class="ph_fault ph_green"></span>
+                <span th:if="${purchaseOrder.doneTime == null}" class="ph_fault"></span>
+            </p>
+            <p class="ph_infoLine" th:if="${purchaseOrder.status == 4}">
+                <span th:if="${purchaseOrder.cancelTime != null}" class="ph_fault ph_green"></span>
+                <span th:if="${purchaseOrder.cancelTime == null}" class="ph_fault"></span>
+            </p>
+            <ul class="ph_infoList">
+                <li>
+                    <i th:if="${purchaseOrder.createTime != null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${purchaseOrder.createTime == null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">提交订单</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(purchaseOrder.createTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+                <li th:if="${purchaseOrder.status != 4}">
+                    <i th:if="${purchaseOrder.payTime != null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${purchaseOrder.payTime == null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">付款成功</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(purchaseOrder.payTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+                <li th:if="${purchaseOrder.status != 4}">
+                    <i th:if="${purchaseOrder.sendTime != null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${purchaseOrder.sendTime == null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">商品发货</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(purchaseOrder.sendTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+                <li th:if="${purchaseOrder.status != 4}">
+                    <i th:if="${purchaseOrder.doneTime != null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${purchaseOrder.doneTime == null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">收货完成</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(purchaseOrder.doneTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+                <li th:if="${purchaseOrder.status == 4}">
+                    <i th:if="${purchaseOrder.cancelTime != null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${purchaseOrder.cancelTime == null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">订单取消</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(purchaseOrder.cancelTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+            </ul>
+        </div>
+        <!--end 订单信息状态-->
+        <!--订单角色信息-->
+        <div class="ph_infoCon">
+            <p class="ph_infoHome"><span>进货商名称：</span><span th:text="${purchaseName}"></span></p>
+            <p class="ph_infoDel">
+                <span>联系人：<span th:text="${purchaseOrder.contacts}"></span></span>
+                <span>联系电话：<span th:text="${purchaseOrder.telPhone}"></span></span>
+                <span>收货地址：<span th:text="${purchaseOrder.address}"></span></span>
+            </p>
+        </div>
+        <div class="ph_infoCon">
+            <p class="ph_infoHome"><span>供货商名称：<span th:text="${senderName}"></span></span></p>
+            <p class="ph_infoDel" th:if="${purchaseOrder.status == 2 || purchaseOrder.status == 3}">
+                <span>联系人：<span th:text="${purchaseOrder.sendContacts}"></span></span>
+                <span>联系电话：<span th:text="${purchaseOrder.sendTelPhone}"></span></span>
+                <span>发货地址：<span th:text="${purchaseOrder.sendAddress}"></span></span>
+            </p>
+        </div>
+        <!--end 订单角色信息-->
+        <!--标题-->
+        <div class="ph_subTit no_border">
+            <h2 th:text="${supplerName}"></h2>
+        </div>
+        <!--end 标题-->
+        <!--商品信息-->
+        <div class="ph_wareBox ph_infoWare">
+            <p>订单号:<span th:text="${purchaseOrder.orderNo}"></span></p>
+            <table class="ph_wareList">
+                <thead>
+                    <tr>
+                        <th width="50">序号</th>
+                        <th>商品名称</th>
+                        <th>商品数量</th>
+                        <th>商品总额（元）</th>
+                        <th>物流总额（元）</th>
+                        <th>总金额（元）</th>
+                        <th>规格</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="product,productStat:${purchaseOrder.list}">
+                        <td th:text="${productStat.count}"></td>
+                        <td th:text="${product.productName}"></td>
+                        <td th:text="${product.productNum}"></td>
+                        <td th:text="${#numbers.formatDecimal(product.totalMoney,1,2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(product.totalFreight,1,2)}"></td>
+                        <td th:text="${#numbers.formatDecimal((product.totalFreight + product.totalMoney),1,2)}"></td>
+                        <td><a class="lookBtn ph_lookBtn" th:onclick="'getView(\'' + ${product.productName} + '\',\''+ ${product.subOrderId} + '\', \''+${product.productId}+'\', \'' + ${purchaseOrder.purchaseType} +'\');'">查看</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="ph_infoTotal ">商品总额：<span class="require" th:text="${#numbers.formatDecimal(purchaseOrder.money,1,2)}"></span>
+                &nbsp;&nbsp;&nbsp;&nbsp;快递费用：
+                <input class="require" type="text" style="width:10%;" th:if="${type == 1 && purchaseOrder.status == 0}"
+                       id="freight" th:value="${#numbers.formatDecimal(purchaseOrder.freight,1,2)}"/>
+                <sapn class="require" th:if="${type == 2 || purchaseOrder.status != 0}" id="freight" th:text="${#numbers.formatDecimal(purchaseOrder.freight,1,2)}" ></sapn>
+            </p>
+            <input type="hidden" id="oldFreight" th:value="${#numbers.formatDecimal(purchaseOrder.referenceFreight,1,2)}"/>
+                <p class="ph_infoTotal ph_infoLarge">总计：<span class="require" th:text="${#numbers.formatDecimal(purchaseOrder.totalCost,1,2)}"></span></p>
+        </div>
+        <!--end 商品信息-->
+        <!--返回按钮-->
+        <div class="PopupBtn">
+            <input name="" th:if="${type == 1 && purchaseOrder.status == 0}" type="button" th:onclick="'saveFreight(\''+${purchaseOrder.id} + '\');'" value="保存">
+            <input name="" type="button" th:onclick="'returnList();'" value="返回">
+        </div>
+        <!--end 返回按钮-->
+    </div>
+    <!--end 主体内容-->
+</div>
+
+<!--type-->
+<input id="type" type="hidden"  th:value="${type}">
+
+<!--遮罩层-->
+<div class="maskBox"></div>
+<!--end 遮罩层-->
+
+<!--查看规格弹窗-->
+<div class="PopupBox" id="ph_lookBox">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="lookCon ph_wareBox">
+            <table class="ph_wareList" id="sku">
+                <thead>
+                <tr>
+                    <th>规格</th>
+                    <th>单价（元）</th>
+                    <th>数量</th>
+                    <th>商品金额（元）</th>
+                    <th>物流费用（元）</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <p class="ph_lookTxt">商品总量：<span class="require">5</span>&nbsp;&nbsp;
+            商品总额：<span class="require">19.00</span>&nbsp;&nbsp;
+            物流总费：<span class="require">2.00</span>&nbsp;&nbsp;
+            总金额：<span class="require">21.00元</span>
+        </p>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 查看规格弹窗-->
+
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<!--弹窗-->
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/common/number.js}"></script>
+<script type="text/javascript">
+    $(function () {
+        $('#freight').on({
+            keyup:function () {
+                check(this);
+            },
+            change:function () {
+                check(this);
+            },
+            blur:function () {
+                check(this);
+            }
+        });
+
+    });
+
+
+    function check(obj){
+        //得到第一个字符是否为负号
+        var t = obj.value.charAt(0);
+        //先把非数字的都替换掉，除了数字和.
+        obj.value = obj.value.replace(/[^\d\.]/g,'');
+        //必须保证第一个为数字而不是.
+        obj.value = obj.value.replace(/^\./g,'');
+        //保证只有出现一个.而没有多个.
+        obj.value = obj.value.replace(/\.{2,}/g,'.');
+        //保证.只出现一次，而不能出现两次以上
+        obj.value = obj.value.replace('.','$#$').replace(/\./g,'').replace('$#$','.');
+        obj.value = obj.value.replace(/^(\-)*(\d+)\.(\d\d).*$/,'$1$2.$3');//只能输入两位小数 
+        //如果第一位是负号，则允许添加
+        if(t == '-'){
+            return;
+        }
+
+    }
+
+
+    /**
+     * 查看规格属性
+     * @param product
+     */
+    function getView(productName,subOrderId,productId,type) {
+        var html = '',
+            price,
+            productInfo;
+        $.ajax({
+            async:false,
+            url:"/web/order/purchase/sku",
+            data:{productId:productId,subOrderId:subOrderId},
+            type:"POST",
+            dataType:"json",
+            success:function(data){
+                if(data.success){
+                    $.each(data.data,function (i,item) {
+                        price = 0
+                        if (type == 0) {
+                            price = item.purchasePrice / 10000.0;
+                        } else if (type == 1) {
+                            price = item.settlementPrice / 10000.0;
+                        }
+                        html += '<tr>';
+                        html += '<td title="' + item.skuName +' ">' + item.skuName + '</td>';
+                        html += '<td>' + toDecimal(price)+ '</td>';
+                        html += '<td>' + item.skuNum+ '</td>';
+                        html += '<td>' + toDecimal(price * item.skuNum) +'</td>';
+                        var freight = 0.00;
+                        if (!item.numberOfPackages || (item.skuNum < item.numberOfPackages)) {
+                            freight = toDecimal(item.skuFreight / 10000.0 * item.skuNum);
+                        }
+                        html += '<td>' + freight +'</td>';
+                        html += '</tr>';
+                        if (i==0) {
+                            productInfo = item;
+                        }
+                    });
+                    var span = $('.ph_lookTxt').find('span');
+                    span.eq(0).text(productInfo.productNum);
+                    span.eq(1).text(toDecimal(productInfo.totalMoney/10000));
+                    span.eq(2).text(toDecimal(productInfo.totalFreight/10000));
+                    span.eq(3).text(toDecimal((productInfo.totalMoney + productInfo.totalFreight)/10000));
+                    $('#sku').find('tbody').html(html);
+                    layer.open({
+                        type: 1,
+                        title: productName,
+                        closeBtn : 0,
+                        area: ['666px','400px'],
+                        btn:['取消'],
+                        btnAlign: 'c',
+                        content: $('#ph_lookBox')
+                    });
+                }else{
+                    layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                }
+            }
+        });
+
+    }
+    
+    function returnList() {
+        var type = $('#type').val();
+        if (type == 1) {
+            window.location.href = "/web/order/supply/toListPage";
+        } else if (type == 2) {
+            window.location.href = "/web/order/supply/refund/toListPage";
+        }
+    }
+    
+    function saveFreight(orderId) {
+        var old = $('#oldFreight').val();
+        var new1 = $('#freight').val();
+
+
+        if (parseFloat(new1) > parseFloat(old) ) {
+            layer.alert("物流费用不能超过" + old + "元", {icon: 2,btnAlign: 'c', closeBtn : 0});
+            $('#freight').val(old);
+            return;
+        }
+        $.ajax({
+            async:false,
+            url:"/web/order/supply/updateFreight",
+            data:{orderId:orderId,freight:new1},
+            type:"POST",
+            dataType:"json",
+            success:function(data){
+                if(data.success){
+                    window.location.href = "/web/order/supply/toListPage";
+                    layer.alert(data.message, {icon: 1,btnAlign: 'c', closeBtn : 0});
+                }else{
+                    layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                }
+            }
+        });
+    }
+    
+</script>
+</body>
+</html>

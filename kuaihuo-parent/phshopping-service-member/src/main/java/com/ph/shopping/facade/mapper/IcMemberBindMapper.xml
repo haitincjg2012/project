@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IcMemberBindMapper">
+
+    <sql id="baseSelect">
+        SELECT
+        b.id,
+        b.icCardId,
+        b.memberId,
+        b.merchantId,
+        b.createTime,
+        b.updateTime,
+        b.status,
+        b.reportTime,
+        b.createrid,
+        i.innerCode,
+        i.outerCode,
+        i.isDelete,
+        m.id as memberId,
+        m.memberName,
+        m.telPhone
+    </sql>
+
+    <sql id="baseCondition">
+        <if test="telPhone != null and telPhone != ''">
+            and m.telPhone = #{telPhone}
+        </if>
+        <if test="createrId != null">
+            and b.createrId = #{createrId}
+        </if>
+        <if test="createTime != null">
+            and b.createTime = #{createTime}
+        </if>
+        <if test="updateTime != null">
+            and b.updateTime = #{updateTime}
+        </if>
+        <if test="icCardId != null">
+            and b.icCardId = #{icCardId}
+        </if>
+        <if test="memberId != null">
+            and b.memberId = #{memberId}
+        </if>
+        <if test="merchantId != null">
+            and b.merchantId = #{merchantId}
+        </if>
+        <if test="status !=null">
+            <choose>
+                <when test="status==0">
+                    and (b.status = 0 and i.isDelete =1)
+                </when>
+                <when test="status==1">
+                    and b.status = 1
+                </when>
+                <when test="status==2">
+                    and i.isDelete = 2
+                </when>
+            </choose>
+        </if>
+        <if test="innerCode != null and innerCode != ''">
+            and i.innerCode = #{innerCode}
+        </if>
+        <if test="outerCode != null and outerCode != ''">
+            and i.outerCode = #{outerCode}
+        </if>
+        order by b.createTime desc
+    </sql>
+
+    <!-- 查询用户绑定的会员卡信息列表 -->
+    <select id="getMemberBindCardList" parameterType="com.ph.shopping.facade.member.dto.MemberCardInfoDTO"
+            resultType="com.ph.shopping.facade.member.vo.MemberCardInfoVO">
+        <include refid="baseSelect"/>
+        FROM
+        ph_member_ic_card_bind b
+        LEFT JOIN ph_member m on m.id = b.memberId
+        LEFT JOIN ph_member_ic_card_info i ON b.icCardId = i.id
+        WHERE
+        m.status != 1
+        and
+        i.isDelete !=0
+        <include refid="baseCondition"/>
+    </select>
+
+
+    <!-- 通过状态和code查找会员卡-->
+    <select id="getBindMemberCardByCodeAndStatus" parameterType="com.ph.shopping.facade.member.dto.MemberCardInfoDTO"
+            resultType="int">
+        SELECT
+        count(1)
+        FROM
+        ph_member_ic_card_bind b
+        LEFT JOIN ph_member_ic_card_info i ON b.icCardId = i.id
+        WHERE
+        i.isDelete != 0
+        <if test="outerCode != null and outerCode != ''">
+            and i.outerCode = #{outerCode}
+        </if>
+        <if test="innerCode != null and innerCode != ''">
+            and i.innerCode = #{innerCode}
+        </if>
+        <if test="status != null">
+            and b.status = #{status}
+        </if>
+    </select>
+</mapper>

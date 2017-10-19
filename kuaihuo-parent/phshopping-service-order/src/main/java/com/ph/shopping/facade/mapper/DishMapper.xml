@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.DishMapper">
+
+	<sql id="where_dish_saleOrcancel_sql">
+		<if test="sort == 2">
+			order by pd.created_time desc
+		</if>
+		<if test="sort == 3">
+			order by pd.created_time asc
+		</if>
+		<if test="sort == 4">
+			order by pd.saleNum desc
+		</if>
+		<if test="sort == 5">
+			order by pd.saleNum asc
+		</if>
+		<if test="sort == 6">
+			order by pd.dCount desc
+		</if>
+		<if test="sort == 7">
+			order by pd.dCount asc
+		</if>
+	</sql>
+
+	<!-- 商品出售中列表销售中或下架的 默认列表显示的是每个商品时间最早的 isDelete : 0出售中,1已下架 -->
+	<select id="getDishsSaleOrCancelList" resultType="Map"
+		parameterType="Map">
+		SELECT
+		a.address,       	 	<!-- 商品默认的图片 -->
+		pd.`id` AS pid,							<!--商品id -->
+		pd.`dishName`,							<!--商品名称 -->
+		ROUND(pd.`money`,2) AS price,	<!--商品销售价格 -->
+		IFNULL(pd.`saleNum`,0) AS salenum,		<!--商品销量 -->
+		IFNULL(pd.`dCount`,0) AS dCount,			<!--库存 -->
+		pd.`isDelete`,							<!--商品状态 -->
+		MIN(pd.`created_time`) AS createdtime,   <!-- 创建时间 -->
+		pdt.typeName,
+		pd.description
+		FROM ph_dish_attachment a
+		inner join ph_dish
+		pd ON pd.id = a.dishId
+		LEFT JOIN ph_merchant pm ON
+		pm.id=pd.`merchantId`
+		LEFT JOIN ph_dish_type pdt on pdt.id =
+		pd.dishTypeId
+		WHERE pd.`merchantId`= #{merchantid} AND
+		pd.`isDelete`=#{isDelete} and
+		pd.type=#{type} GROUP BY pd.`id`
+		<include refid="where_dish_saleOrcancel_sql"></include>
+
+	</select>
+
+	<!-- <select id="getDishById" parameterType="Long" resultMap="dishResultMap"> 
+		SELECT * FROM ph_dish pd WHERE pd.id=#{id} </select> -->
+	<!-- 商品的批量上下架 -->
+	<update id="dishBatchSaleOrCancel">
+
+		<if test="dishIds != null ">
+			<if test="isDelete!=null">
+				UPDATE ph_dish pd SET pd.isDelete=#{isDelete}
+				WHERE pd.id IN
+				<foreach collection="dishIds" item="dishId" open="(" close=")"
+					separator=",">
+					#{dishId}
+				</foreach>
+				AND pd.merchantId=#{merchantid}
+			</if>
+		</if>
+	</update>
+	<!-- 添加商品 -->
+	<insert id="addDish" useGeneratedKeys="true" keyProperty="id">
+		INSERT
+		INTO ph_dish
+		(description,dishName,money,merchantId,dishTypeId,isDelete,type,saleNum,moneyUnit)values(#{description},#{dishName},#{money},#{merchantId},#{dishTypeId},#{isDelete},#{type},#{saleNum},#{moneyUnit})
+	</insert>
+
+	<!-- 添加图片 -->
+	<insert id="insertList">
+		<!-- INSERT INTO ph_dish_attachment( address,dishId ) VALUES <foreach collection="list" 
+			item="item" separator=","> ( #{item} ) </foreach> -->
+		INSERT INTO ph_dish_attachment(address,dishId) VALUES(#{trim},#{id})
+	</insert>
+
+	<select id="getDishtypeList" resultType="cm.ph.shopping.facade.order.vo.DishTypeVO">
+		SELECT pdt.* FROM
+		ph_dish_type pdt LEFT JOIN ph_merchant pm ON pm.id=pdt.merchantid
+		WHERE pdt.merchantid=#{0} AND pdt.type=#{1}
+	</select>
+
+	<select id="getDishList" resultType="cm.ph.shopping.facade.order.vo.DishVO">
+		SELECT
+		pd.dishName,pd.isDelete,pdt.typeName,a.address,pd.money FROM ph_dish
+		pd
+		LEFT JOIN ph_dish_type pdt ON pdt.id = pd.dishTypeId
+		LEFT JOIN
+		ph_dish_attachment a on pd.id = a.dishId
+		WHERE pd.merchantId =
+		#{merchantid}
+		AND pd.dishTypeId =#{dishTypeId}
+		AND pd.type = #{type} GROUP BY
+		a.dishId
+	</select>
+	<select id="getDishTypeById" resultType="cm.ph.shopping.facade.order.vo.DishTypeVO"
+		parameterType="Long">
+		SELECT pdt.* FROM ph_dish_type pdt WHERE
+		pdt.id=#{dishTypeId}
+	</select>
+
+	<insert id="addDishType" parameterType="cm.ph.shopping.facade.order.vo.DishTypeVO">
+		INSERT INTO ph_dish_type
+		(merchantId,typeName,type) values (#{merchantId},#{typeName},#{type})
+	</insert>
+	<!-- 修改商品 -->
+	<update id="UpdateDish">
+		UPDATE ph_dish
+		<set>
+			<if test="description!=null">
+				description=#{description},
+			</if>
+			<if test="dishName!=null">
+				dishName=#{dishName},
+			</if>
+			<if test="money!=null">
+				money=#{money},
+			</if>
+			<if test="dishTypeId!=null">
+				dishTypeId=#{dishTypeId},
+			</if>
+			<if test="moneyUnit!=null">
+				moneyUnit=#{moneyUnit}
+			</if>
+		</set>
+		where id =#{id}
+	</update>
+
+	<!-- 修改餐位图片 -->
+	<update id="updateList">
+		update ph_dish_attachment
+		<set>
+			<if test="trim != null">
+				address=#{trim},
+			</if>
+			<if test="id != null">
+				dishId=#{id}
+			</if>
+		</set>
+		where dishId=#{id}
+	</update>
+
+	<!-- 分类至 ids是多个商品，dishTypeId是唯一的 -->
+	<update id="updateClassifyTo">
+		UPDATE ph_dish SET dishTypeId = #{0} WHERE id =#{1}
+		<!-- <foreach collection="list" item="item" index="index" open="(" separator="," 
+			close=")" > #{item} </foreach> -->
+	</update>
+
+	<update id="updateTypeName">
+		update ph_dish_type set typeName =#{1} where id=#{0}
+	</update>
+
+
+	<delete id="deleteTypeId">
+		DELETE FROM ph_dish_type WHERE id =#{id}
+	</delete>
+
+	<select id="findDishById" resultType="cm.ph.shopping.facade.order.vo.DishVO">
+		SELECT
+		ph_dish.id,
+		ph_dish.dishName,
+		ph_dish.merchantId,
+		ph_dish.imgId,
+		ph_dish.money,
+		ph_dish.dCount,
+		ph_dish.dishTypeId,
+		ph_dish.imgAddress,
+		ph_dish.type,
+		ph_dish.saleNum,
+		ph_dish.hopeTime,
+		ph_dish.isDelete
+		FROM
+		ph_dish
+		WHERE id=#{id}
+	</select>
+
+	<select id="findDistOneId" resultType="cm.ph.shopping.facade.order.dto.DishDTO">
+		SELECT
+		d.moneyUnit,
+		t.typeName,
+		a.address imgAddress,
+		d.id,d.saleNum,d.type,d.dishName,d.hopeTime,d.money,d.description,d.dishTypeId
+		FROM
+		ph_dish_attachment a
+		INNER JOIN ph_dish d ON d.id = a.dishId
+		INNER
+		JOIN ph_dish_type t on d.dishTypeId= t.id
+		WHERE d.type = 0 AND d.id
+		=#{id} GROUP BY id
+
+
+	</select>
+	<!-- 查询出图片集合 -->
+	<select id="fingImgList" resultType="java.lang.String">
+		SELECT
+		a.address
+		FROM
+		ph_dish_attachment a
+		INNER JOIN ph_dish d ON d.id = a.dishId
+		WHERE
+		dishId = #{dishId}
+	</select>
+	<delete id="deleteImg">
+		delete from ph_dish_attachment WHERE dishid =#{id}
+	</delete>
+	<select id="getDishTypeName" 
+		resultType="cm.ph.shopping.facade.order.vo.DishTypeVO">
+		select * from ph_dish_type where typeName =#{typeName} and merchantId=#{merchantId} and type=#{type}
+	</select>
+</mapper>

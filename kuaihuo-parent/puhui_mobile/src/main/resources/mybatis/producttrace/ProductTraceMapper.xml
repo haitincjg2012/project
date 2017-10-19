@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.producttrace.ProductTraceDao">
+
+    <resultMap id="BaseResultMap" type="com.alqsoft.vo.ProductTraceVO" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="address" property="address" jdbcType="VARCHAR" />
+        <result column="content" property="content" jdbcType="VARCHAR" />
+        <result column="orderNo" property="orderNo" jdbcType="VARCHAR" />
+        <result column="product_trace_id" property="productTraceId" jdbcType="BIGINT" />
+        <result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <select id="getTrace" resultMap="BaseResultMap"  parameterType="java.lang.String">
+        SELECT pt.content,pt.created_time,pt.order_no,pt.id FROM alq_product_trace pt
+        WHERE  pt.order_no = #{orderNo,jdbcType=VARCHAR}   ORDER BY pt.created_time  DESC
+
+    </select>
+
+    <select id="getAttachmentList" resultType="java.util.Map" parameterType="java.lang.Long">
+
+        SELECT address FROM alq_product_trace_attachment WHERE product_trace_id = #{pid,jdbcType=BIGINT}
+
+    </select>
+</mapper>

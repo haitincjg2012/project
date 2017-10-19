@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+<meta charset="UTF-8">
+<title>安全管理</title>
+<link th:href="@{/static/css/common/models.css}" type="text/css"
+	rel="stylesheet" />
+</head>
+<body>
+	<div class="MainContent">
+		<!--面包屑-->
+		<div class="current">
+			当前位置：<a href="#">帐户管理</a>&nbsp;&gt;&nbsp;<span>安全管理</span>
+		</div>
+		<!--end 面包屑-->
+		<!--主体内容-->
+		<div class="MainCont">
+			<!--标题-->
+			<div class="ph_subTit no_border">
+				<h2>安全管理</h2>
+			</div>
+			<!--end 标题-->
+			<!--修改密码-->
+			<div class="ph_tabBox">
+				<span id="loginPwd" class="ph_tabLine" onclick="setLoginType()">登录密码</span><!--<span
+					id="payPwd" class="ph_tabLine" onclick="setPayType()">支付密码</span>-->
+			</div>
+			<div class="ph_tabCon">
+				<!-- <div class="ph_methodBox ph_setUp hide">
+						<p class="ph_methPass">
+							<label for=""><span class="require">*</span>新密码：</label> <input
+								name="" type="password">
+						</p>
+						<p class="ph_methPass">
+							<label for=""><span class="require">*</span>确认新密码：</label> <input
+								name="" type="password">
+						</p>
+						<p class="ph_methPass">
+							<label for=""> <span class="require">*</span>验证码：
+							</label> <input name="" type="text"> <span class="provingImg"><a
+								class="provingTxt realNameCode" href="javascript:void(0);">获取验证码</a></span>
+						</p>
+					</div> -->
+				<div class="ph_methodBox ph_setUp hide">
+					<form id="pwdForm">
+					<p class="ph_methPass" style="display: none;">
+						<input id="roleCode" name="roleCode" type="text" th:value="${roleCode}">
+						<input id="telPhone" name="telPhone" type="text" th:value="${telPhone}">
+					</p>
+						<p class="ph_methPass" style="display: none;">
+							<label for=""><span class="require">*</span>密码类型：</label> <input
+								id="type" name="type" type="text" value=1 readonly="readonly">
+						</p>
+						<p class="ph_methPass">
+							<label for=""><span class="require">*</span>新密码：</label> <input
+								id="newPwd" name="newPwd" type="password">
+						</p>
+						<p class="ph_methPass">
+							<label for=""><span class="require">*</span>确认新密码：</label> <input
+								id="confirmPwd" name="confirmPwd" type="password">
+						</p>
+						<p class="ph_methPass">
+							<label for=""> <span class="require">*</span>验证码：
+							</label> <input id="smsCode" name="smsCode" type="text"> 
+							<span class="provingImg"><input class="provingTxt ph_noBor" id="smsId" type="button" value="获取验证码" onclick="getSmsCode()">
+						</span>
+						</p>
+					</form>
+				</div>
+			</div>
+			<!--end 修改密码-->
+			<!--返回按钮-->
+			<div class="PopupBtn btnLeft">
+				<input class="submit" id="savePwd" name="savePwd" type="button"
+					value="保存" onclick="savePwd()">
+			</div>
+			<!--end 返回按钮-->
+		</div>
+		<!--end 主体内容-->
+	</div>
+
+	<script type="text/javascript"
+		th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+	<!--弹窗-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/layer/layer.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/util.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/readTime.js}"></script>
+	
+	<script type="text/javascript"
+		th:src="@{/static/js/account/account_safety.js}"></script>
+	<script>
+		$(function() {
+			/*tab标签切换*/
+			function tabs(tabTit, on, tabCon) {
+				$(tabCon).each(function() {
+					$(this).children().eq(0).show();
+				});
+				$(tabTit).each(function() {
+					$(this).children().eq(0).addClass(on);
+				});
+				$(tabTit).children().click(function() {
+					$(this).addClass(on).siblings().removeClass(on);
+					var index = $(tabTit).children().index(this);
+					$(tabCon).children().eq(index).show().siblings().hide();
+				});
+			}
+			tabs(".ph_tabBox", "on", ".ph_tabCon");
+		});
+	</script>
+</body>
+</html>

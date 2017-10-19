@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.CommunityMapper">
+	<!-- 查询社区列表数据 -->
+	<select id="selectCommunityListByPage" parameterType="com.ph.shopping.facade.system.dto.CommunityQueryDTO" resultType="com.ph.shopping.facade.system.vo.CommunityInfoVO">
+		SELECT
+			id,
+			provinceName,
+			cityName,
+			countyName,
+			townName
+		FROM
+			ph_position 
+		<where>
+			<if test="provinceId != null">
+				provinceId = #{provinceId}
+			</if>
+			<if test="cityId != null">
+				and cityId = #{cityId}
+			</if>
+			<if test="countyId != null">
+				and countyId = #{countyId}
+			</if>
+			<if test="townName != null and townName != ''">
+				and townName like CONCAT('%',#{townName},'%')
+			</if>
+		</where>
+		ORDER BY id DESC
+	</select>
+	<!-- 根据区ID 得到最大的社区id -->
+	<select id="selectMaxTownIdByCountyId" parameterType="java.lang.Long" resultType="java.lang.Long">
+		SELECT
+			(max(townId) + 1000) townId
+		FROM
+			ph_position
+		WHERE
+			countyId = #{countyId}
+		GROUP BY
+			countyId
+	</select>
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.bankcard.BankCardDao">
+	
+
+	<select id="getBankCardByHunterId" resultType="Map" parameterType="map">
+		SELECT b.id AS id, b.bank AS bank,b.bank_no AS bankNo,b.`name` AS `name`,b.card AS card,b.bank_addr AS bankAddr
+		FROM alq_bank_card AS b WHERE b.status=1 AND b.hunter_id=#{hunterId}
+	</select>
+	
+	<select id="getBankCardById" resultType="com.alqsoft.entity.bankcard.BankCard" parameterType="Long">
+		SELECT * FROM alq_bank_card AS b WHERE b.id=#{id}
+	</select>
+	
+	<select id="getBankCardCount"  parameterType="Long"  resultType="Int">
+		SELECT count(*)   FROM alq_bank_card  
+		WHERE  DATE_FORMAT(created_time,"%Y-%m")=DATE_FORMAT(now(),"%Y-%m") 
+			   AND hunter_id=#{hunterId}  
+			   AND status=0
+	</select>
+	
+	<select id="getHunterBankCardMsg" resultType="Map" parameterType="map">
+		SELECT b.id,b.bank,b.bank_no AS bankNo,ROUND(h.left_deposit_money/100,2) AS leftDepositMoney 
+		FROM alq_bank_card AS b,alq_hunter AS h 
+		WHERE b.hunter_id=h.id AND b.`status`=1 AND h.id=#{hunterId}
+	</select>
+	
+</mapper>

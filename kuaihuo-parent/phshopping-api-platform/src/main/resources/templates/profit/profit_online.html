@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>线上订单</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--日期  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/datepicker/css/bootstrap-datepicker.css}">
+</head>
+<body>
+<div class="MainContent">
+      <!--面包屑-->
+    <div class="current">当前位置：<a href="#">订单分润</a>&nbsp;&gt;&nbsp;<span>线上订单</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+           <h2>线上订单</h2>
+           <shiro:hasPermission name="onLineOrderProfitEXCEL">
+            	<div class="ph_snbBtn"><input name="" type="button" th:onclick="'exportExcel();'" value="导出"></div>
+           </shiro:hasPermission>
+        </div>
+        <!--end 标题-->
+          <!--筛选条件-->
+        <shiro:hasPermission name="onLineOrderProfitQuery">
+	        <div class="ph_screen">
+	            <table class="ph_tableBox">
+	                <tr>
+	                    <th>订单时间：</th>
+	                    <td colspan="3">
+	                        <p class="dayBox"><input class="start_rise date start"  id="startOrderTime" type="text" >&nbsp;-&nbsp;<input class="start_rise date end"  id="stopOrderTime" type="text" ></p>
+	                    </td>
+	                    <th>分润时间：</th>
+	                    <td colspan="3">
+	                        <p class="dayBox"><input class="start_rise date start"  id="startProfitTime" type="text" >&nbsp;-&nbsp;<input class="start_rise date end"  id="stopProfitTime" type="text" ></p>
+	                    </td>
+	                </tr>
+	                <tr>
+	                    <th>订单号：</th>
+	                    <td colspan="3"><input name="orderNo" id="orderNo" type="text"></td> 
+	                    <td colspan="2">
+	                        <input name="" type="button" th:onclick="'query();'" value="查询"><input name="" th:onclick="'reset();'" type="button" value="重置">
+	                    </td>
+	                </tr>
+	            </table>
+	        </div>
+        </shiro:hasPermission>
+        <!--商品列表-->
+        <div class="ph_wareBox ph_tabScroll">
+            <table class="ph_wareList" id="purchaseOrderProfit">
+            </table>
+        </div>
+        <!--end 商品列表-->
+        <!--分页-->
+        <!--end 分页-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<!--遮罩层-->
+<div class="maskBox"></div>
+<!--end 遮罩层-->
+<!--导出start-->
+<div hidden>
+    <form action="/web/onLineOrderProfit/getOnLineOrderProfitEXCEL"  id="orderExport" method="get">
+        <input type="hidden" name="startOrderTime" value="" id="e_orderTimeStr"/>
+        <input type="hidden" name="stopOrderTime" value="" id="e_orderTimeEnd"/>
+        <input type="hidden" name="startProfitTime" value="" id="e_profitTimeStr"/>
+        <input type="hidden" name="stopProfitTime" value="" id="e_profitTimeEnd"/>
+        <input type="hidden" name="orderNo" value="" id="e_orderNo"/>
+    </form>
+</div>
+<!--导出end-->
+
+
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!--分页-->
+<script type="text/javascript"   th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+
+<!--日期控件-->
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/bootstrap-datepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.timepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.datepair.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/datepicker.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    var  tb;
+    $(function() {
+        var Popupe = new PopupBase();
+        Popupe.show('.Js_deliver', '.maskBox,.deliverBox');
+        Popupe.show('.Js_refund', '.maskBox,.Js_refundBox');
+        Popupe.show('.Js_btn', '.maskBox,.DeterBox');
+        Popupe.show('.Js_refunddeta', '.maskBox,.Js_refundDetaBox');
+        Popupe.showHide('.subQuemit','.refundBox','.SucBox');
+        Popupe.hide('.close', '.maskBox,.DeterBox,.SucBox,.deliverBox,.Js_refundBox,.Js_refundDetaBox');
+
+        //分页
+        tb=$("#purchaseOrderProfit").DataTable({
+            "bServerSide": true,
+            "sPaginationType": "full_numbers",
+            "bJQueryUI": true,
+            "sDom": '<"">t<"F"ip>',
+            "sAjaxSource": "/web/onLineOrderProfit/onLineOrderProfitList", //ajax调F用接口
+            "aoColumnDefs": [{sDefaultContent: '',aTargets: [ '_all' ]}],
+            "aoColumns": [
+            	{ "sWidth":"50px","sTitle" : "序号","mData": "id","sClass":"sClass" },
+            	{ "sWidth":"150px","sTitle" : "订单时间","mData": "orderTime","sClass":"sClass" },
+            	{ "sWidth":"150px","sTitle" : "分润时间","mData": "createTime","sClass":"sClass" },
+                { "sWidth":"225px","sTitle" : "订单号","mData": "orderNo","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "市代企业","mData": "cityAgentName","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "县代企业","mData": "countyAgentName","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "区代企业","mData": "townAgentName","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "商户名称","mData": "merchantName","sClass":"sClass" },
+                
+                { "sWidth":"120px","sTitle" : "市推名称","mData": "cityPromoterName","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "县推名称","mData": "countyPromoterName","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "区推名称","mData": "townPromoterName","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "商推名称","mData": "merchantPromoterName","sClass":"sClass" },
+                
+                { "sWidth":"120px","sTitle" : "商品金额","mData": "productMoney1","sClass":"sClass" },
+                
+                { "sWidth":"120px","sTitle" : "结算成本","mData": "settlementPrice1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "物流费用","mData": "freight1","sClass":"sClass" },
+                
+                
+                
+                { "sWidth":"120px","sTitle" : "管理费","mData": "chargeFee1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "普惠管理费","mData": "phChargeFee1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "易商通管理费","mData": "ystChargeFee1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "市级代理分润","mData": "cityAgentProfit1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "县级代理分润","mData": "countyAgentProfit1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "社区代理分润","mData": "townAgentProfit1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "市推分润","mData": "cityPromoterProfit1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "县推分润","mData": "countyPromoterProfit1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "社推分润","mData": "townPromoterProfit1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "商推分润","mData": "merchantPromoterProfit1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "管理费支出合计","mData": "chargeProfitTotal1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "管理费剩余","mData": "chargeProfitRemain1","sClass":"sClass" },
+                
+                { "sWidth":"120px","sTitle" : "商户费用","mData": "merchantChainProfit1","sClass":"sClass" },
+                
+                { "sWidth":"120px","sTitle" : "供应链利润","mData": "chainProfit1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "普惠供应链利润","mData": "phIncome1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "易商通供应链收入","mData": "ystIncome1","sClass":"sClass" },
+                
+                { "sWidth":"120px","sTitle" : "市代供应链分润","mData": "cityAgentChainProfit1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "县代供应链分润","mData": "countyAgentChainProfit1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "社代供应链分润","mData": "townAgentChainProfit1","sClass":"sClass" },
+               
+                
+               
+              
+                { "sWidth":"120px","sTitle" : "供应链支出合计","mData": "chainTotal1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "供应链剩余","mData": "chainRemain1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "易商通总余","mData": "ystRemain1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "普惠总余","mData": "phRemain1","sClass":"sClass" },
+                
+                
+            ],
+            "oLanguage" : {
+                "sProcessing" : "数据加载中······",
+                "sLengthMenu" : "显示 _MENU_ 条记录",
+                "sZeroRecords" : "没有您要搜索的内容！",
+                "sEmptyTable" : "列表中无数据存在！",
+                "sInfo" : "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+                "sInfoEmpty" : "显示 0 到 0 条记录",
+                "sInfoFiltered" : "数据列表中共  _MAX_ 条记录",
+                "oPaginate" : {
+                    "sFirst" : "首页",
+                    "sPrevious" : "上一页",
+                    "sNext" : "下一页",
+                    "sLast" : "末页"
+                }
+            },
+            "fnServerData" : function ( sSource, aoData, fnCallback, oSettings ) {
+                oSettings.jqXHR = $.ajax( {
+                    "dataType" 	: 'json',
+                    "type" 		: "POST",
+                    "async"     : 'false',
+                    "url" 		: sSource,
+                    "data" 		: {
+                        'pageNum': (aoData[3].value/aoData[4].value)+1,
+                        'pageSize' :  aoData[4].value,
+                        'startOrderTime'  :  $("#startOrderTime").val(),
+                        'stopOrderTime' : $("#stopOrderTime").val(),
+                        'startProfitTime'  :  $("#startProfitTime").val(),
+                        'stopProfitTime' : $("#stopProfitTime").val(),
+                        'orderNo' : $('#orderNo').val(),
+                    },
+                    "success"	: fnCallback
+                } );
+            },
+            "fnDrawCallback" : function(){
+            	var api = this.api();
+          	　　var startIndex= api.context[0]._iDisplayStart;//获取到本页开始的条数
+          	　　api.column(0).nodes().each(function(cell, i) {
+          	　　　　cell.innerHTML = startIndex + i + 1;
+          	　　});
+            }
+        });
+    });
+
+    //条件查询重新加载数据
+    function query() {
+        tb.draw();
+    };
+
+    /**
+     * 分润记录导出
+     */
+    function exportExcel() {
+        $('#e_orderTimeStr').val($('#startOrderTime').val());
+        $('#e_orderTimeEnd').val($('#stopOrderTime').val());
+        $('#e_profitTimeStr').val($('#startProfitTime').val());
+        $('#e_profitTimeEnd').val($('#stopProfitTime').val());
+        $('#e_orderNo').val($('#orderNo').val());
+        $('#orderExport').submit();
+    }
+    
+    /**
+     * 查询条件清除
+     */
+    function reset() {
+        $('#startOrderTime').val("");
+        $('#stopOrderTime').val("");
+        $('#startProfitTime').val("");
+        $('#stopProfitTime').val("");
+        $('#orderNo').val("");
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+<meta charset="UTF-8">
+<title>积分明细</title>
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/css/common/models.css}">
+<!--bootstrap-select  css文件-->
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}" />
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}" />
+<!--日期  css文件-->
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/js/plugins/datepicker/css/bootstrap-datepicker.css}">
+</head>
+<body>
+	<div class="MainContent">
+		<!--面包屑-->
+		<div class="current">
+			当前位置：<a href="#">账户结算</a>&nbsp;&gt;&nbsp;<span>积分明细</span>
+		</div>
+		<!--end 面包屑-->
+		<!--主体内容-->
+		<div class="MainCont">
+			<!--标题-->
+			<div class="ph_subTit">
+				<h2>积分明细</h2>
+				<div class="ph_snbBtn">
+				<shiro:hasPermission name="scoreDetailExport">
+					<input type="button" value="导出" onclick="Dialog.exportExcel('scoreDetailForm')">
+					</shiro:hasPermission>
+				</div>
+			</div>
+			<!--end 标题-->
+			<!--筛选条件-->
+			<shiro:hasPermission name="scoreDetailQuery">
+			<div class="ph_screen">
+			<form action="/web/scoredetail/exprotexcel" id="scoreDetailForm" method="post">
+				<table class="ph_tableBox">
+					<tr>
+						<th>操作时间：</th>
+						<td colspan="2">
+							<p class="dayBox">
+								<!-- <input id="type" name="type" hidden="hidden"> --> <input
+									class="start_rise date start" id="startDate" name="startDate"
+									type="text">&nbsp;-&nbsp;<input
+									class="start_rise date end" id="endDate" name="endDate"
+									type="text">
+							</p>
+						</td>
+						<th>会员账号：</th>
+						<td><input id="telPhone" name="telPhone" type="text"></td>
+						<th>会员类型：</th>
+						<td><select class="selectpicker" id="memberType" name="memberType">
+								<option value="">请选择</option>
+								<option value="1">推广师</option>
+								<option value="2">会员</option>
+						</select></td>
+
+					</tr>
+					<tr>
+						<th>来源：</th>
+						<td colspan="2"><select class="selectpicker" id="userSource" name="transCode">
+								<option value="">请选择</option>
+						</select></td>
+						<td colspan="4"><input onclick="Dialog.doSearch('scoreDetail')" type="button"
+							value="查询"> <input onclick="Dialog.clearData('scoreDetailForm','memberType,userSource')" type="button"
+							value="重置"></td>
+					</tr>
+				</table>
+				<input type="hidden" th:value="${memberId}" id="memberId" name="memberId"/>
+				</form>
+			</div>
+			</shiro:hasPermission>
+			<!--end 筛选条件-->
+			<!--积分明细列表-->
+			<div class="ph_wareBox">
+				<table class="ph_wareList" id="scoreDetail">
+				</table>
+			</div>
+			<!--end 积分明细列表-->
+		</div>
+		<!--end 主体内容-->
+	</div>
+
+	<script type="text/javascript"
+		th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+	<!--bootstrap-select-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+	<!--分页-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+	<!--日期控件-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/bootstrap-datepicker.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/jquery.timepicker.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/jquery.datepair.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/datepicker.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/util.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/finance/finance_integral.js}"></script>
+</body>
+</html>

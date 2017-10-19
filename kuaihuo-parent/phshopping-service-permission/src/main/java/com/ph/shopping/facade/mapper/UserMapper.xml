@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.UserMapper">
+
+    <!-- 基础查询条件-->
+    <sql id="baseCondition">
+        <trim prefix="where" prefixOverrides="and">
+            <if test="id!=null and id!=''">
+                and u.id =#{id}
+            </if>
+            <if test="userName!=null and userName!=''">
+                and u.userName =#{userName}
+            </if>
+            <if test="telphone!=null and telphone!=''">
+                and u.telphone =#{telphone}
+            </if>
+            <if test="isable !=null and isable != '' and isable != '-1'">
+                and u.isable =#{isable}
+            </if>
+        </trim>
+    </sql>
+
+    <!-- 基础查询字段-->
+    <sql id="baseSelect">
+		SELECT
+			u.id,
+			u.userName,
+			u.telphone,
+			u.password,
+			u.loginTime,
+			u.createTime,
+			u.isable
+	</sql>
+
+
+    <!-- 根据用户手机号查询用户信息-->
+	<select id="findUserByPhone" resultType="com.ph.shopping.facade.permission.entity.User">
+        <include refid="baseSelect"/>
+		FROM
+        ph_permission_common_user u
+		WHERE
+        u.telphone = #{telphone}
+	</select>
+
+
+	<!-- 分页获取所有用户 -->
+    <select id="getUserByPage" resultType="com.ph.shopping.facade.permission.vo.UserVO"
+            parameterType="com.ph.shopping.facade.permission.dto.UserDTO">
+        <include refid="baseSelect"/>
+		FROM
+		  ph_permission_common_user u
+		<where>
+			u.id not in(
+				select
+            userId
+				from 
+					ph_permission_user_role ur
+            inner join ph_permission_role r on ur.roleId = r.id and r.roleCode in(2,3,4,5,6)
+			)
+			<if test="id!=null and id!=''">
+				and u.id =#{id}
+			</if>
+			<if test="userName!=null and userName!=''">
+				and u.userName =#{userName}
+			</if>
+
+			<if test="telphone !=null and telphone !=''">
+				AND u.telphone LIKE CONCAT(CONCAT('%', #{telphone}), '%')
+			</if>
+			<if test="isable != null and isable != ''">
+				AND u.isable = #{isable}
+			</if>
+		</where>
+        ORDER BY u.id DESC
+	</select>
+
+	<!-- 根据条件查询用户对象 -->
+	<select id="getUserByCondition" parameterType="com.ph.shopping.facade.permission.dto.UserDTO"
+			resultType="com.ph.shopping.facade.permission.vo.UserVO">
+        <include refid="baseSelect"/>
+		,
+		a.agentName,
+		m.merchantName,
+        s.supplierName,
+        a.isFrozen as agentStatus,
+        m.isFrozen as merchantStatus,
+        s.isFrozen as supplierStatus,
+		a.status as agentPass,
+		m.status as merchantPass,
+		s.status as supplierPass
+		FROM
+        ph_permission_common_user u
+		LEFT JOIN ph_agent a
+		on u.id=a.userId
+		LEFT JOIN ph_merchant m
+		on u.id=m.userId
+		LEFT JOIN ph_supplier s
+		on u.id=s.userId
+        <include refid="baseCondition"/>
+	</select>
+</mapper>

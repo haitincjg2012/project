@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.UserRoleMapper">
+
+    <!--刪除用户角色关系-->
+    <delete id="deleteUserRoleByUserId">
+        DELETE FROM ph_permission_user_role WHERE userId = #{userId}
+    </delete>
+
+    <!--批量新增用户角色关系-->
+    <insert id="insertUserRole">
+        INSERT ph_permission_user_role (userId,roleId,updaterId,createrId,createTime,updateTime) VALUES
+        <foreach collection="roleIds" item="roleId" separator=",">
+            (#{userId},#{roleId},#{updaterId},#{createrId},now(),now())
+        </foreach>
+    </insert>
+
+
+    <!--单个新增用户关系角色-->
+    <insert id="inserUserRole" parameterType="com.ph.shopping.facade.permission.entity.UserRole">
+        INSERT ph_permission_user_role (userId,roleId) VALUES
+        (#{userId},#{roleId})
+    </insert>
+
+
+    <!--通过用户id查询角色id-->
+    <select id="selectUserRoleByUserId" resultType="long">
+        SELECT roleId FROM ph_permission_user_role WHERE userId = #{userId}
+    </select>
+
+    <!--查询用户角色关联关系-->
+    <select id="selectUserRole"
+            parameterType="com.ph.shopping.facade.permission.entity.UserRole"
+            resultType="com.ph.shopping.facade.permission.entity.UserRole">
+        SELECT userId,roleId FROM ph_permission_user_role
+        <where>
+            <if test="userId != null">userId = #{userId}</if>
+            <if test="roleId != null">and roleId = #{roleId}</if>
+        </where>
+    </select>
+
+    <!--通过用户id查询角色信息-->
+    <select id="selectRoleVOByUserId" resultType="com.ph.shopping.facade.permission.vo.SessionRoleVO">
+        SELECT
+            pr.id,
+            pr.roleCode,
+            pr.roleName
+        FROM
+          ph_permission_user_role pur
+        INNER JOIN
+          ph_permission_role pr
+        ON
+        pur.roleId = pr.id
+        WHERE
+        pr.status = 0
+        AND pur.userId = #{userId}
+    </select>
+</mapper>

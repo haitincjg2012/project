@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.SystemLogMapper">
+
+    <!--分页查询系统日志-->
+   <select id="selectSystemLogListByPage" parameterType="com.ph.shopping.facade.system.dto.QuerySystemLogDTO"
+           resultType="com.ph.shopping.facade.system.vo.SystemLogVO">
+    SELECT
+        id,
+        createrName operator,
+        operateAccount,
+        operateType,
+        operateContent,
+        createTime
+    FROM
+        ph_system_log
+    WHERE
+       1=1
+
+        <if test="operator != null and operator != ''">
+           AND createrName like CONCAT('%',#{operator},'%')
+        </if>
+        <if test="operateAccount != null and operateAccount != ''">
+           AND operateAccount = #{operateAccount}
+        </if>
+        <if test="operateType != null">
+           AND operateType = #{operateType}
+        </if>
+        <if test="starTime != null and starTime != ''">
+           AND createTime &gt;= #{starTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+           AND createTime &lt;= #{endTime}
+        </if>
+    ORDER BY createTime DESC
+   </select>
+
+
+</mapper>

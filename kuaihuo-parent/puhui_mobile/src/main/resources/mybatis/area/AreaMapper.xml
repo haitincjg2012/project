@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.area.AreaDao">
+	<resultMap type="com.alqsoft.entity.area.Area" id="AreaMap">
+		<result column="id" property="id"/>
+	</resultMap>
+
+	<select id="findProList" resultType="map">
+		SELECT id,name FROM alq_area WHERE parent_id=0 AND area_id=0
+	</select>
+	
+	<select id="findCityListByPId" resultType="map" parameterType="Long">
+		SELECT id,name FROM alq_area WHERE area_id=#{pId}
+	</select>
+</mapper>

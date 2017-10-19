@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MemberIntoMerchantMapper">
+
+	<!-- 会员进入商家时获取信息 -->
+	<select id="getMerchantInfo" parameterType="java.lang.Long" resultType="com.ph.shopping.facade.member.entity.Merchant">
+		SELECT 
+			m.merchantName,m.address,m.telPhone,m.longitude,m.latitude,m.userId
+		FROM
+			ph_merchant m
+		WHERE m.id=#{merchantId}
+	</select>
+    <!--获取商户的评价条数-->
+    <select id="getMerchantCount" parameterType="long" resultType="long">
+        SELECT
+            count(1)
+        FROM
+            ph_member_order_online_comment
+        WHERE
+            merchantId = #{userId} AND ISNULL(parentId)
+    </select>
+	<!--获取商家门店照片 -->
+	<select id="getMerchantImg" parameterType="java.lang.Long" resultType="string">
+			SELECT
+			i.url
+		FROM
+			ph_merchant m LEFT JOIN ph_merchant_image i
+		on m.id=i.merchantId
+			WHERE m.id=#{merchantId} AND i.type=3
+	</select>
+	<!--  -->
+	<select id="getDishType0" parameterType="com.ph.shopping.facade.member.dto.MerchantDishDTO" resultType="com.ph.shopping.facade.member.dto.MerchantDishDTO">
+		select 
+			typeName,id as typeId,type
+		 from ph_dish_type
+		 	 where type=#{type} and merchantId=#{merchantId}
+	</select>
+	
+	<!-- 获取商家菜品信息 -->
+	<select id="getDishType" parameterType="com.ph.shopping.facade.member.dto.MerchantDishDTO" resultType="com.ph.shopping.facade.member.dto.MerchantDishDTO">
+		select 
+			typeName,id as typeId,type
+		 from ph_dish_type
+		 	 where type=#{type}
+	</select>
+	<!-- 获取菜品信息 -->
+	<select id="getDishByTypeId" parameterType="map" resultType="com.ph.shopping.facade.member.dto.DishDto">
+		select
+		 	dishName,money,imgAddress,type,id,description,saleNum,subscriptionMoney,count,hopeTime,moneyUnit
+		from
+			 ph_dish 
+		where
+			 merchantId=#{merchantId} and dishTypeId=#{typeId} and isDelete=0
+	</select>
+	<!-- 获取所有包间预计离店时间和到店时间 -->
+	<select id="getTimeByid" parameterType="com.ph.shopping.facade.member.dto.DishDto" resultType="com.ph.shopping.facade.member.dto.DishDto">
+		select o.hopeServiceDate,o.predictServiceDate
+		 	from ph_member_order_online o left join
+		 ph_member_order_online_sku s 
+		 	on o.id=s.orderOnlineId 
+		 	WHERE  s.dishId=#{id} AND (status=2 or status=3)
+	</select>
+	<!--获取包间的所有的时间  用来判断用户本身是否预定该餐位-->
+    <select id="getTimeForThreeByid" parameterType="map" resultType="com.ph.shopping.facade.member.dto.DishDto">
+        SELECT
+            o.hopeServiceDate,
+            o.predictServiceDate,
+            s.dishId as id
+        FROM
+            ph_member_order_online o
+        LEFT JOIN ph_member_order_online_sku s ON o.id = s.orderOnlineId
+        LEFT JOIN ph_merchant m ON m.userId = o.merchantId
+        WHERE
+            s.dishId = #{dishId}
+        AND o.memberId = #{memberId}
+        AND m.id = #{merchantId}
+        AND o. STATUS != 7
+        AND o.hopeServiceDate > now()
+    </select>
+	<!-- 获取当前会员的购物车信息 -->
+	<select id="getShopCart" parameterType="java.lang.Long" resultType="com.ph.shopping.facade.member.dto.ShopCart">
+	
+		select dishId,type from  ph_shop_cart where memberId=#{memberId}
+	</select>
+	<!-- 查询菜品所有图片 -->
+	<select id="getDishImg" parameterType="java.lang.Long" resultType="string">
+		SELECT
+			a.address
+		FROM
+			ph_dish d
+		LEFT JOIN ph_dish_attachment a ON d.id = a.dishId
+		WHERE
+			d.id = #{id}
+	</select>
+	<!---->
+	<select id="getOrderByMember" parameterType="map" resultType="com.ph.shopping.facade.member.entity.PhMemberOrderOnlineSku">
+		SELECT
+			s.dishId
+		FROM
+			ph_member_order_online_sku s
+		LEFT JOIN ph_member_order_online o ON o.id = s.orderOnlineId
+		WHERE
+			o.memberId = #{memberId}
+		AND s.dishId = #{dishId}
+		AND (o. STATUS = 2 or o. STATUS = 1)
+	</select>
+	<select id="getDabao" parameterType="java.lang.Long" resultType="com.ph.shopping.facade.member.dto.DishDto">
+		select
+		 	dishName,money,imgAddress,type,id,description,saleNum,subscriptionMoney,count,hopeTime
+		from
+			 ph_dish 
+		where
+			 dishTypeId=#{typeId} and isDelete=0
+	</select>
+	<!--获取用户预定的包间接口-->
+	<select id="getOnlineOrderDish" parameterType="com.ph.shopping.facade.member.dto.MerchantDishDTO" resultType="com.ph.shopping.facade.member.dto.DishDto">
+	<!--	SELECT  DISTINCT
+			o.id,
+			s.dishName,
+			a.address as imgAddress,
+			o.totalPrice as money
+		FROM
+			ph_dish_attachment a
+		INNER  JOIN ph_member_order_online_sku s ON a.dishId = s.dishId
+		INNER JOIN ph_member_order_online o ON o.id = s.orderOnlineId
+		WHERE
+			o.memberId = #{memberId}
+		AND o.merchantId = #{merchantId}
+		AND s.type = 1 and o.status!=7 and o.hopeServiceDate>NOW()
+		ORDER BY o.hopeServiceDate
+		-->
+		SELECT DISTINCT
+			o.id,
+			s.dishName,
+			a.address AS imgAddress,
+			o.totalPrice AS money
+		FROM
+			ph_member_order_online_sku s
+		LEFT JOIN ph_member_order_online o ON s.orderOnlineId = o.id
+		LEFT JOIN ph_dish_attachment a ON a.dishId = s.dishId
+		WHERE
+			o.memberId = #{memberId}
+			AND o.merchantId = #{merchantId}
+			AND s.type = 1
+			AND o. STATUS != 7
+			AND o.hopeServiceDate > NOW()
+		ORDER BY
+		o.hopeServiceDate
+	</select>
+
+	<!--获取包间中的菜品数量-->
+	<select id="getOnlineOrderDishCount" parameterType="long" resultType="long">
+		SELECT
+			IFNULL(sum(dCount),0) AS dCount
+		FROM
+			ph_member_order_online_sku
+		WHERE
+			type = 0
+		AND orderOnlineId = #{id}
+	</select>
+    <!--获取包间中的菜品数量-->
+    <select id="getShopCartDishCount" parameterType="long" resultType="long">
+        SELECT
+            IFNULL(sum(buyNum),0) AS dCount
+        FROM
+             ph_shop_cart
+        WHERE
+          type = 0
+        AND orderId = #{id}
+    </select>
+
+    <!--获取购物车中菜品的总价-->
+    <select id="getShopCartTotalPrice" parameterType="long" resultType="long">
+        SELECT
+            IFNULL(SUM(d.money * s.buyNum),0)
+        FROM
+            ph_shop_cart s
+        LEFT JOIN ph_dish d ON d.id = s.dishId
+        WHERE
+            s.orderId = #{orderId}
+    </select>
+    <!---->
+    <select id="getOrderTotalPrice" parameterType="long" resultType="long">
+        SELECT
+            IFNULL(SUM(d.money * s.dCount),0)
+        FROM
+            ph_member_order_online_sku s
+        LEFT JOIN ph_dish d ON d.id = s.dishId
+        WHERE
+            s.orderOnlineId = #{orderId} and s.type=0
+    </select>
+    <!--包间菜品回显  购物车中的和订单中的  查询购物车中的信息-->
+    <select id="getDishForShopCart" parameterType="long" resultType="com.ph.shopping.facade.member.dto.DishDto">
+        SELECT
+        	d.id,
+            d.dishName,
+            c.buyNum as dCount,
+            d.money*c.buyNum as money
+        FROM
+            ph_shop_cart c
+        LEFT JOIN ph_dish d ON d.id = c.dishId
+        WHERE
+            c.orderId = #{orderId} and d.type=0
+    </select>
+    <!--包间菜品回显  购物车中的和订单中的  查询订单中的信息-->
+    <select id="getDishForOrder" parameterType="long" resultType="com.ph.shopping.facade.member.entity.PhMemberOrderOnlineSku">
+        SELECT
+        	d.id,
+            o.dishName,
+            IFNULL(o.dCount,1) as dCount,
+            o.money*IFNULL(o.dCount,1) as money
+        FROM
+            ph_dish d
+        LEFT JOIN ph_member_order_online_sku o ON o.dishId = d.id
+        WHERE
+            o.orderOnlineId =#{orderId} and o.type=0
+    </select>
+    <!---->
+    <select id="getDishByOrderId" parameterType="long" resultType="com.ph.shopping.facade.member.dto.DishDto">
+        SELECT
+            s.dishName,
+            DATE_FORMAT(o.hopeServiceDate,'%Y-%m-%d %H:%i') as hopeServiceDates
+        FROM
+            ph_member_order_online_sku s
+        LEFT JOIN ph_member_order_online o ON o.id = s.orderOnlineId
+        WHERE
+            s.orderOnlineId = #{orderId}
+        AND s.type = 1
+    </select>
+    <select id="getDishInfoByDishId" parameterType="long" resultType="com.ph.shopping.facade.member.dto.DishDto">
+        select
+		 	dishName,money,type,id,description,saleNum,moneyUnit
+		from
+			 ph_dish
+		where
+			id=#{dishId}
+    </select>
+</mapper>

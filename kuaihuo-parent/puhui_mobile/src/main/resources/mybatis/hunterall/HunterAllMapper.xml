@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.hunterall.HunterAllDao">
+	<!-- 一期 -->
+	<!--1 热门批发商：销量最高的前9名批发商	单查alq_hunter-->
+	<select id="getHunterAllList" resultType="java.util.Map" parameterType="Long" >
+		SELECT
+		h.id,mm.im_id AS im_id,att.address,h.nickname,IFNULL(h.`level`,0) as level,IFNULL(h.star,0) as star,IFNULL(h.num,0) as num
+		FROM alq_hunter h 
+		LEFT JOIN alq_attachment att ON att.id=h.logo_attachment_id
+		LEFT JOIN alq_member mm ON mm.hunter_id=h.id
+		ORDER BY num DESC LIMIT 9
+	</select>
+	<!-- 2_1获取专题分类 父级栏目alq_hunter@alq_subject-->
+	<select id="getHunterSubjectListParent" resultType="java.util.Map" parameterType="Long" >
+		select  
+		s.id,
+		s.name,
+		(SELECT att.address FROM alq_attachment att WHERE att.id=s.attachment_id) AS subject_address
+		FROM  alq_subject s,alq_hunter h
+		GROUP BY s.id
+		order BY s.created_time desc limit 0,2
+	</select>
+	<!-- 2_2获取专题分类子级栏目 alq_hunter@alq_subject-->
+	<select id="getHunterSubjectList" resultType="java.util.Map" parameterType="Long" >
+		SELECT 
+		s.`id` AS sid,<!-- 专题的id -->
+		s.`name`,<!-- 专题的名字 -->
+		mm.im_id AS im_id,<!-- 腾讯注册的唯一标识 -->
+		h.id,<!-- 批发商id -->
+		att.address,<!-- 批发商LOGO -->
+		IFNULL(h.`level`,0) as level,<!-- 批发商等级 -->
+		IFNULL(h.star,0) as star,<!-- 批发商星级 -->
+		IFNULL(h.`good_comment_num_order`,0) AS good_comment_num_order,		<!-- 批发商好评 -->
+		h.nickname,<!-- 批发商昵称 -->
+		h.`province_name` as provincename,<!-- 批发商省 -->
+		h.`city_name` as cityname,		<!-- 批发商城市-->
+		h.`county_name` as countyname,	<!-- 批发商县 -->
+		h.major,<!-- 批发商专业 -->
+		h.county_name AS sourcing_address,<!-- 猎货范围只显示县-->
+		h.service,<!-- 批发商服务一句话介绍 -->
+		IFNULL(h.num,0) as num<!-- 多少人找他 -->
+		FROM `alq_hunter` h 
+		LEFT JOIN alq_subject s on h.subject_id=s.id
+		LEFT JOIN alq_attachment att ON att.id=h.logo_attachment_id
+		LEFT JOIN alq_member mm ON mm.hunter_id=h.id
+		where  s.id = #{id}
+		ORDER  BY h.created_time desc limit 0,3
+	</select>
+	
+	<!-- 3_1获取热门推荐父级栏目  -->
+	<select id="getHunterHotListParent" resultType="java.util.Map" parameterType="Long">
+		SELECT
+		hot.id,hot.`name` 
+		FROM
+		alq_hotrecommend hot
+		order BY hot.created_time desc limit 0,2
+	</select>
+	<!-- 3_2获取热门推荐子级栏目-->
+	<select id="getHunterHotList" resultType="java.util.Map" parameterType="Long" >
+		SELECT 
+		h.id,p.id AS product_id,mm.im_id AS im_id,att.address,h.nickname,IFNULL(h.`level`,0) as level,IFNULL(h.star,0) as star,IFNULL(h.num,0) as num,h.major,h.good_comment_num_order,
+		p.name,p.imageurl,p.sale_num
+		FROM `alq_hunter` h 
+		LEFT JOIN alq_product p on h.id=p.hunter_id
+		LEFT JOIN alq_attachment att ON att.id=h.logo_attachment_id
+		LEFT JOIN alq_member mm ON mm.hunter_id=h.id
+		WHERE p.hot_recommend_id= #{id}
+	</select>
+	<!-- 4新到批发商：按申请时间进行排序	单查alq_hunter -->
+	<select id="getNewHunterTimeList" resultType="Map" >
+		SELECT 
+		mm.im_id AS im_id,<!-- 腾讯注册的唯一标识 -->
+		h.id,<!-- 批发商id -->
+		att.address,<!-- 批发商LOGO -->
+		IFNULL(h.`level`,0) as level,<!-- 批发商等级 -->
+		IFNULL(h.star,0) as star,<!-- 批发商星级 -->
+		IFNULL(h.`good_comment_num_order`,0) AS good_comment_num_order,		<!-- 批发商好评 -->
+		h.nickname,<!-- 批发商昵称 -->
+		h.`province_name` as provincename,<!-- 批发商省 -->
+		h.`city_name` as cityname,		<!-- 批发商城市-->
+		h.`county_name` as countyname,	<!-- 批发商县 -->
+		h.major,<!-- 批发商专业 -->
+		h.county_name AS sourcing_address,<!-- 猎货范围只显示县-->
+		h.service,<!-- 批发商服务一句话介绍 -->
+		IFNULL(h.num,0) as num<!-- 多少人找他 -->
+		FROM `alq_hunter` h 
+		LEFT JOIN alq_subject s on h.subject_id=s.id
+		LEFT JOIN alq_attachment att ON att.id=h.logo_attachment_id
+		LEFT JOIN alq_member mm ON mm.hunter_id=h.id
+		ORDER BY h.created_time DESC LIMIT 10
+	</select>
+	
+	
+	
+	
+	
+	
+	<!-- 二期 -->
+	<!--1 热门批发商：销量最高的前10名批发商	单查alq_hunter-->
+	<select id="getHunterAllList2" resultType="java.util.Map" parameterType="Long" >
+		SELECT
+			h.id,mm.im_id AS im_id,
+			IFNULL(h.`level`,0) as level,<!-- 批发商等级 -->
+			att.address,   <!-- 批发商logo -->
+			h.major,  <!-- 批发商专业-->
+			IFNULL(h.star,0) as star,<!-- 批发商星级 -->
+			h.nickname,<!-- 批发商昵称 -->
+			IFNULL(h.num,0) as num<!-- 多少人找他 -->
+		FROM alq_hunter h 
+		LEFT JOIN alq_attachment att ON att.id=h.logo_attachment_id
+		LEFT JOIN alq_member mm ON mm.hunter_id=h.id
+		ORDER BY num DESC LIMIT 10
+	</select>
+	<!-- 2_1获取专题分类 父级栏目alq_hunter@alq_subject-->
+	<select id="getHunterSubjectListParent2" resultType="java.util.Map" parameterType="Long" >
+		select  
+		s.id,
+		s.name,
+		(SELECT att.address FROM alq_attachment att WHERE att.id=s.attachment_id) AS subject_address
+		FROM  alq_subject s,alq_hunter h
+		GROUP BY s.id
+		order BY s.created_time desc
+	</select>
+	<!-- 2_2获取专题分类子级栏目 alq_hunter@alq_subject-->
+	<!-- 获取专题分类2期改造：专题分类不做上限，每个专题分类中批发商上限为3个。-->
+	<select id="getHunterSubjectList2" resultType="java.util.Map" parameterType="Long" >
+		SELECT 
+		s.`id` AS sid,<!-- 专题的id -->
+		s.`name`,<!-- 专题的名字 -->
+		mm.im_id AS im_id,<!-- 腾讯注册的唯一标识 -->
+		h.id,<!-- 批发商id -->
+		att.address,<!-- 批发商LOGO -->
+		IFNULL(h.`level`,0) as level,<!-- 批发商等级 -->
+		IFNULL(h.star,0) as star,<!-- 批发商星级 -->
+		IFNULL(h.`good_comment_num_order`,0) AS good_comment_num_order,		<!-- 批发商好评 -->
+		h.nickname,<!-- 批发商昵称 -->
+		h.`province_name` as provincename,<!-- 批发商省 -->
+		h.`city_name` as cityname,		<!-- 批发商城市-->
+		h.`county_name` as countyname,	<!-- 批发商县 -->
+		h.major,<!-- 批发商专业 -->
+		h.county_name AS sourcing_address,<!-- 猎货范围只显示县-->
+		h.service,<!-- 批发商服务一句话介绍 -->
+		IFNULL(h.num,0) as num<!-- 多少人找他 -->
+		FROM `alq_hunter` h 
+		LEFT JOIN alq_subject s on h.subject_id=s.id
+		LEFT JOIN alq_attachment att ON att.id=h.logo_attachment_id
+		LEFT JOIN alq_member mm ON mm.hunter_id=h.id
+		where  s.id = #{id}
+		ORDER BY h.created_time DESC LIMIT 3
+	</select>
+	
+	<!-- 3_1获取热门推荐父级栏目  -->
+	<select id="getHunterHotListParent2" resultType="java.util.Map" parameterType="Long">
+		SELECT
+		hot.id,hot.`name` 
+		FROM
+		alq_hotrecommend hot
+		order BY hot.created_time desc limit 1
+	</select>
+	<!-- 3_2获取热门推荐子级栏目-->
+	<!-- 热门推荐上限为10个  -->
+	<select id="getHunterHotList2" resultType="java.util.Map" parameterType="Long" >
+		SELECT 
+		h.id,p.id AS product_id,mm.im_id AS im_id,att.address,h.nickname,IFNULL(h.`level`,0) as level,IFNULL(h.star,0) as star,IFNULL(h.num,0) as num,h.major,h.good_comment_num_order,
+		p.name,p.imageurl,p.sale_num
+		FROM `alq_hunter` h 
+		LEFT JOIN alq_product p on h.id=p.hunter_id
+		LEFT JOIN alq_attachment att ON att.id=h.logo_attachment_id
+		LEFT JOIN alq_member mm ON mm.hunter_id=h.id
+		WHERE p.hot_recommend_id= #{id}
+		ORDER BY h.created_time DESC LIMIT 10
+	</select>
+	<!-- 4新到批发商：按申请时间进行排序上限为10个	单查alq_hunter -->
+	<select id="getNewHunterTimeList2" resultType="Map" >
+		SELECT 
+		mm.im_id AS im_id,<!-- 腾讯注册的唯一标识 -->
+		h.id,<!-- 批发商id -->
+		att.address,<!-- 批发商LOGO -->
+		IFNULL(h.`level`,0) as level,<!-- 批发商等级 -->
+		IFNULL(h.star,0) as star,<!-- 批发商星级 -->
+		IFNULL(h.`good_comment_num_order`,0) AS good_comment_num_order,		<!-- 批发商好评 -->
+		h.nickname,<!-- 批发商昵称 -->
+		h.`province_name` as provincename,<!-- 批发商省 -->
+		h.`city_name` as cityname,		<!-- 批发商城市-->
+		h.`county_name` as countyname,	<!-- 批发商县 -->
+		h.major,<!-- 批发商专业 -->
+		h.county_name AS sourcing_address,<!-- 猎货范围只显示县-->
+		h.service,<!-- 批发商服务一句话介绍 -->
+		IFNULL(h.num,0) as num<!-- 多少人找他 -->
+		FROM `alq_hunter` h 
+		LEFT JOIN alq_subject s on h.subject_id=s.id
+		LEFT JOIN alq_attachment att ON att.id=h.logo_attachment_id
+		LEFT JOIN alq_member mm ON mm.hunter_id=h.id
+		ORDER BY h.created_time DESC LIMIT 10
+	</select>
+	<select id="getAllHunter" resultType="map">
+			 
+		    SELECT 
+			mm.im_id AS im_id,<!-- 腾讯注册的唯一标识 -->
+			h.id,<!-- 批发商id -->
+			att.address,<!-- 批发商LOGO -->
+			IFNULL(h.`level`,0) as level,<!-- 批发商等级 -->
+			IFNULL(h.star,0) as star,<!-- 批发商星级 -->
+			IFNULL(h.`good_comment_num_order`,0) AS good_comment_num_order,		<!-- 批发商好评 -->
+			h.nickname,<!-- 批发商昵称 -->
+			h.`province_name` as provincename,<!-- 批发商省 -->
+			h.`city_name` as cityname,		<!-- 批发商城市-->
+			h.`county_name` as countyname,	<!-- 批发商县 -->
+			h.major,<!-- 批发商专业 -->
+			<!-- h.county_name AS sourcing_address, --><!-- 猎货范围只显示县-->
+			h.service,<!-- 批发商服务一句话介绍 -->
+			IFNULL(h.num,0) as num,<!-- 多少人找他 -->
+			(dnDistance (
+					#{longitude},
+					#{latitude},
+					h.longitude,
+					h.latitude
+				) * 1
+			) AS distance,<!-- 距离批发商的距离 -->
+			case when h.city_name = '市辖区' then h.county_name  
+			ELSE h.county_name end as sourcing_address<!-- 直辖市显示市，省级显示区或县 -->
+			FROM `alq_hunter` h 
+			LEFT JOIN alq_subject s on h.subject_id=s.id
+			LEFT JOIN alq_attachment att ON att.id=h.logo_attachment_id
+			LEFT JOIN alq_member mm ON mm.hunter_id=h.id WHERE  ifnull(h.state,1)=1
+			ORDER BY distance,h.id ASC
+			LIMIT #{currentPage},#{numPage}
+		    
+	</select>
+
+
+	<select id="getMemberMsg" resultType="map" parameterType="java.lang.String">
+			SELECT  countyId
+			FROM ph_merchant
+			WHERE telPhone = #{phone}
+	</select>
+
+	<select id="getAllHunterByCountyId" resultType="map">
+
+		SELECT
+		mm.im_id AS im_id,<!-- 腾讯注册的唯一标识 -->
+		h.id,<!-- 批发商id -->
+		att.address,<!-- 批发商LOGO -->
+		IFNULL(h.`level`,0) as level,<!-- 批发商等级 -->
+		IFNULL(h.star,0) as star,<!-- 批发商星级 -->
+		IFNULL(h.`good_comment_num_order`,0) AS good_comment_num_order,		<!-- 批发商好评 -->
+		h.nickname,<!-- 批发商昵称 -->
+		h.`province_name` as provincename,<!-- 批发商省 -->
+		h.`city_name` as cityname,		<!-- 批发商城市-->
+		h.`county_name` as countyname,	<!-- 批发商县 -->
+		h.major,<!-- 批发商专业 -->
+		<!-- h.county_name AS sourcing_address, --><!-- 猎货范围只显示县-->
+		h.service,<!-- 批发商服务一句话介绍 -->
+		IFNULL(h.num,0) as num,<!-- 多少人找他 -->
+		case when h.city_name = '市辖区' then h.county_name
+		ELSE h.county_name end as sourcing_address<!-- 直辖市显示市，省级显示区或县 -->
+		FROM `alq_hunter` h
+		LEFT JOIN alq_subject s on h.subject_id=s.id
+		LEFT JOIN alq_attachment att ON att.id=h.logo_attachment_id
+		LEFT JOIN alq_member mm ON mm.hunter_id=h.id
+		WHERE  ifnull(h.state,1)=1 AND h.districts LIKE CONCAT(CONCAT('%', #{countyId}), '%')
+		ORDER BY num ASC
+		LIMIT #{currentPage},#{numPage}
+
+	</select>
+</mapper>

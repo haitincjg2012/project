@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>线下订单</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--日期  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/datepicker/css/bootstrap-datepicker.css}">
+    <!--弹窗 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/layer/layer.css}">
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">订单管理</a>&nbsp;&gt;&nbsp;<span>线下订单</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+            <h2>线下订单</h2>
+            <div class="ph_snbBtn">
+                <shiro:hasPermission name="orderUnlineAdd">
+                    <input name="" type="button" value="创建订单"
+                           onclick="window.location.href='/web/orderUnline/toAddPage'">
+                </shiro:hasPermission>
+                <shiro:hasPermission name="orderUnlineExport">
+                    <input name="" type="button" th:onclick="'exportExcel();'" value="导出">
+            </div>
+            </shiro:hasPermission>
+        </div>
+        <!--end 标题-->
+        <!--筛选条件-->
+        <form id="queryForm">
+            <div class="ph_screen">
+                <shiro:hasPermission name="orderUnlineQuery">
+                    <table class="ph_tableBox">
+                        <tr>
+                            <th>订单号：</th>
+                            <td><input type="text" name = "orderNo" id="orderNo"></td>
+                            <th>会员账号：</th>
+                            <td><input type="text" name="memberPhone" id="memberPhone"></td>
+                            <th>下单时间：</th>
+                            <td>
+                                <p class="dayBox"><input class="start_rise date start" name="starTime" type="text" id="starTime">&nbsp;-&nbsp;
+                                    <input class="start_rise date end" name="endTime" type="text" id="endTime"></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>订单状态：</th>
+                            <td>
+                                <select class="selectpicker" data-live-search="true" name="status" id="status">
+                                    <option value="">全部</option>
+                                    <option value="0">待付款</option>
+                                   <!-- <option value="1">付款中</option>-->
+                                    <option value="2">交易完成</option>
+                                  <!--  <option value="3">交易取消</option>-->
+                                </select>
+                            </td>
+                            <td colspan="4">
+                                <input name="" type="button" th:onclick="'query();'" value="查询">
+                                <input name="" type="button" th:onclick="'resetForm();'" value="重置">
+                            </td>
+                        </tr>
+                    </table>
+                </shiro:hasPermission>
+            </div>
+        </form>
+
+        <!--end 筛选条件-->
+        <!--商品列表-->
+        <div class="ph_wareBox">
+            <table class="ph_wareList" id="example">
+
+            </table>
+        </div>
+        <!--end 商品列表-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<!--撤销订单弹窗-->
+<form action="" id="validateForm">
+    <div class="PopupBox" id="Js_refundBox">
+        <!--内容-->
+        <div class="PopupCon">
+            <div class="ph_subPoCon ph_screen">
+                <table class="ph_tableBox">
+                    <tr>
+                        <th>取消说明：</th>
+                        <td>
+                            <textarea class="ph_txtAreaBg validate[required]" name="" id="cancelReason" ></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <!--end 内容-->
+    </div>
+</form>
+
+<!--end 撤销订单弹窗-->
+
+<!--取消详情弹窗-->
+<div class="PopupBox" id="Js_refundDetaBox">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <table class="ph_tableBox">
+                <tr>
+                    <th>取消说明：</th>
+                    <td>
+                        <textarea name="" id="reasonShow" readonly></textarea>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 取消详情弹窗-->
+<!--导出start-->
+<div hidden>
+    <form action="/web/orderUnline/export"  id="orderExport" method="post">
+        <input type="hidden" name="starTime" value="" id="e_starTime"/>
+        <input type="hidden" name="endTime" value="" id="e_endTime"/>
+        <input type="hidden" name="orderNo" value="" id="e_orderNo"/>
+        <input type="hidden" name="memberPhone" value="" id="e_memberPhone"/>
+        <input type="hidden" name="status" value="" id="e_status"/>
+    </form>
+</div>
+<!--导出end-->
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!--分页-->
+<script type="text/javascript" th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+<!--弹窗-->
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!--日期控件-->
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/bootstrap-datepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.timepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.datepair.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/datepicker.js}"></script>
+<!--验证-->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    var tb;
+    $(function() {
+        $('.ph_wareBox').on('click','.Js_revoke',function(){
+            layer.open({
+                type: 1,
+                title: '取消订单',
+                closeBtn : 0,
+                area: ['442px','260px'],
+                btn:['确认', '取消'],
+                btnAlign: 'c',
+                content: $('#Js_refundBox')
+            });
+        });
+        $('.ph_wareBox').on('click','.Js_revokeDeta',function(){
+            layer.open({
+                type: 1,
+                title: '取消详情',
+                closeBtn : 0,
+                area: ['442px','260px'],
+                btn:['确认', '取消'],
+                btnAlign: 'c',
+                content: $('#Js_refundDetaBox')
+            });
+        });
+        //分页
+        tb = $('#example').DataTable({
+            "lengthChange": false,
+            "ordering": false,
+            "searching": false,
+
+            "bServerSide": true,
+             "sPaginationType": "full_numbers",
+             "bJQueryUI": true,
+             "sDom": '<"">t<"F"ip>',
+             "sAjaxSource": "/web/orderUnline/list", //ajax调用接口
+             "aoColumnDefs": [{sDefaultContent: '',aTargets: [ '_all' ]}],
+             "aoColumns": [
+             { "sTitle" : "ID","mData": "id" ,"class":"sClass","sWidth" : "50px"},
+             { "sTitle" : "订单号","mData": "orderNo","sWidth":"250px"},
+             { "sTitle" : "下单时间","mData": "createTime" },
+             { "sTitle" : "付款方式","mData": "payType","mRender":function (data,type,full) {
+                 var text;
+                 if (full.payType==0){
+                     text = "现金支付";
+                 }else if (full.payType==1){
+                     text = "积分支付";
+                 }else if (full.payType==2){
+                     text = "支付宝支付";
+                 }else if (full.payType==3){
+                     text = "微信支付";
+                 }else if (full.payType==8){
+                     text = "快捷支付";
+                 }else if (full.payType==9){
+                     text = "远程支付";
+                 }
+                 return text;
+             }},
+             { "sTitle" : "订单总额（元）","mData": "orderMoney","mRender" : function ( data, type, full ) {
+                 /*return parseInt(data);*/
+                 return data;
+             } },
+             { "sTitle" : "会员账号","mData": "memberTelPhone" },
+             { "sTitle" : "订单状态","mData": "status" ,"mRender":function (data,type,full) {
+                 var text;
+                 if (full.status == 0) {
+                     text = "待付款";
+                 }else if (full.status == 1) {
+                     text = "付款中";
+                 }else if (full.status == 2) {
+                     text = "交易完成";
+                 }else if (full.status == 3) {
+                     text = "交易取消";
+                 }
+                 return text;
+
+             }},
+             {"sTitle" : "操作","mData" : "id","class":"ph_tableShow", "mRender" : function ( data, type, full ) {
+                 var text = '<div class="ph_operateBox"><input class="ph_operate" name="" type="button" value="操作选项">';
+                 text = text+'<ul class="ph_operateList hide">';
+
+                 if ([[${session.orderUnlineDetail}]]) {
+                     text += '<li><a href="javascript:void(0);" onclick="toDetail(\'' + full.id + '\')">订单详情</a></li>';
+                 }
+                 if (full.status == 0||(full.status == 2 && (full.isSettle == 0 || full.isSettle == null) && (full.isProfit == 0 || full.isProfit == null))) {
+                     //当订单已经分润则不能取消订单
+                     if ([[${session.orderUnlineCancel}]]) {
+                         text += '<li><a class="Js_btn" href="javascript:void(0);" onclick="cancelOrder(\'' + full.id + '\',\'' + full.status + '\');">取消订单</a></li>';
+                     }
+                 }
+                 if (full.status == 3) {
+                     if ([[${session.orderUnlineCancelOrderDetail}]]) {
+                         text += '<li><a class="Js_btn" href="javascript:void(0);" onclick="cancelOrderDetail(\'' + full.id + '\',\'' + full.status + '\');">取消详情</a></li>';
+                     }
+                 }
+                 text = text + '</ul></div>';
+                 return text;
+             }
+             }
+             ],
+            "oLanguage" : {
+                "sProcessing" : "数据加载中······",
+                "sLengthMenu" : "显示 _MENU_ 条记录",
+                "sZeroRecords" : "没有您要搜索的内容！",
+                "sEmptyTable" : "列表中无数据存在！",
+                "sInfo" : "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+                "sInfoEmpty" : "显示 0 到 0 条记录",
+                "sInfoFiltered" : "数据列表中共  _MAX_ 条记录",
+                "oPaginate" : {
+                    "sFirst" : "首页",
+                    "sPrevious" : "上一页",
+                    "sNext" : "下一页",
+                    "sLast" : "末页"
+                }
+            },
+            "fnServerData" : function ( sSource, aoData, fnCallback, oSettings ) {
+                oSettings.jqXHR = $.ajax( {
+                    "dataType" 	: 'json',
+                    "type" 		: "GET",
+                    "async"     : 'false',
+                    "url" 		: sSource,
+                    "data" 		: {
+                        'pageNum': (aoData[3].value/aoData[4].value)+1,
+                        'pageSize' :  aoData[4].value,
+                        'memberPhone'  : $.trim($("#memberPhone").val()) ,
+                        'status' : $.trim($('#status').val()),
+                        'starTime' : $.trim($('#starTime').val()),
+                        'endTime' : $.trim($('#endTime').val()),
+                        'orderNo':$.trim($('#orderNo').val())
+
+                    },
+                    "success"	: fnCallback
+                } );
+            },
+            "fnDrawCallback" : function(){
+                var api = this.api();
+                var startIndex= api.context[0]._iDisplayStart;//获取到本页开始的条数
+                api.column(0).nodes().each(function(cell, i) {
+                    cell.innerHTML = startIndex + i + 1;
+                });
+            }
+        });
+    });
+
+    //条件查询重新加载数据
+    function query() {
+        tb.draw();
+    }
+    /**
+     * 订单详情
+     */
+    function toDetail(orderId) {
+        HtmlHelper.generateAutoSubmitForm({
+            url: "/web/orderUnline/detail",
+            data: {
+                id : orderId,
+            }
+        });
+    }
+    /**
+     * 查看取消订单详情
+     */
+    function cancelOrderDetail(id,status) {
+        $.ajax({
+            async:false,
+            url:"/web/orderUnline/cancelOrderDetail",
+            data:{id:id},
+            type:"POST",
+            dataType:"json",
+            success:function(data){
+                if (data.success) {
+                    $('#reasonShow').text(data.data.cancelReason);
+                    layer.open({
+                        type: 1,
+                        title: '取消订单详情',
+                        closeBtn : 0,
+                        area: ['500px','300px'],
+                        btn:['返回'],
+                        btnAlign: 'c',
+                        content: $('#Js_refundDetaBox')
+                    });
+                } else {
+                    layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                }
+            }
+        });
+    }
+    /**
+     * 取消订单
+     */
+    function cancelOrder(id,status) {
+        layer.open({
+            type: 1,
+            title: '取消订单',
+            closeBtn : 0,
+            area: ['500px','300px'],
+            btn:['确定', '取消'],
+            btnAlign: 'c',
+            content: $('#Js_refundBox'),
+            yes:function (index, layero) {
+                var flag = $("#validateForm").validationEngine("validate");
+                if(!flag){
+                    return false;
+                }
+                $.ajax({
+                    async:false,
+                    url:"/web/orderUnline/cancel",
+                    data:{id:id,cancelReason:$('#cancelReason').val()},
+                    type:"POST",
+                    dataType:"json",
+                    success:function(data){
+                        if (data.success) {
+                            layer.close(index);
+                            tb.draw(false);
+                            layer.alert(data.message, {icon: 1,btnAlign: 'c', closeBtn : 0});
+                        } else {
+                            layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                        }
+                    }
+                });
+            }, btn2: function(index, layero){
+                layer.close(index);
+            }
+        });
+    }
+    /**
+     * 重置内容
+     */
+    function resetForm() {
+        clearData("queryForm");
+    }
+    function clearData(id) {
+        $("#" + id)[0].reset();
+        var selected = $("#" + id).find("select");
+        if (selected.length > 0) {
+            for (var i = 0, length = selected.length; i< length; i++) {
+                selected.eq(i).selectpicker('val','');
+            }
+        }
+    }
+    /**
+     * 导出数据
+     */
+    function exportExcel() {
+        $('#e_starTime').val($('#starTime').val());
+        $('#e_endTime').val($('#endTime').val());
+        $('#e_orderNo').val($('#orderNo').val());
+        $('#e_memberPhone').val($('#memberPhone').val());
+        $('#e_status').val($('#status').val());
+        $('#orderExport').submit();
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+
+.content { float:left; text-align:center; margin-right:10px;
+    width:40px;}
+
+#add #add_all { display:block; width:80px; background:#eee; cursor:pointer; border:1px solid #ccc; padding:5px 0; margin:5px 0;}
+
+

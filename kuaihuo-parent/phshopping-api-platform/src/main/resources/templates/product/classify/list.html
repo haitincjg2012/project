@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台系统</title>
+    <head th:include="header::header"></head>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/treetable/jquery.treeTable.css}">
+    <style type="text/css">
+        .searchClassify{
+            color:#10c8ef !important;
+        }
+        .classifyFirst{
+            text-align: left !important;
+            margin-left: 10px
+        }
+    </style>
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">商品分类</a>&nbsp;&gt;&nbsp;<span>分类列表</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+            <h2>分类列表</h2>
+            <div class="ph_snbBtn">
+                <shiro:hasPermission name="classifyAdd">
+                <input name="" type="button" onclick="window.location.href='/web/product/productClassify/toAddClassify'" value="添加分类">
+                </shiro:hasPermission>
+            </div>
+        </div>
+        <!--end 标题-->
+        <!--筛选条件-->
+        <shiro:hasPermission name="classifyQuery">
+        <div class="ph_screen">
+            <table class="ph_tableBox">
+                <tr>
+                    <th>分类名称：</th>
+                    <td><input id="classifyName" type="text"></td>
+                    <td colspan="4">
+                        <input id="search" type="button" value="查询">
+                        <input id="reset" type="button" value="重置">
+                    </td>
+                </tr>
+            </table>
+        </div>
+        </shiro:hasPermission>
+        <!--end 筛选条件-->
+        <!--商品列表-->
+        <div class="ph_wareBox">
+            <table id="treeTable" class="ph_wareList">
+                <thead>
+                <tr>
+                    <th width="250">分类名称</th>
+                    <th width="50">ID</th>
+                    <th>分类排序</th>
+                    <th>商品数量</th>
+                    <th>创建时间</th>
+                    <th>状态</th>
+                    <th width="110">操作</th>
+                </tr>
+                </thead>
+            </table>
+            <table style="display: none">
+                <tbody id="tree_tbody">
+                <tr id="{id}" pId="{parentId}" data-classify-name="{classifyName}">
+                    <td class="classifyFirst">{classifyName}</td>
+                    <td>{id}</td>
+                    <td data-id="{id}" class="tree-table-sort">{sort}</td>
+                    <td>{productCount}</td>
+                    <td>{createTime}</td>
+                    <td data-fun="statusHandler">{status}</td>
+                    <td class="ph_tableShow">
+                        <div class="ph_operateBox">
+                            <input class="ph_operate" name="" type="button" value="操作选项">
+                            <ul class="ph_operateList hide">
+                                <!--<li><a class="Js_transfer" href="javascript:void(0);">转移商品</a></li>-->
+                                <shiro:hasPermission name="toProperty">
+                                <li>
+                                    <a href="/web/product/property/toProductPropertyPage?classifyId={id}">属性列表</a>
+                                </li>
+                                </shiro:hasPermission>
+                                <shiro:hasPermission name="classifyDelete">
+                                <li>
+                                    <a onclick="deleteClassify({id})" href="javascript:void(0);">删除</a>
+                                </li>
+                                </shiro:hasPermission>
+                                <li data-fun="statusTargetHandler">{status},{id}</li>
+                                <shiro:hasPermission name="classifyUpdate">
+                                <li>
+                                    <a href="/web/product/productClassify/toUpdateClassify?id={id}">编辑</a>
+                                </li>
+                                </shiro:hasPermission>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <!--end 商品列表-->
+        <!--按钮-->
+        <!--<div class="PopupBtn">-->
+            <!--<input class="submit" name="" type="button" value="保存">-->
+        <!--</div>-->
+        <!--按钮-->
+    </div>
+    <!--end 主体内容-->
+</div>
+
+<!--转移商品弹窗-->
+<!--<div class="PopupBox transferBox">-->
+    <!--&lt;!&ndash;关闭按钮&ndash;&gt;-->
+    <!--<a href="javascript: void(0);" class="close"></a>-->
+    <!--&lt;!&ndash;end 关闭按钮&ndash;&gt;-->
+    <!--&lt;!&ndash;内容&ndash;&gt;-->
+    <!--<div class="PopupCon">-->
+        <!--&lt;!&ndash;内容&ndash;&gt;-->
+        <!--<div class="PopupCon" style="margin-top: 40px;">-->
+            <!--<div class="ph_subPoCon ph_screen">-->
+                <!--<table class="ph_tableBox">-->
+                    <!--<tr>-->
+                        <!--<th>商品分类：</th>-->
+                        <!--<td class="ph_select">-->
+                            <!--<select class="selectpicker" data-live-search="true">-->
+                                <!--<option value="">请选择</option>-->
+                            <!--</select>-->
+                            <!--<select class="selectpicker" data-live-search="true">-->
+                                <!--<option value="">请选择</option>-->
+                            <!--</select>-->
+                            <!--<select class="selectpicker" data-live-search="true">-->
+                                <!--<option value="">请选择</option>-->
+                            <!--</select>-->
+                        <!--</td>-->
+                    <!--</tr>-->
+                <!--</table>-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--&lt;!&ndash;end 内容&ndash;&gt;-->
+        <!--<div class="PopupBtn">-->
+            <!--<input class="submit" name="" type="button" value="转移商品">-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--&lt;!&ndash;end 内容&ndash;&gt;-->
+<!--</div>-->
+<!--end 转移商品弹窗-->
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+
+<script type="text/javascript" th:src="@{/static/js/plugins/treetable/jquery.treeTable.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!--分页-->
+<script type="text/javascript" th:inline="javascript">
+    var cacheClassifyName =[];
+    $(function () {
+        $("#search").click(function(){
+            var searchValue = $("#classifyName").val().trim();
+            if(isNull(searchValue)){
+                //重载列表
+//                _treeTable.find("tr[pid]").each(function (i,tr) {
+//                    $(tr).attr("pid")==="0"?$(tr).show():$(tr).hide();
+//                })
+                window.location.reload();
+                return false;
+            }
+            _treeTable.find("tr[pid]").each(function (i,tr) {
+                $(tr).css("display","none");
+            });
+            //这是被搜索出来需要展示的分类数组
+            var showArr = Array.prototype.filterByStr.call(cacheClassifyName,searchValue);
+            _treeTable.find(".searchClassify").removeClass("searchClassify");
+            showArr.forEach(function (classifyName) {
+                var $showTr =  $("tr[data-classify-name="+classifyName+"]",_treeTable);
+                $showTr.find("td:first").addClass("searchClassify");
+                recursiveShow($showTr);
+            });
+
+            //递归展示上级分类
+            function recursiveShow($showTr) {
+                var pid = $showTr.attr("pid");
+                $showTr.css("display","table-row");
+                if(pid==="0"){
+                    return false;
+                }else{
+                    $showTr = $("tr[id="+pid+"]",_treeTable);
+                    recursiveShow($showTr);
+                }
+            }
+        });
+        
+
+        $("#reset").click(function(){
+            $("#classifyName").val("");
+        });
+
+        treeInit();
+        $(_treeTable).on("click",".tree-table-sort",function () {
+            if(this.children.length > 0){
+                return;
+            }
+
+            $(this).html("<input id='' class='tree-table-sort-input' type='text'  value='"+$(this).html()+"' />");
+            $(this).find('input:first').focus();
+        });
+
+        $(_treeTable).on("blur",".tree-table-sort-input",function () {
+            var reg = /^[1-9]\d*$|^0$/;
+            if (this.value == "" || ( this.value != "" && !reg.test(this.value) )) {
+                var errorMsg = '输入内容必须为数字并且不能为空';
+                $(this).css('border', '1px solid red');
+                $(this).css('color', '#ec5644');
+                $(this).val(errorMsg);
+                $(this).focus();
+                return false;
+            }
+            var $this = $(this);
+            $.post("/web/product/productClassify/updateSort", {id: $(this).parent().attr("data-id"), sort: $this.val()}, function () {
+                //window.location.href = "/web/product/productClassify/toClassifyList";
+                $this.parent().html($this.val());
+            })
+        })
+    });
+
+    var _treeTable = $('#treeTable');
+    function treeInit() {
+        var option = {
+            theme: 'vsStyle',
+            expandLevel: 1,
+            beforeExpand: function ($treeTable, id) {
+                //判断id是否已经有了孩子节点，如果有了就不再加载，这样就可以起到缓存的作用
+                if ($('.' + id, $treeTable).length) {
+                    return false;
+                }
+            }
+        };
+
+        $.ajax({
+            type:"post",
+            dataType:"json",
+            url:"/web/product/productClassify/getClassifyList",
+            success:function (data) {
+                _treeTable.find('tbody').remove();
+                var treeTable = $(_treeTable).html() + "<tbody>";
+                $(data.data).each(function (i, _data) {
+                    treeTable += $("#tree_tbody").adapterHtmlHandler(_data);
+                    //缓存一个分类名称数组
+                    cacheClassifyName.push(_data.classifyName);
+                });
+                treeTable += "</tbody>";
+                _treeTable.html(treeTable);
+                //对父级排序值相同的重新组合
+                _treeTable.treeTable(option).treeSort();
+                _treeTable.find('[data-fun],[data-type]').each(function(i,tr){
+                    $(tr).renderElementByInnerHtml();
+                })
+            }
+        });
+
+        $.fn.treeSort = function () {
+            var pidArr = [];
+            $("tr[pid]", $(this)).each(function (i, tr) {
+                pidArr.push($(tr).attr("pid"));
+            });
+            pidArr = Array.prototype.unique.call(pidArr);
+            pidArr.forEach(function (pid) {
+                var parent = $("tr[id=" + pid + "]");
+                if (parent.length !== 0) {
+                    parent.after($("[pid=" + pid + "]"));
+                }
+            });
+        }
+    }
+
+    //状态处理
+    function statusHandler(value) {
+        return value == 0 ? '<font color="#ccc">已停用</font>':"已启用";
+    }
+
+    //状态操作处理
+    function statusTargetHandler(value, id) {
+        //如果类型状态本来是停用0,则把目的状态设为启用1
+        var en = '';
+        if ([[${session.classifyEnable}]]) {
+            en = '<a class="status_enable_btn" onclick="statusClassify(' + id + ',' + 1 + ')" href="javascript:void(0);">启用</a>'
+        }
+        var dis = '';
+        if ([[${session.classifyDisable}]]) {
+            dis =  '<a class="status_disable_btn" onclick="statusClassify(' + id + ',' + 0 + ')" href="javascript:void(0);">停用</a>'
+        }
+        return value == 0 ? en : dis;
+    }
+
+    //确认删除
+    function deleteClassify(id){
+        layer.confirm('确定此操作吗？',{
+            title: "删除",
+            icon: 3,
+            btnAlign: 'c',
+            closeBtn : 0
+        }, function(index){
+            $.ajax({
+                url:'/web/product/productClassify/deleteProductClassify',
+                type:'POST',
+                data:{id:id},
+                dataType:'json',
+                success:function(data){
+                    if(data.success){
+                        layer.alert('操作成功', {icon: 1,btnAlign: 'c', closeBtn : 0},
+                            function(){
+                                window.location.reload();
+                            });
+                    }else{
+                        layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                        return false;
+                    }
+                }
+            });
+            layer.close(index);
+        })
+
+    }
+
+    //启用/停用
+    function statusClassify(id, handle){
+        var title = "停用";
+        url = "/web/product/productClassify/disableProductClassify";
+        if(handle == 1){
+            title = "启用";
+            url = "/web/product/productClassify/enableProductClassify";
+        }
+        layer.confirm('确定此操作吗？',{
+            title: title,
+            icon: 3,
+            btnAlign: 'c',
+            closeBtn : 0
+        }, function(index){
+            $.ajax({
+                url: url,
+                type:'POST',
+                data:{id:id},
+                dataType:'json',
+                success:function(data){
+                    if(data.success){
+                        layer.alert('操作成功', {icon: 1,btnAlign: 'c', closeBtn : 0},
+                            function(){
+                                window.location.reload();
+                            });
+                    }else{
+                        layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                        return false;
+                    }
+                }
+            })
+            layer.close(index);
+        })
+    }
+</script>
+</body>
+</html>

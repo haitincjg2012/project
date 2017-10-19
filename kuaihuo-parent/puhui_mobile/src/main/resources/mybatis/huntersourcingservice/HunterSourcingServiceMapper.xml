@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.huntersourcingservice.SourcingServiceDao">
+
+	
+	<!--批发商货源服务列表 -->
+	<select id="getSourcingServiceList" resultType="Map" parameterType="map">
+		SELECT
+		s.id, 
+		s.detail 
+		FROM `alq_hunter_service` s
+		where s.hunter_id=#{hunter_id}
+	</select>
+	
+	
+</mapper>

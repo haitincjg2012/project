@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MemberShareRecordMapper">
+	
+	<!-- 根据手机号得到分享记录 -->
+	<select id="getShareRecordInfoByTelphone" parameterType="com.ph.shopping.facade.member.entity.MemberShareRecord" resultType="com.ph.shopping.facade.member.vo.MemberShareRecordVO">
+		SELECT
+			a.id,
+			a.telPhone,
+			a.userId,
+			a.toTelPhone,
+			a.type,
+			a.createTime,
+		 	b.memberName userName
+		FROM
+			ph_member_share_record a
+		INNER JOIN ph_member b ON a.userId = b.id
+		WHERE
+			a.type = #{type}
+		AND
+			a.toTelPhone = #{toTelPhone}
+	</select>
+</mapper>

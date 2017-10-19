@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>创建订单</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">订单管理</a>&nbsp;&gt;&nbsp;<a href="#">线下订单</a>&nbsp;&gt;&nbsp;<span>创建订单</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit no_border">
+            <h2>创建线下订单</h2>
+        </div>
+        <!--end 标题-->
+        <!--创建订单-->
+        <form id="addForm">
+            <div class="ph_methodBox ph_setUp">
+                <p class="ph_methPass">
+                    <label for="">操作类型：</label>
+                    <span class="ph_setUpTxt">
+                        <input class="Js_radio" name="setup" type="radio" value="2" checked="checked">手机号</span>
+                    <span class="ph_setUpTxt">
+                        <input class="Js_radio" name="setup" type="radio" value="3">会员卡</span><!--<span class="ph_setUpTxt"><input class="Js_radio" name="setup" type="radio" value="2">会员APP扫码支付</span>-->
+                </p>
+                <p class="ph_methPass">
+                    <label for="">会员手机：</label>
+                    <input class="js_phone validate[required, maxSize[11],custom[memberTelphone]]" name="" type="text" id="memberTelphone" >
+                    <span class="checkPhoneMsg"></span>
+                </p>
+                <p class="ph_methPass">
+                    <label for="">会员卡号：</label>
+                    <input class="js_card validate[required, maxSize[10],custom[memberCardNo]]" name="" type="text" id="memberCardNo" disabled="disabled" >
+                    <span class="checkCardMsg card"></span>
+                </p>
+                <p class="ph_methPass">
+                    <label for="">订单金额(元)：</label>
+                    <input name="" type="text" id="orderMoney" class="validate[required] ph_validate">
+                </p>
+                <p class="ph_methPass">
+                    <label for="">支付方式：</label>
+                    <span class="ph_setUpTxt">
+                        <input class="Js_radio" name="setupOne" type="radio" value="0" checked="checked">现金支付</span>
+                    <span class="ph_setUpTxt">
+                        <input class="Js_radio scoreType" name="setupOne" type="radio" value="1" id="scoreType">积分支付</span><!--<span class="ph_setUpTxt"><input class="Js_radio" name="setup" type="radio" value="2">会员APP扫码支付</span>-->
+                </p>
+                <p class="ph_methPass Js_setUpOne">
+                    <label for="">支付密码：</label>
+                    <input name="" type="password" id="password">
+                </p>
+               <p class="ph_methPass  Js_setUpTwo hide">
+					<label for=""> <span class="require">*</span>验证码：
+					</label> <input id="smsCode" name="smsCode" type="text"> 
+					<span class="provingImg"><input class="provingTxt ph_noBor" id="smsId" type="button" value="获取验证码" onclick="getSmsCode()">
+					</span>
+				</p>
+				
+				
+            </div>
+        </form>
+        <!--end 创建订单-->
+        <!--返回按钮-->
+        <div class="PopupBtn btnLeft">
+            <input class="submit" name="" type="button" th:onclick="'unlineOrderSubmit();'" value="确认付款">
+            <input class="cancel" name="" type="button" th:onclick="'toPageList();'" value="取消">
+        </div>
+        <!--end 返回按钮-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<!--遮罩层-->
+<!--<div class="maskBox"></div>-->
+<!--end 遮罩层-->
+<!--扫码支付弹窗-->
+<!--<div class="PopupBox setUpBox">
+    <h2>扫码支付</h2>
+    &lt;!&ndash;关闭按钮&ndash;&gt;
+    <a href="javascript: void(0);" class="close"></a>
+    &lt;!&ndash;end 关闭按钮&ndash;&gt;
+    &lt;!&ndash;内容&ndash;&gt;
+    <div class="PopupCon">
+        <div class="setUpTxt">
+            <p>重庆好吃点有限公司</p>
+            <p class="require">订单总金额：10000.00元</p>
+            <p class="ph_setUpImg"><img src="images/ewm.png" alt=""></p>
+        </div>
+        <div class="PopupBtn">
+            <input class="cancel" name="" type="button" value="取消">
+        </div>
+    </div>
+    &lt;!&ndash;end 内容&ndash;&gt;
+</div>-->
+<!--end 扫码支付弹窗-->
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/util.js}"></script>
+<!--属性输入框的增加和删除-->
+<script type="text/javascript" th:src="@{/static/js/common/attrbox.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/readTime.js}"></script>
+<script type="text/javascript">
+    var memberTelphone;
+    var memberCardNo;
+    $(function(){
+        $(".checkCardMsg").css({color:"red"});
+        $(".checkPhoneMsg").css({color:"red"});
+        $('.ph_methPass .Js_radio').on('click',function(){
+            var radioNm = $(this).val();
+            switch (parseInt(radioNm)){
+                case 0 :
+                    $('.ph_setUp').find('.Js_setUpTwo').addClass('hide');
+                    $('.ph_setUp').find('.Js_setUpOne').removeClass('hide');
+                    break;
+                case 1 :
+                    $('.ph_setUp').find('.Js_setUpTwo').removeClass('hide');
+                    $('.ph_setUp').find('.Js_setUpOne').addClass('hide');
+                    break;
+                case 2 :
+                    $(".checkPhoneMsg").text("");
+                    $(".checkCardMsg").text("");
+                    addDisable ("js_card");
+                    removeDisable("js_phone");
+                    $('.js_card').val("");
+                    $('.js_phone').val("");
+                    break;
+                case 3 :
+                    $(".checkPhoneMsg").text("");
+                    $(".checkCardMsg").text("");
+                    addDisable ("js_phone");
+                    removeDisable("js_card");
+                    removeDisable("scoreType");
+                    $('.js_card').val("");
+                    $('.js_phone').val("");
+                    break;
+                default : ''
+            }
+        });
+        var Popupe = new PopupBase();
+        Popupe.hide('.close', '.maskBox,.setUpBox');
+        //处理手机号和会员卡号失去焦点--star
+        $('#memberTelphone').blur(function(){
+            removeDisable("scoreType");
+            $("#memberCardNo").val("");
+            memberTelphone = $(this).val();
+            if(memberTelphone.trim() == ""){
+                layer.alert("手机号不能为空", {icon: 2,btnAlign: 'c', closeBtn : 0});
+            }else{
+                var isMob=/^1(3|4|5|7|8)\d{9}$/;
+                if (isMob.test(memberTelphone)){
+                    $.ajax({
+                        url:"/web/orderUnline/getPhoneOrCard",
+                        type:"post",
+                        async:false,
+                        data:{
+                            "telPhone":memberTelphone
+                        },
+                        dataType:"json",
+                        success:function (data) {
+                            if (data.success){
+                                $(".checkCardMsg").text("");
+                                if (data.data==null){
+                                    addDisable("scoreType");
+                                    $(".checkCardMsg").text("手机号没有绑定会员卡");
+//                                    layer.alert("手机号没有绑定会员卡", {icon: 2,btnAlign: 'c', closeBtn : 0});
+                                }else {
+                                    $("#memberCardNo").val(data.data.innerCode);
+                                }
+                            }
+                        }
+                    });
+                }else {
+                    layer.alert("请输入正确的手机号", {icon: 2,btnAlign: 'c', closeBtn : 0});
+                }
+            }
+
+        });
+        $('#memberCardNo').blur(function(){
+            $("#memberTelphone").val("");
+            memberCardNo = $(this).val();
+            if(memberCardNo.trim() == ""){
+                layer.alert("会员卡号不能为空", {icon: 2,btnAlign: 'c', closeBtn : 0});
+            }else{
+                $.ajax({
+                    url:"/web/orderUnline/getPhoneOrCard",
+                    type:"post",
+                    async:false,
+                    data:{
+                        "innerCode":memberCardNo
+                    },
+                    dataType:"json",
+                    success:function (data) {
+                        if (data.success){
+                            $(".checkPhoneMsg").text("");
+                            if (data.data==null){
+                                $(".checkPhoneMsg").text("此会员卡没有绑定会员");
+                            }else {
+                                $("#memberTelphone").val(data.data.telPhone);
+                            }
+                        }else {
+                            layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                        }
+                    }
+                });
+            }
+        });
+        //处理手机号和会员卡号失去焦点--end
+    });
+    //获取验证码
+    function getSmsCode() {
+        if (checkParam($("#memberCardNo").val().trim(),"会员卡号")){
+            var data = {"memberCardNo":$("#memberCardNo").val()};
+            //获取电话号码
+            $.post("/web/orderUnline/sendValidCode", data, function(data, textStatus, req) {
+                if(data.success) {
+                    layer.alert(data.message, {icon: 1,btnAlign: 'c', closeBtn : 0});
+                    ReadTime.readTime("smsId");//霞哥看看这里调用读秒
+                }else {
+                    Dialog.alertWarn(data.message);
+                }
+            }, 'json');
+        }
+    }
+
+
+    //提交订单
+    function unlineOrderSubmit() {
+        addDisable ("submit");
+        removeDisable("scoreType");
+        //提交订单校验
+        var flag = validateSubmit();
+        if (!flag) {
+            removeDisable("submit");
+            return;
+        }
+        //订单定额
+        var orderMoney = $("#orderMoney").val().trim();
+        //会员电话
+        var  memberTelphone = $("#memberTelphone").val().trim();
+        //会员卡号(会员卡)
+        var memberCardNo = $("#memberCardNo").val().trim();
+        //支付密码
+        var password = $("#password").val().trim();
+        //短信验证码
+        var validateNo = $("#smsCode").val().trim();
+        //支付方式
+        var payType = $("input[name='setupOne']:checked").val().trim();
+        $.ajax({
+            async:false,
+            url:"/web/orderUnline/add",
+            data:{
+                "orderMoney" :orderMoney,
+                "memberTelphone" :memberTelphone,
+                "memberCardNo":memberCardNo,
+                "payPassWord":password,
+                "verificationCode":validateNo,
+                "payType":payType
+            },
+            type:"POST",
+            dataType:"json",
+            success:function (data) {
+                if (data.success){
+                    layer.confirm('保存成功',{
+                        icon: 1,
+                        btn: ['继续添加', '返回'],
+                        btn1: function(index){
+//		            	layer.close(index);
+                            window.location.href="/web/orderUnline/toAddPage";
+                        },
+                        btn2: function(index){
+                            window.location.href="/web/orderUnline/toListPage";
+                        }
+                    });
+                }else {
+                    removeDisable("submit");
+                    layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                }
+            }
+        });
+
+
+    }
+    /**
+     * 返回到列表页面
+     */
+    function toPageList() {
+        window.location.href="/web/orderUnline/toListPage";
+    }
+    //禁用元素--1
+    function addDisable(cls) {
+        $("." + cls).attr("disabled","disabled");
+    }
+    //启用元素
+    function removeDisable(cls) {
+        $("." + cls).removeAttr('disabled');
+    }
+    //提交订单校验--2
+    function validateSubmit() {
+        //支付方式
+        var payType = $("input[name='setupOne']:checked").val().trim();
+        if (payType.length <= 0) {
+            layer.alert("请选择支付方式", {icon: 2,btnAlign: 'c', closeBtn : 0});
+            return false;
+        }
+
+        //订单定额
+        var orderMoney = $("#orderMoney").val().trim();
+        //会员手机
+        var memberTelphone = $("#memberTelphone").val().trim();
+        //会员卡号
+        var memberCardNo = $("#memberCardNo").val().trim();
+        //支付密码
+        var password = $("#password").val().trim();
+        //短信验证码
+        var validateNo = $("#smsCode").val().trim();  
+        if (checkParam(orderMoney,"订单金额")
+            &&checkParam(memberTelphone,"会员手机号")){
+            if (payType==0){
+                if (checkParam(password,"支付密码")){
+                    return true;
+                }else {
+                    return false;
+                }
+            }else {
+                if (checkParam(validateNo,"短信验证码")){
+                    return true;
+                }else {
+                    return false;
+                }
+            }
+        }else {
+            return false;
+        }
+    }
+    //验证单个内容
+    function checkParam(content,desc) {
+        if(content.trim().length<=0){
+            if ("会员手机号".valueOf() == desc){
+                if ($("#memberCardNo").val().trim().length>0){
+                    layer.alert(desc+"不能为空，请输入可用的会员卡号",{icon: 2,btnAlign: 'c', closeBtn : 0});
+                    return false;
+                }
+            }
+            layer.alert(desc+"，不能为空",{icon: 2,btnAlign: 'c', closeBtn : 0});
+            return false;
+        }
+        if("订单金额".valueOf() == desc){
+            if (isNaN(content)){
+                layer.alert(desc+"，请输入正确的金额格式",{icon: 2,btnAlign: 'c', closeBtn : 0});
+                return false;
+            }else {
+                if (Number(content)<=0){
+                    layer.alert(desc+"，请输入金额要大于0",{icon: 2,btnAlign: 'c', closeBtn : 0});
+                    return false;
+                }else {
+                    var dot = content.indexOf(".");
+                    if(dot != -1&&dot != 0){
+                        var dotCnt = content.substring(dot+1,dot.length);
+                        if(dotCnt.length>2){
+                            layer.alert(desc+"，请输入正确的金额格式(只能两位小数)",{icon: 2,btnAlign: 'c', closeBtn : 0});
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+</script>
+</body>
+</html>

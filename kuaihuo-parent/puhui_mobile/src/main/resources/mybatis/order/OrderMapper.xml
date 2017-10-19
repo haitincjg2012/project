@@ -1,0 +1,848 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.order.OrderDao" >
+	<resultMap type="com.alqsoft.entity.order.Order" id="orderMap">
+		<result column="id" property="id"/>
+		<association  property="member" autoMapping="true" foreignColumn="id"  column="member_id" javaType="com.alqsoft.entity.member.Member" select="getMemberById" />
+		<association  property="hunter" autoMapping="true" foreignColumn="id"  column="hunter_id" javaType="com.alqsoft.entity.hunter.Hunter" select="getHunterById" />
+		<association  property="proArea" autoMapping="true" foreignColumn="id"  column="pro_area_id" javaType="com.alqsoft.entity.area.Area" select="getProAreaById" />
+	</resultMap>
+
+	<resultMap id="BaseResultMap" type="com.alqsoft.vo.OrderVO" >
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<!--<result column="create_user" property="createUser" jdbcType="VARCHAR" />
+		<result column="created_ip" property="createdIp" jdbcType="VARCHAR" />
+		<result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />-->
+		<result column="actual_money" property="actualMoney" jdbcType="BIGINT" />
+		<result column="message" property="message" jdbcType="VARCHAR" />
+		<result column="negotiate_price" property="negotiatePrice" jdbcType="BIGINT" />
+		<result column="order_no" property="orderNo" jdbcType="VARCHAR" />
+		<result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
+		<result column="pay_time" property="payTime" jdbcType="TIMESTAMP" />
+		<result column="pay_type" property="payType" jdbcType="INTEGER" />
+		<result column="receive_address" property="receiveAddress" jdbcType="VARCHAR" />
+		<result column="receive_name" property="receiveName" jdbcType="VARCHAR" />
+		<result column="receive_phone" property="receivePhone" jdbcType="VARCHAR" />
+		<result column="receive_time" property="receiveTime" jdbcType="TIMESTAMP" />
+		<result column="send_time" property="sendTime" jdbcType="TIMESTAMP" />
+		<result column="service_money" property="serviceMoney" jdbcType="BIGINT" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="subscription_money" property="subscriptionMoney" jdbcType="BIGINT" />
+		<result column="hunter_id" property="hunterId" jdbcType="BIGINT" />
+		<result column="industry_association_id" property="industryAssociationId" jdbcType="BIGINT" />
+		<result column="member_id" property="memberId" jdbcType="BIGINT" />
+		<result column="product_id" property="productId" jdbcType="BIGINT" />
+		<result column="product_specification_id" property="productSpecificationId" jdbcType="BIGINT" />
+		<result column="product_type_id" property="productTypeId" jdbcType="BIGINT" />
+		<result column="refund_msg" property="refundMsg" jdbcType="VARCHAR" />
+		<result column="num" property="num" jdbcType="INTEGER" />
+		<result column="order_sub_no" property="orderSubNo" jdbcType="VARCHAR" />
+
+		<result column="total_price" property="totalPrice" jdbcType="BIGINT" />
+		<result column="direct_hunter_after_money" property="directHunterAfterMoney" jdbcType="BIGINT" />
+		<result column="direct_hunter_fen" property="directHunterFen" jdbcType="BIGINT" />
+		<result column="industry_after_money" property="industryAfterMoney" jdbcType="BIGINT" />
+		<result column="industry_fen" property="industryFen" jdbcType="BIGINT" />
+		<result column="recommend_hunter_after_money" property="recommendHunterAfterMoney" jdbcType="BIGINT" />
+		<result column="recommend_hunter_fen" property="recommendHunterFen" jdbcType="BIGINT" />
+		<result column="refund_type" property="refundType" jdbcType="INTEGER" />
+		<result column="serial_num" property="serialNum" jdbcType="VARCHAR" />
+		<result column="apply_refund_time" property="applyRefundTime" jdbcType="TIMESTAMP" />
+		<result column="hunter_refund_msg" property="hunterRefundMsg" jdbcType="VARCHAR" />
+		<result column="refund_time" property="refundTime" jdbcType="TIMESTAMP" />
+		<result column="fen_run_status" property="fenRunStatus" jdbcType="INTEGER" />
+
+		<result column="puhui_fen" property="puhuiFen" jdbcType="BIGINT" />
+		<result column="puhui_run_status" property="puhuiRunStatus" jdbcType="INTEGER" />
+		<result column="product_name" property="productName" jdbcType="VARCHAR" />
+		<result column="product_sale_price" property="productSalePrice" jdbcType="BIGINT" />
+		<result column="product_specification_name" property="productSpecificationName" jdbcType="VARCHAR" />
+		<result column="product_type_name" property="productTypeName" jdbcType="VARCHAR" />
+		<result column="imgAddress" property="imgAddress" jdbcType="VARCHAR"/>
+
+		<result column="subscription_time" property="subscriptionTime" jdbcType="TIMESTAMP" />
+
+		<result column="productStatus" property="productStatus" jdbcType="VARCHAR"/>
+
+		<result column="negotiate_time" property="negotiateTime" jdbcType="TIMESTAMP"/>
+		<result column="negotiate_price_status" property="negotiatePriceStatus" jdbcType="INTEGER"/>
+	</resultMap>
+	<sql id="Base_Column_List" >
+		o.id, o.num, o.actual_money, o.message, o.negotiate_price,o.created_time,
+		o.order_no, o.pay_time, o.pay_type, o.receive_address, o.receive_name, o.receive_phone, o.receive_time,
+		o.send_time, o.service_money, o.status, o.subscription_money,o.hunter_id, o.industry_association_id,
+		o.member_id, o.product_id, o.product_specification_id, o.product_type_id, o.refund_msg,order_sub_no,
+		 o.total_price, o.direct_hunter_after_money, o.direct_hunter_fen, o.industry_after_money,
+       o.industry_fen, o.recommend_hunter_after_money, o.recommend_hunter_fen, o.refund_type, o.serial_num,
+       o.apply_refund_time, o.hunter_refund_msg, o.refund_time, o.fen_run_status,o.puhui_fen,
+       o.puhui_run_status,o.product_name,o.product_sale_price,o.product_specification_name ,
+       o.product_type_name,o.subscription_time,p.status as productStatus ,o.negotiate_price_status,
+	   o.hope_service_date,o.predict_service_date
+
+	</sql>
+
+	<select id="getOrder" resultMap="BaseResultMap" parameterType="java.util.Map" >
+		select
+		<include refid="Base_Column_List" /> ,
+		(
+		SELECT p.imageurl FROM alq_product p WHERE p.id=o.product_id) imgAddress
+
+		from alq_order o,alq_product p
+		<where>
+			and o.product_id = p.id
+			<if test="type==0">
+				and 	o.member_id = #{mid,jdbcType=BIGINT}
+			</if>
+
+			<if test="type==1">
+				and	o.hunter_id= #{hid,jdbcType=BIGINT}
+			</if>
+			and o.id = #{oid,jdbcType=BIGINT}
+		</where>
+
+
+
+
+	</select>
+
+
+	<!-- 判断会员是否已经在该批发商有存在的完成订单，用于app首页直接给批发商评价 -->
+	<select id="getMemberHaveOrderForHunterCommentCount" resultType="int" parameterType="map">
+		SELECT COUNT(*) FROM alq_order o WHERE o.hunter_id=#{hunterid} AND o.member_id=#{memberid}  AND o.status>3
+	</select>
+
+	<select id="findOrderByWaitPay" resultType="map" parameterType="map">
+		SELECT 
+			o.id,
+			o.order_no,
+			h.nickname,
+			o.status,
+			p.name,
+			t.content,
+			p.imageurl AS address,
+			s.price,
+			o.num,
+			o.total_price,
+			m.im_id AS mImId,
+			m1.im_id AS hImId
+		FROM alq_order AS o,
+			 alq_hunter AS h,
+			 alq_product AS p,
+			 alq_product_type AS t,
+			 alq_product_specification AS s,
+			 alq_member AS m,
+			 alq_member AS m1
+		WHERE o.hunter_id=h.id
+		  AND o.product_id=p.id
+		  AND o.product_type_id=t.id
+		  AND o.product_specification_id=s.id
+		  AND o.member_id=m.id
+		  AND m1.hunter_id=h.id
+		  AND o.status=0
+		  AND o.member_id=#{id}
+		ORDER BY o.created_time DESC LIMIT #{startIndex},#{endIndex}
+	</select>
+	<select id="findOrderByWaitPayCount" resultType="int" parameterType="Long">
+		SELECT 
+			COUNT(*)
+		FROM alq_order AS o,
+			 alq_hunter AS h,
+			 alq_member AS m
+		WHERE o.hunter_id=h.id
+		  AND m.hunter_id=h.id
+		  AND m.id=#{id}
+		  AND o.status=0
+	</select>
+
+	<select id="findOrderBySubscription" resultType="map" parameterType="map">
+		SELECT 
+			o.id,
+			o.order_no,
+			h.nickname,
+			o.status,
+			p.name,
+			t.content,
+			s.price,
+			p.imageurl AS address,
+			o.num,
+			o.total_price,
+			o.subscription_money,
+			m.im_id AS mImId,
+			m1.im_id AS hImId
+		FROM alq_order AS o,
+			 alq_hunter AS h,
+			 alq_product AS p,
+			 alq_product_type AS t,
+			 alq_product_specification AS s,
+			 alq_member AS m,
+			 alq_member AS m1
+		WHERE o.hunter_id=h.id
+		  AND o.product_id=p.id
+		  AND o.product_type_id=t.id
+		  AND o.product_specification_id=s.id
+		  AND o.member_id=m.id
+		  AND m1.hunter_id=h.id
+		  AND o.status=1
+		  AND o.member_id=#{id}
+		ORDER BY o.created_time DESC LIMIT #{startIndex},#{endIndex}
+	</select>
+	<select id="findOrderBySubscriptionCount" resultType="int" parameterType="Long">
+		SELECT 
+			COUNT(*)
+		FROM alq_order AS o,
+			 alq_hunter AS h,
+			 alq_member AS m
+		WHERE o.hunter_id=h.id
+		  AND m.hunter_id=h.id
+		  AND m.id=#{id}
+		  AND o.status=1
+	</select>
+
+	<select id="findOrderByWaitForSend" resultType="map" parameterType="map">
+		SELECT 
+			o.id,
+			o.order_no,
+			h.nickname,
+			o.status,
+			p.name,
+			t.content,
+			s.price,
+			p.imageurl AS address,
+			o.num,
+			o.total_price,
+			o.receive_name,
+			o.receive_address,
+			o.receive_phone,
+			m.im_id AS mImId,
+			m1.im_id AS hImId
+		FROM alq_order AS o,
+			 alq_hunter AS h,
+			 alq_product AS p,
+			 alq_product_type AS t,
+			 alq_product_specification AS s,
+			 alq_member AS m,
+			 alq_member AS m1
+		WHERE o.hunter_id=h.id
+		  AND o.product_id=p.id
+		  AND o.product_type_id=t.id
+		  AND o.product_specification_id=s.id
+		  AND o.member_id=m.id
+		  AND m1.hunter_id=h.id
+		  AND o.status=2
+		  AND o.member_id=#{id}
+		ORDER BY o.created_time DESC LIMIT #{startIndex},#{endIndex}
+	</select>
+	<select id="findOrderByWaitForSendCount" resultType="int" parameterType="Long">
+		SELECT 
+			COUNT(*)
+		FROM alq_order AS o,
+			 alq_hunter AS h,
+			 alq_member AS m
+		WHERE o.hunter_id=h.id
+		  AND m.hunter_id=h.id
+		  AND m.id=#{id}
+		  AND o.status=2
+	</select>
+
+	<select id="findOrderBySend" resultType="map" parameterType="map">
+		SELECT 
+			o.id,
+			o.order_no,
+			h.nickname,
+			o.status,
+			p.name,
+			t.content,
+			s.price,
+			p.imageurl AS address,
+			o.num,
+			o.total_price,
+			o.receive_name,
+			o.receive_address,
+			o.receive_phone,
+			m.im_id AS mImId,
+			m1.im_id AS hImId
+		FROM alq_order AS o,
+			 alq_hunter AS h,
+			 alq_product AS p,
+			 alq_product_type AS t,
+			 alq_product_specification AS s,
+			 alq_member AS m,
+			 alq_member AS m1
+		WHERE o.hunter_id=h.id
+		  AND o.product_id=p.id
+		  AND o.product_type_id=t.id
+		  AND o.product_specification_id=s.id
+		  AND o.member_id=m.id
+		  AND m1.hunter_id=h.id
+		  AND o.status=3
+		  AND o.member_id=#{id}
+		ORDER BY o.created_time DESC LIMIT #{startIndex},#{endIndex}
+	</select>
+	<select id="findOrderBySendCount" resultType="int" parameterType="Long">
+		SELECT 
+			COUNT(*)
+		FROM alq_order AS o,
+			 alq_hunter AS h,
+			 alq_member AS m
+		WHERE o.hunter_id=h.id
+		  AND m.hunter_id=h.id
+		  AND m.id=#{id}
+		  AND o.status=3
+	</select>
+
+	<select id="getOrderByOrderIdAndMid" resultMap="orderMap" parameterType="map">
+		SELECT 
+			*
+		FROM alq_order AS o,
+			 alq_hunter h,
+			 alq_member m
+		WHERE o.hunter_id=h.id
+		  AND m.hunter_id=h.id
+		  AND m.id=#{mId}
+		  AND o.id=#{orderId}
+	</select>
+	<!-- 批发商收入明细 -->
+	<select id="findOrderByHunterId" resultType="Map" parameterType="map">
+		SELECT o.id AS id,
+		o.order_no AS orderNum,
+		m.created_time AS createdTime,<!-- 分润时间，收货时间 -->
+		IFNULL(ROUND(SUM(o.total_price)/100,2),0) AS totalPrice,<!-- 订单金额 -->
+		IFNULL(ROUND(SUM(o.direct_hunter_fen)/100,2),0) AS serviceMoney,<!-- 分润金额 -->
+		IFNULL(ROUND(SUM(o.direct_hunter_fen)/100,2),0) AS realMoney <!--实际收入 -->
+		FROM alq_order AS o, alq_member_money AS m
+		WHERE o.order_sub_no=m.order_sub_no
+		AND o.hunter_id=#{hunterId}
+		AND o.fen_run_status=1
+		AND (o.status=7 OR o.status=4)
+		GROUP BY o.order_no
+		ORDER BY o.created_time DESC
+		LIMIT #{startIndex},#{endIndex}
+	</select>
+	<!-- 批发商收入订单明细 -->
+	<select id="findOrderByorderNum" resultType="Map" parameterType="map">
+		SELECT o.order_no AS orderNum,
+			    m.created_time AS createdTime,
+			   IFNULL(ROUND(SUM(o.total_price)/100,2),0) AS totalPrice,
+			   IFNULL(ROUND(SUM(o.direct_hunter_fen)/100,2),0) AS serviceMoney,
+			   IFNULL(ROUND(SUM(o.direct_hunter_fen)/100,2),0) AS realMoney 
+		FROM alq_order AS o , alq_member_money AS m
+		WHERE  o.order_sub_no=m.order_sub_no
+			  AND o.hunter_id=#{hunterId} 
+			  AND o.fen_run_status=1
+			  AND (o.status=7 OR o.status=4) 
+			  AND o.order_no=#{orderNum}
+	</select>
+
+	<select id="getOrderById" resultMap="orderMap" parameterType="Long">
+		SELECT 
+			*
+		FROM alq_order AS o
+		WHERE o.id=#{orderId}
+	</select>
+
+
+	<select id="getOrderByIdAndWait" resultType="map" parameterType="map">
+		SELECT 
+			o.id,
+			o.receive_name,
+			o.receive_address,
+			o.receive_phone,
+			o.message,
+	    	p.name,
+			s.price,
+			p.imageurl AS address,
+			t.content,
+			o.num,
+			o.pay_type,
+			o.subscription_money,
+			o.negotiate_price,
+			o.service_money,
+			o.actual_money,
+			o.order_no,
+			o.created_time,
+			o.pay_time,
+			o.status,
+			m.im_id AS mImId,
+			m1.im_id AS hImId
+	   FROM alq_order AS o,
+	   		alq_hunter AS h,
+	    	alq_product AS p,
+			alq_product_type AS t,
+			alq_product_specification AS s,
+			alq_member AS m,
+			alq_member AS m1
+	  WHERE o.status=2
+	 	AND o.hunter_id=h.id
+		AND o.product_id=p.id
+		AND o.product_type_id=t.id
+		AND o.product_specification_id=s.id
+		AND o.member_id=m.id
+		AND m1.hunter_id=h.id
+	    AND o.id=#{id}
+	</select>
+
+
+	<select id="getOrderListByStatus" resultType="map" parameterType="map">
+		SELECT
+		o.id,
+		o.order_no,
+		h.id AS hId,
+		p.id AS pId,
+		h.nickname,
+		o.status,
+		p.name,
+		a.address AS logoImg,
+		o.product_specification_name AS content,
+		ROUND(IFNULL(o.product_sale_price,0)/100,2) AS price,
+		p.imageurl AS address,
+		o.num,
+		o.pay_type,
+		ROUND(IFNULL(o.total_price,0)/100,2) AS total_price,
+		ROUND(IFNULL(o.subscription_money,0)/100,2) AS subscription_money,
+		ROUND(IFNULL(o.negotiate_price,0)/100,2) AS negotiate_price,
+		m.im_id AS mImId,
+		m1.im_id AS hImId,
+		o.fen_run_status
+		FROM alq_order AS o,
+		alq_hunter AS h,
+		alq_product AS p,
+		alq_attachment AS a,
+		alq_member AS m,
+		alq_member AS m1
+		WHERE o.product_id=p.id
+		AND o.hunter_id=h.id
+		AND o.member_id=m.id
+		AND h.logo_attachment_id=a.id
+		AND m1.hunter_id=h.id
+		AND o.member_id=#{id}
+		<if test="status == 0 or status == '0'">
+			AND o.status IN (#{status})
+			ORDER BY o.created_time DESC
+		</if>
+		<if test="status == 1 or status == '1'">
+			AND o.status IN (#{status})
+			ORDER BY o.subscription_time DESC
+		</if>
+		<if test="status == 2 or status == '2'">
+			AND o.status IN (#{status})
+			ORDER BY o.pay_time DESC
+		</if>
+		<if test="status == 3 or status == '3'">
+			AND o.status IN (#{status})
+			ORDER BY o.send_time DESC
+		</if>
+		<if test="status == 4 or status == '4'">
+			AND o.status IN (#{status})
+			ORDER BY o.created_time DESC
+		</if>
+		<if test="status == 5 or status == '5'">
+			AND o.status IN (#{status})
+			ORDER BY o.apply_refund_time DESC
+		</if>
+		<if test="status == 6 or status == '6'">
+			AND o.status IN (#{status})
+			ORDER BY o.refund_time DESC
+		</if>
+		<if test="status == 7 or status == '7'">
+			AND o.status IN (#{status})
+			ORDER BY o.receive_time DESC
+		</if>
+		LIMIT #{startIndex},#{endIndex}
+	</select>
+
+	<select id="getOrderListByStatusCount" resultType="int" parameterType="map">
+		SELECT
+		COUNT(*)
+		FROM alq_order AS o
+		WHERE o.member_id=#{id}
+		<if test="status != null and status != ''">
+			AND o.status IN (#{status})
+		</if>
+	</select>
+
+	<select id="getHunterOrderListByStatus" resultType="map" parameterType="map">
+		SELECT
+		o.id,
+		o.receive_name,
+		o.receive_address,
+		o.receive_phone,
+		o.message,
+		h.nickname,
+		p.name,
+		ROUND(IFNULL(o.product_sale_price,0)/100,2) AS price,
+		p.imageurl AS address,
+		o.product_specification_name AS content,
+		o.num,
+		a.address AS logoImg,
+		o.pay_type,
+		ROUND(IFNULL(o.subscription_money,0)/100,2) AS subscription_money,
+		ROUND(IFNULL(o.negotiate_price,0)/100,2) AS negotiate_price,
+		ROUND(IFNULL(o.service_money,0)/100,2) AS service_money,
+		ROUND(IFNULL(o.total_price,0)/100,2) AS total_price,
+		o.negotiate_price_status,
+		o.order_no,
+		o.created_time,
+		o.status,
+		m.im_id AS mImId,
+		m1.im_id AS hImId
+		FROM alq_order AS o,
+		alq_hunter AS h,
+		alq_product AS p,
+		alq_attachment AS a,
+		alq_member AS m,
+		alq_member AS m1
+		WHERE o.product_id=p.id
+		AND o.hunter_id=h.id
+		AND o.member_id=m.id
+		AND h.logo_attachment_id=a.id
+		AND m1.hunter_id=h.id
+		AND m1.id=#{id}
+		<if test="status == 0 or status == '0'">
+			AND o.status IN (#{status})
+			ORDER BY o.created_time DESC
+		</if>
+		<if test="status == 1 or status == '1'">
+			AND o.status IN (#{status})
+			ORDER BY o.subscription_time DESC
+		</if>
+		<if test="status == 2 or status == '2'">
+			AND o.status IN (#{status})
+			ORDER BY o.pay_time DESC
+		</if>
+		<if test="status == 3 or status == '3'">
+			AND o.status IN (#{status})
+			ORDER BY o.send_time DESC
+		</if>
+		<if test="status == 4 or status == '4'">
+			AND o.status IN (#{status})
+			ORDER BY o.created_time DESC
+		</if>
+		<if test="status == 5 or status == '5'">
+			AND o.status IN (#{status})
+			ORDER BY o.apply_refund_time DESC
+		</if>
+		<if test="status == 6 or status == '6'">
+			AND o.status IN (#{status})
+			ORDER BY o.refund_time DESC
+		</if>
+		<if test="status == 7 or status == '7'">
+			AND o.status IN (#{status})
+			ORDER BY o.receive_time DESC
+		</if>
+		LIMIT #{startIndex},#{endIndex}
+	</select>
+
+	<select id="getHunterOrderListByStatusCount" resultType="map" parameterType="map">
+		SELECT 
+			(SELECT COUNT(*) FROM alq_order o WHERE o.status=0 AND o.hunter_id=h.id) AS dfk,
+			(SELECT COUNT(*) FROM alq_order o WHERE o.status=1 AND o.hunter_id=h.id) AS fdj, 
+			(SELECT COUNT(*) FROM alq_order o WHERE o.status=2 AND o.hunter_id=h.id) AS dfh,
+			(SELECT COUNT(*) FROM alq_order o WHERE o.status=3 AND o.hunter_id=h.id) AS dsh,
+			(SELECT COUNT(*) FROM alq_order o WHERE (o.status=7 OR o.status=4) AND o.hunter_id=h.id) AS dpj,
+			(SELECT COUNT(*) FROM alq_order o WHERE (o.status=5 OR o.status=6) AND o.hunter_id=h.id) AS tk
+		FROM 
+			alq_hunter h,
+			alq_member m
+		WHERE 
+			h.id=m.hunter_id
+		AND m.id=#{id}
+	</select>
+
+	<select id="getMemberById" resultType="com.alqsoft.entity.member.Member" parameterType="Long">
+		SELECT * FROM alq_member WHERE id = #{member_id}
+	</select>
+	<select id="getHunterById" resultType="com.alqsoft.entity.hunter.Hunter" parameterType="Long">
+		SELECT * FROM alq_hunter WHERE id = #{hunter_id}
+	</select>
+
+	<select id="getAllHunterByMember" resultType="java.util.Map" parameterType="java.util.Map">
+		select distinct hunter_id hid from alq_order  where member_id=#{mid} and status =#{status} order by created_time desc
+		limit #{page} , #{size}
+	</select>
+
+	<select id="getAllMemberByMap" resultType="java.util.Map" parameterType="java.util.Map">
+		select distinct member_id mid,order_no orderNo from alq_order  where hunter_id =#{hid} and status =#{status} order by created_time desc
+		limit #{page} , #{size}
+	</select>
+	<!--获取订单信息-->
+	<select id="getOrderNoByMemberAndHunter" resultType="java.util.Map" parameterType="java.util.Map">
+	 select o.order_no orderNo,count(o.order_no)total from alq_order o
+	 where o.member_id= #{mid} and o.status=#{status}  and o.hunter_id=#{hid} group by order_no
+	</select>
+
+	<select id="getOrderByMemberAndOrderNo" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT
+			o.id,
+			o.order_no,
+			h.id AS hId,
+			p.id AS pId,
+			h.nickname,
+			o.status,
+			o.receive_name,
+			o.receive_address,
+			o.receive_phone,
+			p.name,
+			p.start_num,
+			o.product_specification_name AS content,
+			ROUND(IFNULL(o.product_sale_price,0)/100,2) AS price,
+			p.imageurl AS address,
+			IFNULL(o.num,0) num,
+			o.pay_type,
+			ROUND(IFNULL(o.total_price,0)/100,2) AS total_price,
+			ROUND(IFNULL(o.subscription_money,0)/100,2) AS subscription_money,
+			ROUND((IFNULL(o.product_sale_price * o.num - IFNULL(o.subscription_money,0),0))/100,2) AS nego_price,
+			ROUND(IFNULL(o.negotiate_price,0)/100,2) AS negotiate_price,
+			o.negotiate_price_status,
+			m.im_id AS mImId,
+			o.fen_run_status
+	   FROM alq_order AS o,
+	   		alq_hunter AS h,
+	    	alq_product AS p,
+			alq_member AS m,
+			alq_member AS m1
+	  WHERE o.product_id=p.id
+	  	AND o.hunter_id=h.id
+		AND o.member_id=m.id
+		AND m1.hunter_id=h.id
+	      AND o.hunter_id=#{hid} and o.order_no = #{orderNo} and o.member_id=#{mid} and o.status=#{status}
+	</select>
+
+	<select id="getOrderListByOrderNo" parameterType="java.util.Map" resultType="java.util.Map" >
+		SELECT o.id AS id FROM alq_order AS o WHERE o.order_no = #{orderNo} AND o.hunter_id = #{hunterId}
+	</select>
+
+	<select id="getOrderNoByMember" resultType="java.util.Map" parameterType="java.util.Map" >
+		SELECT  distinct order_no orderNo,hunter_id hid FROM alq_order  WHERE member_id = #{mid} and status = #{status}  GROUP BY order_no ORDER BY created_time DESC
+		limit #{page} , #{size}
+	</select>
+
+	<select id="getHunterOrderCountByStatusCount" resultType="Map" >
+		 SELECT
+		    (SELECT COUNT(1) FROM (SELECT  COUNT( DISTINCT o.order_no) FROM alq_order o WHERE o.status=0 AND o.hunter_id=#{id}    GROUP BY  o.order_no ,o.member_id)a) dfk,
+			(SELECT COUNT(1) FROM (SELECT  COUNT( DISTINCT o.order_no) FROM alq_order o WHERE o.status=1  AND o.hunter_id=#{id}  GROUP BY  o.order_no ,o.member_id)b) fdj,
+			(SELECT COUNT(1) FROM (SELECT  COUNT( DISTINCT o.order_no) FROM alq_order o WHERE o.status=2  AND o.hunter_id=#{id}   GROUP BY  o.order_no ,o.member_id)c) dfh,
+			(SELECT COUNT(1) FROM (SELECT  COUNT( DISTINCT o.order_no) FROM alq_order o WHERE o.status=3  AND o.hunter_id=#{id}  GROUP BY  o.order_no ,o.member_id)d) dsh,
+			(SELECT COUNT(1) FROM (SELECT  COUNT( DISTINCT o.order_no) FROM alq_order o WHERE (o.status=7 OR o.status=4)  AND o.hunter_id=#{id}   GROUP BY  o.order_no ,o.member_id)e) dpj,
+			(SELECT COUNT(1) FROM (SELECT  COUNT( DISTINCT o.order_no) FROM alq_order o WHERE (o.status=5 OR o.status=6)  AND o.hunter_id=#{id}  GROUP BY  o.order_no ,o.member_id)f) tk
+			
+			FROM alq_member m WHERE m.hunter_id=#{id}
+	</select>
+	<!-- 尾款价格查订单 -->
+	<select id="getOrderByOrderId" resultMap="orderMap" parameterType="map">
+		SELECT 
+			*
+		FROM alq_order AS o,
+			 alq_member m
+		WHERE o.member_id=m.id
+		  AND m.id=#{mId}
+		  AND o.id=#{orderId}
+	</select>
+
+
+	<select id="getOrderListByCondition" resultType="map" parameterType="map">
+		SELECT
+		o.id,
+		o.order_no,
+		o.product_name ,
+		o.product_specification_name,
+		o.product_type_name ,
+		o.receive_address,
+		o.receive_name,
+		h.id AS hid,
+		p.id AS pid,
+		sp.id as spid,
+		pt.id as stid,
+		h.send_start_time as start_time,
+		h.send_end_time as end_time,
+		h.nickname,
+		o.status,
+		a.address AS logoImg,
+		ROUND(IFNULL(o.product_sale_price,0)/100,2) AS price,
+		p.imageurl AS address,
+		o.num,
+		o.pay_type,
+		ROUND(IFNULL(o.total_price,0)/100,2) AS total_price,
+		ROUND(IFNULL(o.subscription_money,0)/100,2) AS subscription_money,
+		ROUND(IFNULL(o.negotiate_price,0)/100,2) AS negotiate_price,
+		DATE_FORMAT(o.created_time,'%Y-%m-%d %H:%i:%s') as created_time,
+		DATE_FORMAT(o.hope_service_date,'%Y-%m-%d %H:%i:%s') as hope_service_date,
+		m.im_id AS mImId,
+		m1.im_id AS hImId
+		FROM alq_order AS o,
+		alq_hunter AS h,
+		alq_product AS p,
+		alq_attachment AS a,
+		alq_member AS m,
+		alq_member AS m1,
+		alq_product_specification as sp,
+		alq_product_type as pt
+		WHERE o.product_id=p.id
+		AND o.hunter_id=h.id
+		AND o.member_id=m.id
+		AND h.logo_attachment_id=a.id
+		AND m1.hunter_id=h.id
+		and pt.id = sp.product_type_id
+		and o.product_specification_id =  sp.id
+		AND o.order_no = #{orderNo}
+	</select>
+
+
+	<select id="getOrderStatusByOrdeNo" resultType="java.lang.Integer">
+		select status from alq_order where order_no = #{orderNo}
+	</select>
+	<!--买家查询订单列表-->
+	<select id="queryParentOrders" resultType="map" parameterType="map">
+		select
+		o.id , o.order_no orderNo, o.`status` , h.`nickname` as name , a.address headImg
+		from
+		alq_order o left join alq_hunter h
+		on o.hunter_id = h.id left join alq_attachment a
+		on logo_attachment_id = a.id
+		WHERE
+		<if test="userType == 1">o.member_id=#{memberId}</if>
+		<if test="userType == 2">o.hunter_id=#{memberId}</if>
+		<if test="status == 0">AND o.status=0</if>
+		<if test="status == 1">AND o.status=1</if>
+		<if test="status == 2">AND o.status=2</if>
+		<if test="status == 3">AND o.status=3</if>
+		<if test="status == 4">AND o.status=4</if>
+		<if test="status == 5">AND o.status=5</if>
+		<if test="status == 6">AND o.status=6</if>
+		<if test="status == 7">AND o.status=7</if>
+		<if test="status == 8">AND o.status=8</if>
+		<if test="status == 9 and userType == 1">AND o.`status` in (4,6)</if>
+		<if test="status == 9 and userType == 2">AND o.`status` in (4,6,7)</if>
+		<if test="status == 10"></if>
+		GROUP BY orderNo
+		ORDER BY o.`created_time` DESC LIMIT #{startIndex},#{endIndex}
+	</select>
+	<!--查询订单总金额-->
+	<select id="countOrderMoney" parameterType="string" resultType="long">
+		select
+		SUM(total_price) totalMoney
+		from
+		alq_order
+		where
+		order_no = #{orderNo}
+	</select>
+	<select id="queryOrderDetailByOrderNo" resultType="map">
+		select
+			o.receive_name receiveName,
+			o.receive_phone receivePhone,
+			o.receive_address receiveAddress,
+			o.order_no orderNo,
+			DATE_FORMAT(o.subscription_time,'%Y年%m月%d日 %H:%i') subscriptionTime,
+			DATE_FORMAT(o.send_time,'%Y年%m月%d日 %H:%i') sendTime,
+			DATE_FORMAT(o.agree_time,'%Y年%m月%d日 %H:%i') agreeTime,
+			DATE_FORMAT(o.receive_time,'%Y年%m月%d日 %H:%i') receiveTime,
+			DATE_FORMAT(o.created_time,'%Y年%m月%d日 %H:%i') createTime,
+			h.`nickname` hname,
+			a.address hImg,
+			am.im_id imId,
+			ROUND(SUM(o.subscription_money)/100,2) subscriptionMoney,
+			ROUND(SUM(o.negotiate_price)/100,2) negotiatePrice,
+			ROUND(SUM(o.total_price)/100,2) totalPrice
+		from
+			alq_order o left join alq_hunter h
+		on o.hunter_id = h.id left join alq_attachment a
+		on logo_attachment_id = a.id left join alq_member am
+		on h.id = am.hunter_id
+		where
+			o.order_no = #{orderNo}
+		GROUP BY
+			orderNo
+	</select>
+	<!--查询订单详情-->
+	<select id="querySonOrders" resultType="map">
+		SELECT
+		o.id,
+		o.order_no orderNo,
+		o.order_sub_no orderSubNo,
+		o.`status`,
+		h.nickname,
+		p.`name`,
+		p.ph_type as phType,
+		t.content,
+		p.imageurl AS address,
+		s.price,
+		ifnull(o.num,0) num,
+		o.total_price,
+		m.im_id AS mImId,
+		m1.im_id AS hImId
+		FROM alq_order AS o,
+		alq_hunter AS h,
+		alq_product AS p,
+		alq_product_type AS t,
+		alq_product_specification AS s,
+		alq_member AS m,
+		alq_member AS m1
+		WHERE o.hunter_id=h.id
+		AND o.product_id=p.id
+		AND o.product_type_id=t.id
+		AND o.product_specification_id=s.id
+		AND o.member_id=m.id
+		AND m1.hunter_id=h.id
+		<if test="status == 0">AND o.status=0</if>
+		<if test="status == 1">AND o.status=1</if>
+		<if test="status == 2">AND o.status=2</if>
+		<if test="status == 3">AND o.status=3</if>
+		<if test="status == 4">AND o.status=4</if>
+		<if test="status == 5">AND o.status=5</if>
+		<if test="status == 6">AND o.status=6</if>
+		<if test="status == 7">AND o.status=7</if>
+		<if test="status == 8">AND o.status=8</if>
+		<if test="status == 9">AND o.`status` in (4,6)</if>
+		<if test="status == 10"></if>
+		AND o.order_no = #{orderNo}
+		GROUP by order_sub_no
+	</select>
+	<select id="queryOrderForProducts" resultType="map">
+		select
+			IFNULL(p.`name`,'') pame,
+			IFNULL(p.imageurl,'') pImg,
+			IFNULL(o.num,0) num,
+			ROUND(IFNULL(s.sale_price,0)/100,2) salePrice
+		from
+			alq_order o left join alq_product p
+		on o.product_id = p.id  left join alq_product_specification s
+		on o.product_specification_id=s.id
+		where o.order_no = #{orderNo}
+	</select>
+
+
+	<select id="getOrderListByOrderNoForShopCart" resultType="Map">
+		select distinct o.id as orderId,
+		o.product_specification_id,
+		o.product_id as productId,
+		o.member_id,
+		p.name,
+		h.id as hunterId,
+		o.product_type_id ,
+		o.num as buy_num,
+		ROUND(ps.sale_price/100,2) price,
+		ifnull(ps.num,0)num,
+		IFNULL(p.status,0) productStatus,
+		ps.content product_specification
+		from alq_order o,
+		alq_product_specification ps ,alq_product p ,
+		alq_hunter h
+		where ps.id=o.product_specification_id AND ps.product_id=p.id
+		and h.id=o.hunter_id and
+		o.member_id = #{id} and
+		o.order_no = #{orderNo}
+	</select>
+
+	<select id="getDistinctOrderNos" resultType="java.lang.String" parameterType="java.util.Map">
+		select DISTINCT  o.order_no  from alq_order o
+		where o.member_id = #{id}
+		<if test=" time != null and time != '' ">
+			and DATE_FORMAT(o.created_time,'%Y-%m-%d') = #{time}
+		</if>
+	  	AND o.status IN (0,3)  ORDER BY o.created_time DESC
+		LIMIT #{startIndex},#{endIndex}
+	</select>
+
+</mapper>

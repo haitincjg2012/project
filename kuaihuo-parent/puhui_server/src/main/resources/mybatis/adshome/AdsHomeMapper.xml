@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.mybatis.dao.adshomedata.AdsHomeDataDao">
+	
+	<select id="findIndustryTypeListMybatis" resultType="map"   parameterType="map">
+		SELECT
+			 t.`id` as id,
+			 t.`name` as name,
+		 	 t.`address` as address,
+		 	 t.header as header
+		 FROM 
+		     alq_ad_attachment as t   
+		 WHERE TRUE ORDER BY t.`created_time` DESC  LIMIT #{startIndex},#{endIndex}
+	</select>
+	
+		<select id="getIndustryTypeListCount" resultType="int" parameterType="map">
+		SELECT
+			count(*)
+		 FROM 
+		  alq_ad_attachment 
+	</select>
+	
+</mapper>

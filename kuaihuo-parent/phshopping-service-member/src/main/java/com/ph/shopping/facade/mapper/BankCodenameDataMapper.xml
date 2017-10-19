@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.BankCodenameDataMapper">
+    <!-- 获取会员卡列表根据状态 -->
+    <select id="getBankCodenameDataDetailByCode" parameterType="java.lang.String"
+            resultType="com.ph.shopping.facade.member.vo.BankCodenameDataVO">
+        SELECT
+        id,bankName
+        FROM
+        ph_bank_codename_data
+        WHERE
+        (
+        bankCode = SUBSTRING(#{bankCode}, 1, 6)
+        OR bankCode = SUBSTRING(#{bankCode}, 1, 7)
+        OR bankCode = SUBSTRING(#{bankCode}, 1, 8)
+        )
+        LIMIT 1
+    </select>
+
+</mapper>

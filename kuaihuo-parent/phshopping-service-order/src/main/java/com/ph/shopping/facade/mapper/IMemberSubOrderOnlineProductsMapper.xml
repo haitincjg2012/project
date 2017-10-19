@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.IMemberSubOrderOnlineProductsMapper">
+
+	<!--通过线上子订单id获取订单的商品列表信息-->
+	<select id="getMemberSubOrderProductBySubOrderId" parameterType="long"
+			resultType="cm.ph.shopping.facade.order.entity.PhMemberSubOrderOnlineProducts">
+		SELECT
+			p.*, pi.url productImageUrl
+		FROM
+			ph_member_sub_order_online_products p
+		LEFT JOIN ph_product_image pi ON p.productId = pi.productId
+		WHERE
+			pi.sort=1 and p.subOrderId = #{subOrderId}
+	</select>
+</mapper>

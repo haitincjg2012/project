@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="ehcache.xsd" updateCheck="true"
+	monitoring="autodetect" dynamicConfig="true">
+	<diskStore path="java.io.tmpdir" />
+	<defaultCache maxElementsInMemory="10000" overflowToDisk="true"
+		eternal="false" memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false" />
+		
+	<cache name="com.alqsoft.entity.soft.Update"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.log.UserLog"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.sensitivity.Sensitivity"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.push.Push" maxElementsInMemory="10000"
+		overflowToDisk="true" eternal="false" memoryStoreEvictionPolicy="LRU"
+		maxElementsOnDisk="10000000" diskExpiryThreadIntervalSeconds="600"
+		timeToIdleSeconds="900" timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.constantmanager.ConstantManager"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.resource.Resource"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.logback.LoggingEventException"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.attachment.Attachment"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.role.Role" maxElementsInMemory="10000"
+		overflowToDisk="true" eternal="false" memoryStoreEvictionPolicy="LRU"
+		maxElementsOnDisk="10000000" diskExpiryThreadIntervalSeconds="600"
+		timeToIdleSeconds="900" timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.memberconnect.MemberConnect"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.constantmanager.ConstantType"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.onemenu.OneMenu"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.user.User" maxElementsInMemory="10000"
+		overflowToDisk="true" eternal="false" memoryStoreEvictionPolicy="LRU"
+		maxElementsOnDisk="10000000" diskExpiryThreadIntervalSeconds="600"
+		timeToIdleSeconds="900" timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.logback.LoggingEvent"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+
+	<cache name="com.alqsoft.entity.icon.Icon" maxElementsInMemory="10000"
+		overflowToDisk="true" eternal="false" memoryStoreEvictionPolicy="LRU"
+		maxElementsOnDisk="10000000" diskExpiryThreadIntervalSeconds="600"
+		timeToIdleSeconds="900" timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+
+	<cache name="com.alqsoft.entity.area.Area" maxElementsInMemory="10000"
+		overflowToDisk="true" eternal="false" memoryStoreEvictionPolicy="LRU"
+		maxElementsOnDisk="10000000" diskExpiryThreadIntervalSeconds="600"
+		timeToIdleSeconds="900" timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.logback.LoggingEventProperty"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+
+	<cache name="com.alqsoft.entity.log.LoginFalseLog"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+
+	<cache name="com.alqsoft.entity.pushlog.PushLog"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+
+	<cache name="com.alqsoft.entity.role.RoleResource"
+		maxElementsInMemory="10000" overflowToDisk="true" eternal="false"
+		memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false"></cache>
+</ehcache>

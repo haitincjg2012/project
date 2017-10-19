@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.product.ProductDao">
+
+	<resultMap id="productMap" type="com.alqsoft.entity.product.Product">
+		<id column="id" property="id" />
+		<association  property="imageAttachment" autoMapping="true" foreignColumn="id"  column="image_attachment_id" javaType="com.alqsoft.entity.attachment.Attachment" select="selectAttachmentById" />
+		<association  property="productType" autoMapping="true" foreignColumn="id"  column="product_type_id" javaType="com.alqsoft.entity.producttype.ProductType" select="selectProductTypeById" />
+		<association  property="hunter" autoMapping="true" foreignColumn="id"  column="hunter_id" javaType="com.alqsoft.entity.hunter.Hunter" select="selectHunterById" />
+	</resultMap>
+
+	<select id="selectAttachmentById" resultType="com.alqsoft.entity.attachment.Attachment" parameterType="Long">
+		SELECT * FROM alq_attachment WHERE id=#{image_attachment_id}
+	</select>
+	<select id="selectProductTypeById" resultType="com.alqsoft.entity.producttype.ProductType" parameterType="Long">
+		SELECT * FROM alq_product_type WHERE id = #{product_type_id}
+	</select>
+	<select id="selectHunterById" resultType="com.alqsoft.entity.hunter.Hunter" parameterType="Long">
+		SELECT * FROM alq_hunter WHERE id = #{hunter_id}
+	</select>
+	<sql id="where_product_saleOrcancel_sql">
+		<if test="type == 1">
+			order by ps.created_time desc
+		</if>
+		<if test="type == 2">
+			order by ps.created_time asc
+		</if>
+		<if test="type == 3">
+			order by ps.sale_num desc
+		</if>
+		<if test="type == 4">
+			order by ps.sale_num asc
+		</if>
+		<if test="type == 5">
+			order by ps.num desc
+		</if>
+		<if test="type == 6">
+			order by ps.num asc
+		</if>
+	</sql>
+
+	<!-- 商品出售中列表销售中或下架的   默认列表显示的是每个商品规格时间最早的  status : 0  下架 1出售中-->
+	<select id="findProductSaleOrCancelList" resultType="map" parameterType="map">
+		SELECT
+		p.imageurl as address,          <!-- 商品默认的图片 -->
+		ps.`id` AS psid,   				<!--商品规格id -->
+		p.`id` AS pid,					<!--商品id  -->
+		p.`name`,						<!--商品名称  -->
+		ROUND(ps.`sale_price`/100,2) AS price,<!--商品销售价格  -->
+		IFNULL(p.`sale_num`,0) AS salenum,		<!--商品销量  -->
+		IFNULL(ps.`num`,0) AS num,						<!--库存  -->
+		p.`status`,						<!--商品状态  -->
+		MIN(ps.`created_time`) AS pscreatedtime  <!-- 创建时间 -->
+		FROM alq_product_specification ps, alq_product p
+		WHERE  p.`hunter_id`=#{hunterid} and ps.`product_id`=p.`id` AND ps.`is_delete`=0 AND p.`status`=#{status}  GROUP BY p.`id`
+		<include refid="where_product_saleOrcancel_sql"></include>
+		LIMIT #{startIndex},#{endIndex}
+
+	</select>
+
+	<select id="getProductByHunterIdAndTypeId" resultType="com.alqsoft.vo.ProductVo" >
+		SELECT
+		p.id,
+		p.hunter_id AS hunterId,
+		name,
+		p.product_type_id AS productTypeId,
+		p.image_attachment_id   AS pictureids,
+		p.is_subscription AS isSubscription,
+		p.imageurl AS address,
+		ROUND(IFNULL(p.subscription_money,0)/100,2) AS subscriptionMoney,
+		IFNULL(p.start_num,0) AS startNum,
+		IFNULL(p.nice_comment_num,0) AS niceCommentNum,
+		IFNULL(p.sale_num,0) AS saleNum,
+		IFNULL(p.common_comment_num,0) AS commonCommentNum,
+		IFNULL(p.bad_comment_num,0) AS badCommentNum
+		FROM alq_product p,alq_product_specification s
+		WHERE p.hunter_id =#{hunterId}
+		AND (p.product_type_id in(select id from alq_product_type where parent_id=#{typeId}) or p.product_type_id=#{typeId})
+		AND s.product_id = p.id AND s.is_delete = 0
+		ORDER BY p.sale_num DESC
+		LIMIT #{cpage},#{numPage}
+	</select>
+
+
+
+
+	<select id="getProductById" resultMap="productMap" parameterType="Long">
+		SELECT * FROM alq_product where id=#{id}
+
+	</select>
+
+	<select id="getProductByHunterId" resultType="com.alqsoft.vo.ProductVo" >
+		SELECT
+		p.id,
+		p.hunter_id AS hunterId,
+		name,
+		p.product_type_id AS productTypeId,
+		p.image_attachment_id   AS pictureids,
+		p.is_subscription AS isSubscription,
+		p.imageurl AS address,
+		ROUND(IFNULL(p.subscription_money,0)/100,2) AS subscriptionMoney,
+		IFNULL(p.start_num,0) AS startNum,
+		IFNULL(p.nice_comment_num,0) AS niceCommentNum,
+		IFNULL(p.sale_num,0) AS saleNum,
+		IFNULL(p.common_comment_num,0) AS commonCommentNum,
+		IFNULL(p.bad_comment_num,0) AS badCommentNum
+		FROM alq_product p
+		WHERE p.hunter_id = #{hunterId}
+		LIMIT #{cpage},#{numPage}
+	</select>
+
+
+	<!-- 商品编辑时用到 -->
+	<select id="getProductBaseMsgById" resultType="map" parameterType="Long">
+		SELECT
+		p.`id`,
+		p.`hunter_id` AS hunterId,
+		p.name,
+		IFNULL(p.start_num,0) AS startNum,
+		p.`product_type_id` AS productTypeId,
+		p.`is_subscription` AS isSubscription,
+		t.`content`,
+		ROUND(IFNULL(p.`subscription_money`,0)/100,2) AS subscriptionMoney
+		FROM
+		alq_product p LEFT JOIN alq_product_type t ON p.`product_type_id`=t.`id`
+		WHERE
+		p.`id`=#{productid}
+
+	</select>
+
+	<!-- 根据商品分类查询商品 -->
+	<select id="findProductByTypeList" resultType="map" parameterType="map">
+		SELECT
+		p.imageurl AS address,
+		ps.`id` AS psid,
+		ps.`product_type_id`,
+		p.`id` AS pid,
+		p.`name`,
+		IFNULL(p.start_num,'0') AS startNum,
+		ROUND(ps.`sale_price`/100,2) AS price,
+		IFNULL(p.`sale_num`,0) AS salenum,
+		IFNULL(ps.`num`,0) AS num,
+		p.`status`,
+		MIN(ps.`created_time`) AS pscreatedtime
+		FROM alq_product_specification ps, alq_product p
+		WHERE  ps.`product_type_id`=#{productTypeId} AND ps.`is_delete`=0 AND p.`status`=1 AND ps.`product_id`=p.`id` GROUP BY p.`id`
+		LIMIT #{startIndex},#{endIndex}
+	</select>
+
+
+
+</mapper>

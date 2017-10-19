@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.IMemberSubOrderOnlineMapper">
+
+	<!--分页查询线上订单(子订单)列表-->
+	<select id="getMemberSubOrderOnlineListByPage" parameterType="cm.ph.shopping.facade.order.dto.QueryMemberOrderOnlineDTO"
+			resultType="cm.ph.shopping.facade.order.vo.PhMemberSubOrderOnlinePageVO">
+		select
+		pmsoo.id,
+		pmsoo.orderNo,
+		pmsoo.terminalUnit,
+		DATE_FORMAT(pmsoo.createTime,'%Y-%m-%d %H:%i:%s') createTime,
+		pmsoo.shippingName,
+		pmsoo.productMoney/10000 productMoney,
+		pmsoo.logisticsMoney/10000 logisticsMoney,
+		pmsoo.orderMoney/10000 orderMoney,
+		pmsoo.payType,
+		<if test="isRefund == true">
+		(case WHEN pmsor.id is null then pmsoo.status else pmsor.appliStatus END) status,
+		</if>
+		<if test = "isRefund == false">
+			pmsoo.status,
+		</if>
+		pmsoo.logisticsName,
+		pmsoo.logisticsNo,
+		ps.supplierName,
+		pmsoo.shippingType,
+		pmsor.appliStatus,
+		pmsor.id refundId
+		from ph_member_sub_order_online pmsoo
+		LEFT JOIN ph_member_sub_order_refund pmsor
+		ON pmsor.subOrderId = pmsoo.id
+		LEFT JOIN ph_supplier ps
+		ON ps.id = pmsoo.supplierId
+		where
+		1=1
+		<if test="orderNo !=null and orderNo != '' ">
+			AND pmsoo.orderNo = #{orderNo}
+		</if>
+		<if test="isRefund">
+			AND pmsor.id is NOT NULL
+		</if>
+		<if test="terminalUnit != null">
+			AND pmsoo.terminalUnit = #{terminalUnit}
+		</if>
+		<if test="status != null">
+			AND pmsoo.status = #{status}
+		</if>
+		<if test="startTime != null and startTime != ''">
+			AND pmsoo.createTime &gt;=#{startTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			AND  pmsoo.createTime &lt;=#{endTime}
+		</if>
+		<if test="shippingProvinceId != null and shippingProvinceId != ''">
+			AND  pmsoo.shippingProvinceId =#{shippingProvinceId}
+		</if>
+		<if test="shippingCityId != null and shippingCityId != ''">
+			AND pmsoo.shippingCityId = #{shippingCityId}
+		</if>
+		<if test="shippingCountyId != null and shippingCountyId != ''">
+			AND pmsoo.shippingCountyId = #{shippingCountyId}
+		</if>
+		<if test="shippingTownId != null and shippingTownId != ''">
+			AND pmsoo.shippingTownId = #{shippingTownId}
+		</if>
+		<if test="merchantId != null and merchantId != ''">
+			AND pmsoo.merchantId = #{merchantId}
+		</if>
+		<if test="memberId !=null and memberId != ''">
+			AND pmsoo.createrId = #{memberId}
+		</if>
+		<if test="supplierId != null and supplierId != ''">
+			AND pmsoo.supplierId = #{supplierId}
+		</if>
+
+		ORDER BY createTime DESC
+	</select>
+</mapper>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ph.shopping.facade.mapper.UserBalanceMapper">
+  	<!--用户余额流水记录表 -->
+  <insert id="insertUserBalanceRecord"  parameterType="com.ph.shopping.facade.spm.entity.UserBalanceRecord"  >
+  		INSERT INTO ph_user_balance_trade (
+			userId,
+			score,
+			userType,
+			transCode,
+			createTime,
+			handingCharge,
+			orderNo
+		)
+		VALUES
+		(#{userId}, #{score}, #{userType}, #{transCode}, now(),#{handingCharge},#{orderNo})
+  </insert>
+  
+  <!-- 更新用户余额 -->
+  <update id="updateUserBalance">
+  		update ph_user_balance b set b.score = b.score + #{score},b.updateTime=now() where b.userId=#{userId}
+  </update>
+  
+  <select id="getUserBalance" resultType="com.ph.shopping.facade.spm.vo.BalanceVO" parameterType="java.lang.Long" useCache="false">
+  		SELECT
+			b.score score1,
+			p.payPwd
+		FROM
+			ph_user_balance b
+		LEFT JOIN ph_traders_password p ON b.userId = p.userId and p.customerType = 2 
+		WHERE b.userId = #{userId} for update 
+  	</select>
+
+	<select id="getOrderTotalPrice" resultType="java.lang.Long">
+		SELECT sum(total_price) totalPrice FROM alq_order WHERE order_no LIKE CONCAT(CONCAT('%', #{orderNo}),'%')
+	</select>
+
+  	<select id="getUserBalanceTrade" resultType="com.ph.shopping.facade.spm.vo.UserBalanceTradeVO">
+  		SELECT
+			r.orderNo,t.source,
+			
+			r.createTime,			
+		 (r.score+r.handingCharge) score1,r.handingCharge handingCharge1,t.remark
+		FROM
+			ph_user_balance_trade r,
+			ph_transcode t
+		WHERE
+			t.transCode = r.transCode
+			and r.userId =#{userId}
+			<!-- and r.score > 0 -->
+			<trim>
+				<if test="startDate != null and startDate != ''">
+					and date_format(r.createTime, '%Y-%m-%d') &gt;= #{startDate}
+				</if>
+				<if test="endDate != null and endDate !=''">
+					and date_format(r.createTime, '%Y-%m-%d') &lt;= #{endDate}
+				</if>
+				<if test="transCode != null and transCode != 1" >
+					and t.transCode = #{transCode}
+				</if>
+				<if test="orderNo !=null and orderNo !=''" >
+					and r.orderNo = #{orderNo}
+				</if>
+
+			</trim>
+		ORDER BY r.createTime desc
+  	</select>
+  	
+  	<select id="getTransCode" resultType="com.ph.shopping.facade.spm.vo.TransCodeVO">
+  		select transCode,source from ph_transcode
+  	</select>
+  	
+  	<update id="frozenOrUnFrozenBalance">
+  		UPDATE ph_user_balance b SET b.status = #{status} WHERE b.id = #{balanceId} 
+  	</update>
+  	
+  	<delete id="delUserBalance">
+  		DELETE FROM ph_user_balance WHERE userId=#{userId}
+  	</delete>
+
+	<select id="getUserInfo" parameterType="Long" resultType="com.ph.shopping.facade.spm.dto.UserDrawCashDTO">
+		SELECT
+			b.bankName,
+			b.cardNo as bankNo,
+			b.idCardNo,
+			b.ownerName,
+			b.telPhone
+		FROM
+			ph_user_bank_card_info b
+		WHERE b.userId = #{userId}
+		AND b.isDelete = 0
+	</select>
+
+</mapper>

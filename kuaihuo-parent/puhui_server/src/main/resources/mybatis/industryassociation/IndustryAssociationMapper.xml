@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.mybatis.dao.industryassociation.MyIndustryAssociationDao">
+	
+	<!-- 行业协会后台身份查询-->
+	<select id="findIndustryAssociationById" resultType="map" parameterType="map">
+		SELECT * FROM alq_industry_association AS aia WHERE aia.id=#{id} LIMIT #{startIndex},#{endIndex}
+	</select>
+	
+	<select id="findIndustryAssociationCountById" resultType="int" parameterType="map">
+		SELECT count(*) FROM alq_industry_association AS aia WHERE aia.id=#{id}
+	</select>
+	
+	<select id="getIndustryAssociationById" resultType="com.alqsoft.entity.industryassociation.IndustryAssociation" parameterType="map">
+		SELECT * FROM alq_industry_association AS aia WHERE aia.id=#{id}
+	</select>
+	
+	<select id="getAssociationByPhone" resultType="com.alqsoft.entity.industryassociation.IndustryAssociation" parameterType="map">
+		SELECT * FROM alq_industry_association AS aia WHERE aia.phone=#{phone}
+	</select>
+		
+	<select id="findAssociationLikeName" resultType="int" parameterType="map">
+		select count(*) from alq_industry_association h where h.`name` = #{name}
+	</select>
+	
+</mapper>
+

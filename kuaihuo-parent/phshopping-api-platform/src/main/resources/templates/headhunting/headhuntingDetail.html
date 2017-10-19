@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"  xmlns:th="http://www.thymeleaf.org" 
+		xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台系统</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--富文本  css文件-->
+    <!--<link rel="stylesheet" href="css/ueditor.css">-->
+    <!--图片点击放大  css文件-->
+    <link rel="stylesheet" th:href="@{/static/js/plugins/viewer/css/viewer.min.css}">
+    <!--弹窗 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/layer/layer.css}">
+    <style>
+    	.span_clas{
+    		float: left;
+		    display: inline;
+		    line-height: 40px;
+		    padding-left: 10px;
+		    font-size: 12px;
+    	}
+    </style>
+</head>
+<body>
+<div class="MainContent">
+    <div class="current">当前位置：<span>批发商详情</span></div>
+    <div class="MainCont ">
+        <form action="">
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">批发商昵称:</span>
+                </label>
+                <th:block th:if="${headhuntingInfo != null}">
+	                <span class="span_clas" th:text="${headhuntingInfo.nickName}"></span>
+                </th:block>
+                <!-- <input type="text" class="left" placeholder=""/> -->
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">批发商账号:</span>
+                </label>
+                <th:block th:if="${headhuntingInfo != null}">
+	                <span class="span_clas" th:text="${headhuntingInfo.accountNumber}"></span>
+                </th:block>
+                <!-- <input type="text" class="left" placeholder=""/> -->
+            </div>
+            <!-- <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">批发商服务:</span>
+                </label>
+               <span class="span_clas"></span>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">批发商专业:</span>
+                </label>
+               <span class="span_clas"></span>
+            </div> -->
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="">所属工会:</span>
+                </label>
+                <!--  <select class="selectUp selectpicker" data-live-search="true">
+                    <option value="">全部</option>
+                    <option value="">平台</option>
+                    <option value="">市代</option>
+                </select> -->
+                <th:block th:if="${headhuntingInfo != null}">
+	                <span class="span_clas" th:text="${headhuntingInfo.laborUnionName}"></span>
+                </th:block>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">批发商地址:</span>
+                </label>
+                <th:block th:if="${headhuntingInfo != null}">
+	                <span class="span_clas" th:text="${headhuntingInfo.detailAddress}"></span>
+                </th:block>
+            </div>
+            <!--省市区三级联动JS-->
+
+            <!--省市区三级联动JS-->
+            <!-- <div class="mainFrom">
+                <label class="left">
+                    <span class="">详细地址:</span>
+                </label>
+                <input type="text" id="tipinput"  value = '点击地图显示地址/输入地址显示位置' onfocus = 'this.value=""' placeholder=""/>
+                <div id="message"></div>
+            </div>
+            <div class="mainFrom">
+
+                <div id="map_container" tabindex="0" class="relative">
+                    <div class="location_span absolute">当前经纬度：X:<span id="lng"></span>    Y:<span id="lat"></span></div>
+                </div>
+            </div> -->
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">批发商标签:</span>
+                </label>
+                <p class="ph_add_headhunt">
+                </p>
+               <!--  <th:block th:if="${headhuntingInfo != null}">
+	                <span class="span_clas" th:text="${headhuntingInfo.tags}"></span>
+                </th:block> -->
+            </div>
+
+            <div class="mainFrom imgupbox">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">批发商头像:</span>
+                </label>
+                <div class="content-box">
+                    <div class="img-box addIndustry">
+                        <!-- <span class="imgup-notice">请上传您的营业执照，照片大小不超过10M.</span> -->
+                        <div class="img-box full">
+                            <section class=" img-section">
+                                <div class="z_photo upimg-div">
+                                    <section class="z_file left">
+                                    	<th:block th:if="${headhuntingInfo != null && headhuntingInfo.headImgUrl != null}">
+	                                        <img th:src="${headhuntingInfo.headImgUrl}" class="add-img">
+                                    	</th:block>
+                                    	<th:block th:if="${headhuntingInfo == null || headhuntingInfo.headImgUrl == null}">
+                                    		<img th:src="@{/static/images/add.png}" class="add-img">
+                                    	</th:block>
+                                        <!-- <input type="file" name="file" id="file1" class="file" value=""
+                                               accept="image/jpg,image/jpeg,image/png,image/bmp" multiple/> -->
+                                    </section>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+       <!--  <div class="PopupBtn btnLeft" style="margin-bottom: 20px;padding-left: 104px;">
+            <input class="submit addMerchant_save" name="" type="button" value="保存">
+            <input class="submit addMerchant_cancel" name="" type="button" value="取消">
+        </div> -->
+        <!--商品规格组结束-->
+        <!--规格展示表格-->
+
+    </div>
+</div>
+<!--添加批发商标签-->
+<div class="PopupBox" id="Js_addLinkman">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <form class="form-inline">
+                <table class="ph_tableBox">
+                    <tr>
+                        <td>
+                        	<select class="selectpicker huntList" data-live-search="true">
+	                            <option value="">全部</option>
+	                            <option value="">平台</option>
+	                            <option value="">市代</option>
+	                        </select>
+                        </td>
+                        <td>
+                        	<select class="selectpicker huntList" data-live-search="true">
+	                            <option value="">全部</option>
+	                            <option value="">平台</option>
+	                            <option value="">市代</option>
+	                        </select>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 添加批发商标签-->
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!--属性输入框的增加和删除-->
+<script type="text/javascript" th:src="@{/static/js/common/attrbox.js}"></script><!--图片点击放大-->
+<script type="text/javascript" th:src="@{/static/js/plugins/viewer/viewer-jquery.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/imgUp.js}"></script>
+<!-- 区域 -->
+<script type="text/javascript" th:src="@{/static/js/common/cascade.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<!--高德地图API-->
+<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=bff58436d7cf818a8788f43a536e7800"></script>
+<script th:src="@{/static/js/common/main.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/map_init.js}"></script>
+<!--弹窗-->
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript">
+    $(function(){
+        $('.mainFrom').on('click','.js_addhuntBtn',function(){
+            layer.open({
+                type: 1,
+                title: '添加标签',
+                closeBtn : 0,
+                area: ['460px','260px'],
+                btn:['确定', '取消'],
+                btnAlign: 'c',
+                content: $('#Js_addLinkman')
+            });
+        });
+        $('.addLabelClose').on('click',function(){
+            $(this).parents('.addLabel').remove();
+        });
+        // addressAreaInit();
+        loadTags();
+    });
+    // 加载区域
+    function addressAreaInit() {
+        cascade({
+            totalSelect: 4,
+            DivId: "area_div",
+            spaceArrLeft: [0, 0, 0],
+            spaceArrRight: [0, 0, 0],
+            selectNames: ["provinceId", "cityId", "areaId" , "townId"],
+            selectClasses: ["ph_selectCon validate[required]", "ph_selectCon validate[required]", "ph_selectCon validate[required]","ph_selectCon"],
+        });
+    }
+    // 加载批发商标签
+    function loadTags(){
+    	try{
+    		var tags = '[[${headhuntingInfo.tags}]]';
+    		if(tags){
+    			var tagss = tags.split(",");
+    			var len = tagss.length;
+    			var text = "";
+    			for(var i = 0;i < len;i++){
+    				if(tagss[i] != ""){
+	    				text += "<span class='addLabel'>"+tagss[i]+"</span>";
+    				}
+    			}
+    			$(".ph_add_headhunt").html(text);
+    		}
+    	}catch (err){
+    	}
+    }
+</script>
+</body>
+</html>
+

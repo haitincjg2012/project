@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.hunternotice.HunterNoticeDao">
+
+
+	<select id="getHunterNoticeList" resultType="java.util.Map" parameterType="Long">
+     SELECT ahn.hunter_id,ahn.content,ahn.release_time FROM  alq_hunter_notice ahn WHERE
+     ahn.hunter_id = #{hunterId}
+	</select>
+
+	
+</mapper>

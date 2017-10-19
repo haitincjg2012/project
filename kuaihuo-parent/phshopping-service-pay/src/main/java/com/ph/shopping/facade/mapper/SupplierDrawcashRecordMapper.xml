@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.ph.shopping.facade.mapper.SupplierDrawcashRecordMapper">
+  
+  <!--供应商提现记录新增-->
+  <insert id="addSupplierDrawcashRecord" parameterType="com.ph.shopping.facade.pay.entity.SupplierDrawcashRecord"
+          useGeneratedKeys="true" keyProperty="id">
+      	insert into ph_supplier_drawcash_record(supplierId,score,handingCharge,status,expectedDate,createDate,drawcashNo,bankName,auditState,drawcashIp,receiver,bankNo)
+      	values(#{supplierId},#{score},#{handingCharge},#{status},#{expectedDate},#{createDate},#{drawcashNo},#{bankName},#{auditState},#{drawcashIp},#{receiver},#{bankNo})
+  </insert>
+  
+</mapper>

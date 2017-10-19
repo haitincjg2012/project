@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.mybatis.dao.subject.SubjectDao">
+
+	<!--运营专员后台&专题分类 查alq_subject-->
+	<select id="getSubjectList" resultType="java.util.Map"  >
+		SELECT distinct s.id,s.name , attachment_id aid,
+		(select m.address from alq_attachment m where m.id= s.attachment_id) address FROM alq_subject s
+		LEFT JOIN alq_hunter h
+		ON h.subject_id=s.id and s.is_del =0
+		LIMIT #{page} , #{rows}
+	</select>
+
+	<delete id="delete" parameterType="java.lang.Long">
+		delete from alq_subject where id = #{id}
+	</delete>
+
+	<select id="detail" resultType="java.util.Map" parameterType="java.lang.Long">
+      SELECT s.id,s.name,s.attachment_id aid,(select m.address from alq_attachment m where m.id=s.attachment_id) address FROM  alq_subject s where s.id = #{id,jdbcType=BIGINT}
+	</select>
+</mapper>

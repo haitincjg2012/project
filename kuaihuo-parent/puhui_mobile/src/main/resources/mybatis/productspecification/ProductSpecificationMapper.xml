@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.alqsoft.dao.productspecification.ProductSpecificationDao">
+
+	<resultMap id="BaseResultMap" type="com.alqsoft.vo.ProductSpecificationVO" >
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="num" property="num" jdbcType="BIGINT" />
+		<result column="price" property="price" jdbcType="BIGINT" />
+		<result column="product_id" property="productId" jdbcType="BIGINT" />
+		<result column="product_type_id" property="productTypeId" jdbcType="BIGINT" />
+		<result column="hunter_id" property="hunterId" jdbcType="BIGINT" />
+		<result column="status" property="productStatus" jdbcType="INTEGER"/>
+	</resultMap>
+
+
+
+	<select id="getProductSpecificationVO" resultMap="BaseResultMap"  parameterType="java.lang.Long">
+        select ps.id,ps.content,ps.num,ps.price,ps.product_id,ps.product_type_id ,p.hunter_id,p.status
+        from alq_product_specification ps , alq_product p ,alq_product_type pt ,alq_hunter h
+        where ps.product_type_id = pt.id
+        and ps.product_id = p. id
+        and p.hunter_id = h. id  and ps.id =#{pid,jdbcType=BIGINT}
+
+
+    </select>
+
+	<select id="getProductSpecificationVOList" resultType="com.alqsoft.vo.ProductSpecificationVO"  parameterType="java.lang.Long">
+		select id,content,ROUND(IFNULL(sale_price,0)/100,2) as price,num,product_id as productId,product_type_id as productTypeId,limit_num as limitNum
+		from alq_product_specification
+		where product_id = #{productId}
+
+
+	</select>
+
+	<select id="getProductSpecificationById" resultType="map"  parameterType="Long">
+			SELECT 
+				ps.id,
+				ps.content,
+				ROUND(IFNULL(ps.sale_price,0)/100,2) AS price,
+				ps.num,
+				p.start_num,
+				p.`name`,
+				p.imageurl,
+				p.start_num,
+				p.is_subscription,
+				ROUND(IFNULL(ps.subscription_money,0)/100,2) AS subscription_money,
+				p.`status`,
+				h.nickname,
+				a.address,
+				h.level,
+				h.id AS hId,
+				ps.num stockNum
+			FROM alq_product_specification AS ps,
+				 alq_product AS p,
+				 alq_hunter AS h,
+				 alq_attachment AS a
+		   WHERE ps.product_id=p.id
+		   	 AND p.hunter_id=h.id
+		   	 AND h.logo_attachment_id=a.id
+			 AND ps.id=#{pId}
+    </select>
+
+	<select id="getHIdByPsId" resultType="map"  parameterType="Long">
+			SELECT a.nickname,
+				a.address,
+				a.level,
+				a.id,
+ 				i.`name` FROM (
+								SELECT 
+								h.nickname,
+								a.address,
+								h.level,
+								h.id,
+								h.industry_type_id
+							FROM alq_product_specification AS ps,
+								 alq_product AS p,
+								 alq_hunter AS h,
+								 alq_attachment AS a
+				
+						   WHERE ps.product_id=p.id
+						   	 AND p.hunter_id=h.id
+						   	 AND h.logo_attachment_id=a.id
+							  AND ps.id= #{pId}) AS a LEFT JOIN alq_industry_type AS i
+			ON a.industry_type_id=i.id
+    </select>
+
+	<!-- 根据商品商品id查询商品规格 -->
+	<select id="getProductSpecificationByProductId" resultType="map" parameterType="Long">
+    	SELECT 
+    		ps.`id` AS psid,
+    		ps.`content`,
+    		ROUND(IFNULL(ps.`price`,0)/100,2) as price,
+    		ps.`num`,
+    		ps.`limit_num` AS limitNum
+    	FROM 
+    		alq_product_specification ps 
+    	WHERE 
+    		ps.`is_delete`=0 AND ps.`product_id`=#{productid}
+    
+    </select>
+</mapper>

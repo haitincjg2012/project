@@ -1,0 +1,23 @@
+@charset "utf-8";
+
+#header .headerNav { background:url(images/header_bg.png) repeat-x; height: 50px;}
+#header { background-color:#102c4a;}
+#header .headerMenu{float:right;color: #b9ccda;padding-right: 10px;padding-top: 20px;}
+#header .nav{ float:left; margin-left:-1px; padding:0 8px; line-height:11px; background:url(images/listLine.png) no-repeat;}
+#header .nav a { color:#b9ccda;}
+#header .themeList li div { background:url(images/themeButton.png) no-repeat;}
+
+.channel a{text-decoration:none;width:100%; display:block; text-decoration:none; color:#000000;padding-left: 15px;padding-top: 5px;padding-bottom: 5px;}
+.channel a:hover {background-color:#E0ECFF; font-weight:bold; text-decoration:none; color:#000000}
+.channel a span{float:left;background:url(images/cl.png) no-repeat;width: 15px;height: 15px;}
+
+
+.userCheck div{height: 20px;}
+.userCheck input{vertical-align:middle; margin-top:0;}
+.legend {  
+            color: #F00;  
+            font-family: "Comic Sans MS";  
+            font-weight: bold;  
+            text-shadow: #999 2px 2px 1px;  
+            text-transform: uppercase;  
+        }

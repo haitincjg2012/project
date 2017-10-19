@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IPurchaseOrderProfitMapper">
+	<!-- 供应链订单分润list 前端显示 -->
+	<select id="getPurchaseOrderProfitList" parameterType="com.ph.shopping.facade.profit.dto.PurchaseOrderProfitDTO"
+		resultType="com.ph.shopping.facade.profit.vo.PurchaseOrderProfitVO">
+		SELECT
+			id,
+			orderNo,
+			retailPrice,
+			settlementPrice,
+			purchasePrice, 
+			freight  logisticsFee,
+			chainProfit,
+			phIncome,
+			ystIncome,
+			cityAgentProfit,
+			countyAgentProfit,
+			townAgentProfit,
+			chainTotal,
+			chainRemain,
+			ystRemain,
+			phRemain,
+			cityAgentName,
+			countyAgentName,
+			townAgentName,
+			cityPromoterName,
+			countyPromoterName,
+			townPromoterName,
+			sellerName,
+			buyerName,
+			cityAgentId,
+			countyAgentId,
+			townAgentId,
+			DATE_FORMAT(p.orderTime,'%Y-%m-%d %H:%i:%s') orderTime,
+			DATE_FORMAT(p.createTime,'%Y-%m-%d %H:%i:%s') createTime
+		FROM
+			ph_profit_purchase_order  p
+		WHERE
+			1 = 1	
+		<if test="orderNo !=null and orderNo !='' ">
+			AND p.orderNo = #{orderNo}
+		</if>	
+		<if test="startOrderTime !=null and startOrderTime !='' ">
+			AND p.orderTime  &gt;  #{startOrderTime} 
+		</if>
+		<if test="stopOrderTime !=null and stopOrderTime !='' ">
+			AND p.orderTime  &lt;  #{stopOrderTime} 
+		</if>
+		<if test="startProfitTime !=null and startProfitTime !='' ">
+			AND p.createTime  &gt; #{startProfitTime}
+		</if>
+		<if test="stopProfitTime !=null and stopProfitTime !='' ">
+			AND p.createTime   &lt;   #{stopProfitTime}
+		</if>
+			ORDER BY p.id DESC
+	</select>
+	<!--  供应链订单表取数据过来   -->
+	<select id="getPurchaseOrderList" resultType="com.ph.shopping.facade.profit.vo.PurchaseOrderVO">
+		SELECT
+			p.id,
+			p.orderNo,
+			p.createTime orderTime,
+			p.money retailPrice,
+			p.freight,
+			p.settleMoney settlementPrice,
+			p.purchaserId,
+			p.senderId,
+			p1.positionId merchantPositionId
+		FROM
+			ph_purchase_sub_order p
+		LEFT JOIN ph_merchant p1 ON p.purchaserId = p1.userId
+		WHERE
+			p.isProfit = 0
+		AND p. STATUS = 3
+		AND date_add(p.doneTime, INTERVAL 7 DAY) &lt; NOW()
+		AND p.purchaseType = 0
+	</select>
+	<!-- 新增 ph_profit_purchase_order 批量插入数据 -->
+	<insert id="insertPurchaseOrderProfit" parameterType="java.util.List">
+		INSERT INTO ph_profit_purchase_order (
+			orderNo,
+			retailPrice,
+			settlementPrice,
+			purchasePrice, 
+			freight,
+			chainProfit,
+			phIncome,
+			ystIncome,
+			cityAgentProfit,
+			countyAgentProfit,
+			townAgentProfit,
+			chainTotal,
+			chainRemain,
+			ystRemain,
+			phRemain,
+			createTime,
+			cityAgentName,
+			countyAgentName,
+			townAgentName,
+			cityPromoterName,
+			countyPromoterName,
+			townPromoterName,
+			sellerName,
+			buyerName,
+			cityAgentId,
+			countyAgentId,
+			townAgentId,
+			orderTime
+			)
+		VALUES
+	    <foreach collection="list" item="item" index="index" separator=",">
+	        (#{item.orderNo},#{item.retailPrice},#{item.settlementPrice},#{item.purchasePrice},#{item.freight},#{item.chainProfit},#{item.phIncome},
+	        #{item.ystIncome},#{item.cityAgentProfit},#{item.countyAgentProfit},#{item.townAgentProfit},#{item.chainTotal},#{item.chainRemain},
+	        #{item.ystRemain},#{item.phRemain},now(),#{item.cityAgentName},#{item.countyAgentName},#{item.townAgentName},
+	        #{item.cityPromoterName},#{item.countyPromoterName},#{item.townPromoterName},
+	        #{item.sellerName},#{item.buyerName},#{item.cityAgentId},#{item.countyAgentId},#{item.townAgentId},#{item.orderTime})
+	    </foreach>
+	</insert>
+	<!-- 批量改ph_purchase_sub_order表 分润状态 -->
+	<update id="updatePurchaseOrderBonus" parameterType="java.util.List">
+		UPDATE ph_purchase_sub_order SET isProfit = 1 ,updateTime = now() , profitTime = now() WHERE id IN
+		<foreach collection="list" item="item" index="index" open="("
+			separator="," close=")">
+			#{item.id}
+		</foreach>
+	</update>
+
+	<!-- 修改余额 -->  
+	<update id="updateUserBalance" parameterType="com.ph.shopping.facade.profit.vo.UserBalanceVO">
+                update ph_user_balance 
+                  set 
+                  score= score + ${balance},
+                  updateTime = now()
+                where userId = ${manageId}  
+	</update>
+	
+	<!-- 批量新增入用户余额流水表 -->
+	<insert id="insertUserBalanceRecordBatch" >
+	INSERT INTO ph_user_balance_trade (
+		userId,
+		score,
+		orderNo,
+		transCode,
+		createTime,
+		userType
+			)
+		VALUES
+	    <foreach collection="list" item="item" index="index" separator="," >
+	        (#{item.userId},#{item.money},#{item.orderNo},#{item.transCode},now(),#{item.userType})
+	    </foreach>
+	</insert>
+	<!-- 通过主键获取区域 -->
+	<select id="getPositionById" resultType="com.ph.shopping.facade.profit.vo.PositionVO">
+		SELECT
+			provinceId,
+			cityId,
+			countyId,
+			townId
+		FROM
+			ph_position p
+		WHERE
+			p.id = #{id}
+	</select>
+</mapper>

@@ -1,0 +1,42 @@
+spring:
+  #上传文件大小配置
+  http:
+     multipart:
+       max-file-size: 5Mb
+       max-request-size: 5Mb
+
+  #thymeleaf配置
+  thymeleaf:
+      prefix: classpath:/templates/
+      suffix: .html
+      mode: HTML5
+      cache: false
+  #redis相关配置
+  redis:
+    host: 127.0.0.1
+    database: 0
+    port: 36379
+    password:
+    timeout: 60000
+    pool:
+      max-active: -1
+      max-wait: -1
+      max-idle: 500
+      min-idle: 0
+
+#端口配置
+server:
+  port: 10010
+  session:
+    timeout: 30
+  tomcat:
+    basedir: /tmp
+    accesslog:
+      enabled: true
+      directory: /logs/puhui-tomcat/app-api-member
+      pattern: common
+      prefix: phshopping-
+      suffix: .log
+    uri-encoding: UTF-8
+
+

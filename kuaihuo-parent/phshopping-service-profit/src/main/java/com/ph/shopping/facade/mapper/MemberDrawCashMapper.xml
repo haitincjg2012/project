@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IMemberDrawCashMapper">
+	<select id="queryMemberDrawCashes" resultType="com.ph.shopping.facade.profit.vo.MemberDrawCashVO">
+		SELECT
+			r.orderNo,
+			r.createTime,
+			m.telPhone,
+			m.isMarketing,
+			m.memberName,
+			r.operatorCheckTime,
+			r.treasurerCheckTime,
+			r.score score1,
+			r.handingCharge handingCharge1,
+			r.auditState,
+			r.status,
+			r.id drawCashId
+			
+		FROM
+			ph_member m,
+			ph_member_drawcash_record r
+		WHERE
+			m.id = r.memberId
+		<trim>
+			<if test="startDate != null and startDate != ''">
+				and date_format(r.createTime, '%Y-%m-%d') &gt;= #{startDate}
+			</if>
+			<if test="endDate != null and endDate != ''">
+				and date_format(r.createTime, '%Y-%m-%d') &lt;= #{endDate}
+			</if>
+			<if test="orderNo != null and orderNo != ''">
+				and r.orderNo = #{orderNo}
+			</if>
+			<if test="telPhone != null and telPhone != ''">
+				and m.telPhone = #{telPhone}
+			</if>
+			<if test="memberType != null">
+				and m.isMarketing = #{memberType}
+			</if>
+			<if test="auditState != null">
+				and r.auditState = #{auditState}
+			</if>
+			<if test="status != null">
+				and r.status = #{status}
+			</if>
+		</trim>
+		order by r.createTime desc
+	</select>
+	
+	<select id="countDrawCashTotal" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT count(0) from ph_member_drawcash_record WHERE orderNo=#{orderNo} 
+		and status=1 and tradeState is not null
+	</select>
+	
+	<update id="auditOperator">
+		UPDATE ph_member_drawcash_record d SET d.auditState=#{auditState}
+		<trim>
+			<if test="auditRgint == 7">
+				,operatorCheckTime=NOW()
+				,updaterId=#{userId}
+				,operatorCheckId=#{userId}
+			</if>
+			<if test="auditRgint == 8">
+				,treasurerCheckTime=NOW()
+				,updaterId=#{userId}
+				,treasurerCheckId=#{userId}
+			</if>
+			<if test="type == 2">
+				,status=2
+			</if>
+		</trim>
+		WHERE d.id=#{drawCashId}
+	</update>
+	
+	<update id="updateStatus">
+		UPDATE ph_member_drawcash_record d SET d.status=#{status}, d.tradeState=#{tradeState} 
+		where d.orderNo = #{orderNo}
+	</update>
+	
+	<select id="getBackDrawCashData" resultType="com.ph.shopping.facade.profit.vo.BackMemberDrawCashVO">
+		SELECT
+			r.memberId,
+			(r.score + r.handingCharge) score
+		FROM
+			ph_member_drawcash_record r,
+			ph_member c
+		WHERE
+			r.memberId = c.id
+		AND r.orderNo = #{orderNo}
+	</select>
+	
+	<select id="isHaveDrawCash" parameterType="java.lang.String" resultType="com.ph.shopping.facade.profit.vo.DrawCashVO">
+		SELECT score,memberId from ph_member_drawcash_record WHERE orderNo=#{orderNo}
+	</select>
+	
+	<select id="getMemberDrawCashData" parameterType="java.lang.Long" resultType="com.ph.shopping.facade.profit.vo.MemberDrawCashDataVO">
+		SELECT
+			r.score,
+			r.handingCharge,
+			r.bankCardNo,
+			r.memberName,
+			r.orderNo,
+			r.memberId
+		FROM
+			ph_member_drawcash_record r
+		WHERE r.id = #{drawCashId}
+	</select>
+</mapper>

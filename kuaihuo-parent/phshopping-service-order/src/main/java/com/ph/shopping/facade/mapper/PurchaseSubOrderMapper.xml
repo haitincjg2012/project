@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.PurchaseSubOrderMapper">
+
+	<!--分页查询供应链进货列表-->
+	<select id="selectPurchaseOrderListByPage" parameterType="cm.ph.shopping.facade.order.dto.QueryPurchaseOrderDTO"
+			resultType="cm.ph.shopping.facade.order.vo.PurchaseSubOrderPageVO">
+		SELECT
+			id,
+			orderNo,
+			senderId,
+			money,
+			freight,
+			totalCost,
+			status,
+			refundStatus,
+			createTime,
+			purchaserId,
+			payment,
+			supplerId,
+			purchaseType
+		FROM
+			ph_purchase_sub_order
+		<where>
+			<if test="purchaserId != null">
+				and purchaserId = #{purchaserId}
+			</if>
+			<if test="supplerId != null">
+				and supplerId = #{supplerId}
+			</if>
+			<if test="senderId != null">
+				and senderId = #{senderId}
+			</if>
+			<if test="status != null">
+				and status = #{status}
+			</if>
+			<if test="queryType != null and queryType == 1">
+				and refundStatus IS NOT NULL
+			</if>
+			<if test="refundStatus != null">
+				and refundStatus = #{refundStatus}
+			</if>
+			<if test="orderNo != null and orderNo != ''">
+				and orderNo = #{orderNo}
+			</if>
+			<if test="createTimeStr != null">
+				and createTime &gt;= #{createTimeStr}
+			</if>
+			<if test="createTimeEnd != null">
+				and createTime &lt;= #{createTimeEnd}
+			</if>
+			<if test="payment !=null">
+				and payment = #{payment}
+			</if>
+			<if test="purchaseIds != null ">
+				and purchaserId IN
+				<foreach collection="purchaseIds" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		ORDER BY createTime DESC
+	</select>
+
+</mapper>

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.mybatis.dao.IOrderDao">
+	
+	<select id="getOrderFenByManager" resultType="map" parameterType="map">
+		SELECT 
+			a.*, 
+			i.phone AS iPhone 
+		FROM (
+			SELECT 
+				o.order_no,
+				m1.phone AS directPhone,
+				m.phone AS phone,
+				o.industry_association_id,
+				o.subscription_money,
+				o.negotiate_price,
+				o.service_money,
+				o.num,
+				ps.price,
+				o.direct_hunter_fen,
+				o.industry_fen,
+				o.recommend_hunter_fen,	
+				o.total_price,
+				o.pay_type,
+				o.created_time,
+				o.puhui_fen,
+				(SELECT phone FROM alq_member AS m2
+							WHERE m2.hunter_id=
+								(SELECT hunter_id FROM alq_order AS o1
+														WHERE o1.member_id=o.member_id
+																ORDER BY o1.created_time LIMIT 0, 1)) AS recommendPhone
+			  FROM alq_order AS o,
+				   alq_hunter AS h,
+				   alq_member AS m,
+				   alq_member AS m1,
+				   alq_product_specification AS ps	 
+		     WHERE o.hunter_id=h.id
+		  	   AND m1.hunter_id=h.id
+		       AND o.member_id=m.id
+			   AND o.product_specification_id=ps.id
+			   AND o.fen_run_status = 1
+			   <if test="orderNo != null and orderNo != ''">
+			   		AND o.order_no LIKE concat(#{orderNo}, '%')
+			   </if>
+			   <if test="directPhone != null and directPhone != ''">
+			   		AND m1.phone=#{directPhone}
+			   </if>
+			   <if test="recommendPhone != null and recommendPhone != ''">
+			   		AND (SELECT phone FROM alq_member AS m2 
+								WHERE m2.hunter_id=
+									(SELECT hunter_id FROM alq_order AS o1 
+															WHERE o1.member_id=o.member_id 
+																	ORDER BY o1.created_time LIMIT 0, 1))=#{recommendPhone}
+			   </if>
+			   <if test="phone != null and phone != ''">
+			   		AND m.phone=#{phone}
+			   </if>
+			   ) AS a 
+		LEFT JOIN alq_industry_association i
+		ON a.industry_association_id=i.id WHERE 1=1
+	   <if test="iPhone != null and iPhone != ''">
+	   		AND i.phone=#{iPhone}
+	   </if> 
+	   ORDER BY a.created_time DESC LIMIT #{startIndex}, #{endIndex}
+	</select>
+	
+	
+	<select id="getOrderFenByIndustryAssociation" resultType="map" parameterType="map">
+		SELECT 
+			order_no,
+			total_price,
+			industry_fen,
+			industry_after_money,
+			receive_time
+		FROM alq_order 
+		WHERE industry_association_id=#{id}
+		  AND fen_run_status=1
+	    ORDER BY created_time DESC LIMIT #{startIndex}, #{endIndex}
+	</select>
+
+	 <select id="getOrderList" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT o.id, o.num, ROUND(ifnull(o.actual_money/100,0),2)actual_money, o.message, ROUND(ifnull(o.negotiate_price/100,0),2)negotiate_price,
+				DATE_FORMAT(o.created_time,'%Y-%m-%d %H:%i:%s')created_time,o.order_no, o.pay_time, o.pay_type, o.subscription_time,
+		       (select am.phone from alq_member am where am.hunter_id=o.hunter_id) hphone,
+		        o.receive_address, o.receive_name,o.receive_phone,o.receive_time,o.send_time, ROUND(IFNULL(o.service_money/100,0),2)service_money,
+		       o.status, ROUND(ifnull(o.subscription_money/100,0),2)subscription_money,o.hunter_id, o.industry_association_id,o.member_id, o.product_id,
+				o.product_specification_id, o.product_type_id,o.refund_msg,o.order_sub_no,p.name,
+				ps.content,ROUND(ifnull(ps.price/100,0),2)price,m.phone,ROUND(ifnull(ps.sale_price/100,0),2)sale_price FROM alq_order o,alq_product p,alq_product_specification ps,
+				alq_product_type pt,alq_member m WHERE o.product_id= p.id AND o.product_type_id= pt.id
+				AND ps.id=o.product_specification_id and o.member_id=m.id
+			<if test="orderNo != null  and orderNo != '' ">
+				and o.order_no like  #{orderNo,jdbcType=VARCHAR}
+			</if>
+
+			 <if test="phone != null  and phone != '' ">
+				 and m.phone = #{phone,jdbcType=VARCHAR}
+			 </if>
+			 <if test="hphone != null  and hphone != '' ">
+				 and (select am.phone from alq_member am where am.hunter_id=o.hunter_id)= #{hphone,jdbcType=VARCHAR}
+			 </if>
+			 <if test="payType != null  and payType != '' ">
+				 and o.pay_type = #{payType,jdbcType=VARCHAR}
+			 </if>
+			 <if test="status != null  and status != '' ">
+				 and o.status = #{status,jdbcType=VARCHAR}
+			 </if>
+
+		     <if test="startTime !=null and startTime != ''">
+				and  DATE_FORMAT(o.created_time,'%Y-%m-%d') &gt;= #{startTime}
+			 </if>
+
+		    <if test="endTime !=null and endTime != ''">
+				and  DATE_FORMAT(o.created_time,'%Y-%m-%d') &lt;= #{endTime}
+		     </if>
+		 ORDER BY o.created_time  ${order}  LIMIT #{page} , #{rows}
+	 </select>
+
+
+	<select id="getOrderDetailById" resultType="java.util.Map" parameterType="java.lang.Long">
+		SELECT o.id, o.num,ROUND(ifnull(o.actual_money/100,0),2)actual_money, o.message, ROUND(IFNULL(o.negotiate_price/100,0),2)negotiate_price,
+				o.order_no, DATE_FORMAT(o.pay_time,'%Y-%m-%d %H:%i:%s')pay_time, o.pay_type,o.subscription_time,
+				 o.receive_address, o.receive_name,o.receive_phone,DATE_FORMAT(o.receive_time,'%Y-%m-%d %H:%i:%s')receive_time, ROUND(IFNULL(o.service_money/100,0),2)service_money,
+				  o.status, ROUND(IFNULL(o.subscription_money/100,0),2)subscription_money,o.order_sub_no,p.name,
+				  DATE_FORMAT(o.send_time,'%Y-%m-%d %H:%i:%s')send_time,
+				  DATE_FORMAT(o.refund_time,'%Y-%m-%d %H:%i:%s')refund_time,
+				  DATE_FORMAT(o.created_time,'%Y-%m-%d %H:%i:%s')created_time,
+				  (select  DATE_FORMAT(cm.created_time,'%Y-%m-%d %H:%i:%s') from alq_order_comment cm where cm.order_id= o.id and cm.parent_id is null)comment_time,
+				ps.content,ROUND(ifnull(ps.price/100,0),2)price,m.phone,ROUND(ifnull(ps.sale_price/100,0),2)sale_price ,
+				(select am.phone from alq_member am where am.hunter_id=o.hunter_id) hphone
+				FROM alq_order o,alq_product p,
+				alq_product_specification ps,alq_product_type pt,alq_member m
+				WHERE o.product_id= p.id AND o.product_type_id= pt.id
+				AND ps.id=o.product_specification_id and o.member_id=m.id
+				and o.id = #{id,jdbcType=BIGINT}
+	</select>
+
+
+	<select id="getAccountList" resultType="java.util.Map" parameterType="java.util.Map">
+
+				SELECT mm.id ,o.order_no,h.nickname,mm.type,ROUND(ifnull(o.total_price/100,0),2)total_price,
+				ROUND(ifnull(mm.money/100,0),2)money,ROUND(ifnull(mm.after_money/100,0),2)after_money,
+				ROUND(ifnull(o.puhui_fen/100,0),2)puhuifen,ROUND(ifnull(o.direct_hunter_fen/100,0),2)directHunterFen,
+				DATE_FORMAT(mm.created_time,'%Y-%m-%d %H:%i:%s')created_time,mm.type,
+                m.phone,
+		(SELECT rm.phone FROM alq_member rm WHERE rm.hunter_id=
+		(SELECT o1.hunter_id FROM alq_order  o1
+		WHERE o1.member_id=o.member_id ORDER BY o1.created_time LIMIT 1)) rphone,
+		(select ia.phone from alq_industry_association ia WHERE ia.id=o.industry_association_id)iphone,
+				o.puhui_run_status FROM
+				alq_member_money mm ,alq_order o,alq_hunter h,alq_member m WHERE mm.order_sub_no=o.order_sub_no
+				 AND mm.hunter_id=h.id and m.hunter_id=h.id  and o.fen_run_status=1
+
+		<if test="orderNo != null  and orderNo != '' ">
+			and mm.order_no like  #{orderNo,jdbcType=VARCHAR}
+		</if>
+
+		<if test="startTime !=null and startTime != ''">
+			and  DATE_FORMAT(mm.created_time,'%Y-%m-%d') &gt;= #{startTime}
+		</if>
+
+		<if test="endTime !=null and endTime != ''">
+			and  DATE_FORMAT(mm.created_time,'%Y-%m-%d') &lt;= #{endTime}
+		</if>
+				  ORDER BY mm.created_time ${order}, mm.id desc LIMIT #{page} , #{rows}
+	</select>
+
+	<select id="getOrderListTotal" parameterType="java.util.Map" resultType="java.lang.Long">
+		SELECT count(1) FROM alq_order o,alq_product p,alq_product_specification ps,
+		alq_product_type pt,alq_hunter h,alq_member m WHERE o.product_id= p.id AND o.product_type_id= pt.id
+		AND ps.id=o.product_specification_id and o.member_id=m.id and o.hunter_id = h.id
+		<if test="orderNo != null  and orderNo != '' ">
+			and o.order_no like #{orderNo,jdbcType=VARCHAR}
+		</if>
+
+		<if test="phone != null  and phone != '' ">
+			and m.phone = #{phone,jdbcType=VARCHAR}
+		</if>
+		<if test="hphone != null  and hphone != '' ">
+			and (select am.phone from alq_member am where am.hunter_id=o.hunter_id)= #{hphone,jdbcType=VARCHAR}
+		</if>
+		<if test="payType != null  and payType != '' ">
+			and o.pay_type = #{payType,jdbcType=VARCHAR}
+		</if>
+		<if test="status != null  and status != '' ">
+			and o.status = #{status,jdbcType=VARCHAR}
+		</if>
+
+		<if test="startTime !=null and startTime != ''">
+			and  DATE_FORMAT(o.created_time,'%Y-%m-%d') &gt;= #{startTime}
+		</if>
+
+		<if test="endTime !=null and endTime != ''">
+			and  DATE_FORMAT(o.created_time,'%Y-%m-%d') &lt;= #{endTime}
+		</if>
+	</select>
+
+
+	<select id="getAccountListTotal" parameterType="java.util.Map" resultType="java.lang.Long" >
+		SELECT  count(1) FROM
+		alq_member_money mm ,alq_order o,alq_hunter h,alq_member m WHERE mm.order_sub_no=o.order_sub_no
+		AND mm.hunter_id=h.id and m.hunter_id=h.id  and o.fen_run_status=1
+		<if test="orderNo != null  and orderNo != '' ">
+			and mm.order_no like #{orderNo,jdbcType=VARCHAR}
+		</if>
+
+		<if test="startTime !=null and startTime != ''">
+			and  DATE_FORMAT(mm.created_time,'%Y-%m-%d') &gt;= #{startTime}
+		</if>
+
+		<if test="endTime !=null and endTime != ''">
+			and  DATE_FORMAT(mm.created_time,'%Y-%m-%d') &lt;= #{endTime}
+		</if>
+	</select>
+<!--根据主订单号更新订单状态-->
+	<update id="updateOrderStatusByOrderNo">
+		update alq_order set `status` = #{status} where order_no = #{orderNo}
+	</update>
+	<!--根据主订单号查询交易流水记录-->
+	<select id="queryOrderTreadByOrderNo" resultType="com.alqsoft.entity.wxpayorder.WxPayOrder">
+		select
+			money,pay_type payType,`status`,type,wx_order_num wxOrderNum,wx_serial_number wxSerialNumber,order_num orderNum
+		from
+			alq_wx_pay_order
+		where
+			order_num = #{orderNo}
+			<if test="type != null">AND `type` = #{type}</if>
+	</select>
+	<select id="getListByOrderNoAndStatus" resultType="com.alqsoft.entity.wxpayorder.WxPayOrder">
+		select
+			money,pay_type payType,`status`,type,wx_order_num wxOrderNum,wx_serial_number wxSerialNumber,order_num orderNum
+		from
+			alq_wx_pay_order
+		where
+			order_num = #{orderNo} and `status` = 0 and type in (#{types})
+	</select>
+	<select id="getOrderListByOrderNo" resultType="string" parameterType="string">
+		select id from alq_order where order_no = #{orderNo}
+	</select>
+	<update id="agreeOrderBySupplyer">
+	  	update alq_order set `status` = 2 where order_no = #{orderNo}
+	</update>
+</mapper>

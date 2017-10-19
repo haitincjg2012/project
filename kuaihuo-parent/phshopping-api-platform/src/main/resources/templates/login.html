@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台登录</title>
+     <link th:href="@{/static/images/favicon.ico}" rel="icon" type="image/x-icon"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/css/common/models.css}">
+    <script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/login.css}"/>
+    <style>
+        .img {
+            margin-right: 10px;
+            height: 36px;
+            margin-top: 1px;
+        }
+
+        .img_pointer {
+            cursor: pointer;
+        }
+
+        .ret_prompt {
+            margin-top: 39px;
+            width: 250px;
+            height: 18px;
+            display: block;
+            line-height: 18px;
+            font-size: 14px;
+            color: #ce5242;
+            left: 27px;
+            bottom: 89px;
+            position: absolute;
+        }
+
+        .login_box {
+            position: relative;
+        }
+
+        .back_jump_clas {
+            display: none
+        }
+    </style>
+</head>
+<body>
+<!--登录-->
+<div class="loginBox">
+    <div class="loginCon" style="height: 435px">
+        <h2><img src="static/images/login_tit_kf.png" alt="" width="192" height="24"></h2>
+        <form id="loginForm" action="/doLogin" method="post">
+            <p class="loginTxt"><input name="telphone" class="validate[required, maxSize[11],custom[phone]]" type="text"
+                                       placeholder="请输入手机号"><span class="loginErr"></span>
+            </p>
+            <p class="loginTxt"><input name="password"
+                                       class="validate[required,minSize[6],maxSize[16]]"
+                                       type="password"
+                                       placeholder="请输入密码"><span
+                    class="loginErr"></span></p>
+
+            <div class="loginTxt">
+                 <input class="proving validate[required]" id="MsgCode" name="msgCode" type="text" placeholder="请输入验证码">
+                 <p class="provingImg"><img th:src="@{/loadverify}" class="get_yzm img img_pointer" alt="图片验证"
+                                            id="verify_codeid"></p>
+            </div>
+            <!-- <p class="loginConTxt"><span class="left"><input type="checkbox" name="rememberMe"
+                                                              id="rememberMe">记住我</span></p>-->
+            <p class="loginBtn"><input name="" id="loginBtn" type="button" value="登录"></p>
+        </form>
+        <p class="loginConTxt">
+            <span class="left">还没有代理账号？
+                <a href="javascript:void(0);"
+                   onclick=" window.location.href = '/web/agent/addOrUpdate?operateType=applyAgent'">代理申请
+                </a>
+            </span>
+            <span class="right"><a href="/findPassword">忘记密码？</a></span>
+        </p>
+
+        <P class="loginTxt" id="msg" th:if="${'' != msg}">
+            <span style="color: red" th:text="${msg}"></span>
+            <script type="text/javascript">
+                setTimeout('$("#msg").hide("slow")', 3000);
+            </script>
+        </P>
+
+    </div>
+
+</div>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<script>
+    var tipsIndex;
+    $(function () {
+        //验证初始化
+        $('#loginForm').validationEngine({
+            promptPosition: 'bottomLeft'
+            , autoPositionUpdate: false
+            , addPromptClass: 'formError-text'
+            , autoHidePrompt: true
+            , autoHideDelay: 3000
+            , fadeDuration: 0.3
+        });
+
+        loadVerifyCode();//加载验证码
+        //defhiden();
+        bingClosetipsIndex();
+        // 回车事件
+        document.onkeydown = function (e) {
+            var ev = document.all ? window.event : e;
+            if (ev.keyCode == 13) {
+                var flag = $("#loginForm").validationEngine("validate");
+                if (!flag) {
+                    return false;
+                }
+                $("#loginForm").submit();
+            }
+        }
+
+        if (window != top) {
+            top.location.href = location.href;
+        }
+
+        $("input[type='telPhone'] ").val("")
+        $("input[type='password'] ").val("")
+
+        $("#loginBtn").click(function () {
+            var flag = $("#loginForm").validationEngine("validate");
+            if (!flag) {
+                return false;
+            }
+            $("#loginForm").submit();
+        });
+
+    });
+
+    function defhiden() {
+        $('.img').css('display', 'none');
+        $('span.get_yzm').click(function () {
+            $(this).css('display', 'none');
+            $('.img').css('display', 'block');
+        });
+    }
+    //点击跟新验证码
+    $("#verify_codeid").click(function () {
+        loadVerifyCode();
+    })
+    function loadVerifyCode() {
+        var url = "/loadverify";
+        $("#verify_codeid").attr("src", url + "?" + Date.parse(new Date()));
+    }
+    //处理得到焦点后去掉提示
+    function bingClosetipsIndex() {
+        $('#login_user').on("focus", function () {
+            if (tipsIndex) {
+                layer.close(tipsIndex);
+            }
+        });
+        $('#login_pwd').on("focus", function () {
+            if (tipsIndex) {
+                layer.close(tipsIndex);
+            }
+        });
+        $('#verify_codeval').on("focus", function () {
+            if (tipsIndex) {
+                layer.close(tipsIndex);
+            }
+        });
+    }
+</script>
+<!--end 登录-->
+</body>
+</html>

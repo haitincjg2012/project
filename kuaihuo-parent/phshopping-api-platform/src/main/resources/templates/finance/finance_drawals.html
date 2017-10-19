@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+<meta charset="UTF-8">
+<title>供链提现</title>
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/css/common/models.css}">
+<!--bootstrap-select  css文件-->
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}" />
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}" />
+<!--日期  css文件-->
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/js/plugins/datepicker/css/bootstrap-datepicker.css}">
+</head>
+<body>
+	<div class="MainContent">
+		<!--面包屑-->
+		<div class="current">
+			当前位置：<a href="#">账户结算</a>&nbsp;&gt;&nbsp;<span>供链提现</span>
+		</div>
+		<!--end 面包屑-->
+		<!--主体内容-->
+		<div class="MainCont">
+			<!--标题-->
+			<div class="ph_subTit">
+				<h2>供链提现</h2>
+				<div class="ph_snbBtn">
+					<shiro:hasPermission name="supplyChainExport">
+						<input type="button" value="导出"
+							onclick="Dialog.exportExcel('userDrawCashForm')">
+					</shiro:hasPermission>
+				</div>
+			</div>
+			<!--end 标题-->
+			<!--筛选条件-->
+			<shiro:hasPermission name="supplyChainExport">
+				<div class="ph_screen">
+					<form id="userDrawCashForm" action="/web/userdrawcash/exprotexcel"
+						method="post">
+						<table class="ph_tableBox">
+							<tr>
+								<th>提交时间：</th>
+								<td colspan="2">
+									<p class="dayBox">
+										<input class="start_rise date start" name="startDate"
+											id="startDate" type="text">&nbsp;-&nbsp;<input
+											class="start_rise date end" name="endDate" id="endDate"
+											type="text">
+									</p>
+								</td>
+								<th>订单号：</th>
+								<td><input name="orderNo" id="orderNo" type="text"></td>
+								<!--<th>供链名称：</th>
+								<td><input name="enterpriseName" id="enterpriseName"
+									type="text"></td>-->
+							</tr>
+							<tr>
+								<th>供链账号：</th>
+								<td colspan="2"><input name="telPhone" id="telPhone"
+									type="text"></td>
+								<th>审核状态：</th>
+								<td><select class="selectpicker" name="auditState"
+									id="auditState">
+										<option value="">请选择</option>
+										<option value="0">待审核</option>
+										<option value="1">运营通过</option>
+										<option value="2">运营撤销</option>
+										<option value="3">财务通过</option>
+										<option value="4">财务撤销</option>
+								</select></td>
+								<th>提现状态：</th>
+								<td><select class="selectpicker" name="status" id="status">
+										<option value="">请选择</option>
+										<option value="0">提现中</option>
+										<option value="1">提现成功</option>
+										<option value="2">提现失败</option>
+								</select></td>
+							</tr>
+							<tr>
+								<td colspan="7"><input name="" type="button" value="查询"
+									onclick="Dialog.doSearch('userDrawCashTable')"> <input
+									name="" type="button" value="重置"
+									onclick="Dialog.clearData('userDrawCashForm','auditState,status')">
+								</td>
+							</tr>
+						</table>
+					</form>
+				</div>
+			</shiro:hasPermission>
+			<!--end 筛选条件-->
+			<!--供链提现列表-->
+			<div class="ph_wareBox ph_tabScroll">
+				<table class="ph_wareList" id="userDrawCashTable">
+				</table>
+			</div>
+			<!--end 供链提现列表-->
+		</div>
+		<!--end 主体内容-->
+	</div>
+
+	<script type="text/javascript"
+		th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+
+	<!--bootstrap-select-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+	<!--分页-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+
+	<!--日期控件-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/bootstrap-datepicker.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/jquery.timepicker.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/jquery.datepair.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/datepicker.js}"></script>
+	<!--弹窗-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/layer/layer.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/util.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/finance/finance_drawals.js}"></script>
+	<script type="text/javascript" th:inline="javascript">
+		$(function() {
+			$('#userDrawCashTable').DataTable({
+				"sDom" : '<"">t<"F"ip>',
+				"bServerSide" : true,
+				"autoWidth": false, 
+				"sPaginationType" : "full_numbers",
+				//"bJQueryUI": true,
+				//"sAjaxSource": "${ctx}/api/user/list", //ajax调用接口
+				//<div class="btn-group" style="text-align:left;"><button type="button" class="btn btn-info dropdown-toggle"data-toggle="dropdown">操作 <span class="caret"></span></button>
+				"sAjaxSource" : "/web/userdrawcash/getuserdrawcashes", //ajax调用接口
+				"aoColumnDefs" : [ {
+					sDefaultContent : '',
+					aTargets : [ '_all' ]
+				} ],
+				"aoColumns" : [
+					{
+						"sTitle" : "序号",
+						"sWidth" : "80px",
+						"mData" : "seq"
+					},
+					{
+						"sTitle" : "订单号",
+						"sWidth" : "240px",
+						"mData" : "orderNo"
+					},
+					{
+						"sTitle" : "提交时间",
+						"sWidth" : "180px",
+						"mData" : "createTime"
+					},
+					{
+						"sTitle" : "供链类型",
+						"sWidth" : "100px",
+						"mData" : "enterpriseType"
+					},
+					/*{
+						"sTitle" : "供链名称",
+						"sWidth" : "150px",
+						"mData" : "enterpriseName"
+					},*/
+					{
+						"sTitle" : "供链账号",
+						"sWidth" : "150px",
+						"mData" : "telPhone"
+					},
+					{
+						"sTitle" : "drawCashId",
+						"mData" : "drawCashId",
+						"bVisible" : false
+					},
+					{
+						"sTitle" : "运营审核时间",
+						"sWidth" : "180px",
+						"mData" : "operatorCheckTime"
+					},
+					{
+						"sTitle" : "财务审批时间",
+						"sWidth" : "180px",
+						"mData" : "treasurerCheckTime"
+					},
+					{
+						"sTitle" : "金额",
+						"sWidth" : "100px",
+						"mData" : "score"
+					},
+					{
+						"sTitle" : "手续费",
+						"sWidth" : "80px",
+						"mData" : "handingCharge"
+					},
+					{
+						"sTitle" : "审核状态",
+						"sWidth" : "100px",
+						"mData" : "auditState",
+						"mRender" : function(data, type, full) {
+							var text;
+							if (full.auditState == 0) {
+								text = '<span style=\"color:black\">[运]审核中</span>';
+							} else if (full.auditState == 1) {
+								text = '<span style=\"color:black\">[财]审核中</span>';
+							} else if (full.auditState == 2) {
+								text = '<span style=\"color:gray\">[运]未通过</span>';
+							} else if (full.auditState == 3) {
+								text = '<span style=\"color:gray\">[财]未通过</span>';
+							} else if (full.auditState == 4) {
+								text = '<span style=\"color:black\">已通过</span>';
+							} else {
+								text = '<span style=\"color:gray\">未知状态码</span>';
+							}
+							return text;
+						}
+					},
+					{
+						"sTitle" : "提现状态",
+						"sWidth" : "100px",
+						"mData" : "status",
+						"mRender" : function(data, type, full) {
+							var text;
+							if (full.status == 0) {
+								text = '<span style=\"color:black\">提现中</span>';
+							} else if (full.status == 1) {
+								text = '<span style=\"color:black\">提现成功</span>';
+							} else if (full.status == 2) {
+								text = '<span style=\"color:gray\">提现失败</span>';
+							} else {
+								text = '<span style=\"color:gray\">未知状态码</span>';
+							}
+							return text;
+						}
+					},
+					{
+						"sWidth" : "110px",
+						"sTitle" : "操作",
+						"mData" : "id",
+						"sClass" : "ph_tableShow",
+						"mRender" : function(data, type, full) {
+							if (full.auditState == 0 || full.auditState == 1) {
+								var text = '<div class="ph_operateBox"><input class="ph_operate" name="" type="button" value="操作选项">';
+								text = text + '<ul class="ph_operateList hide" role="menu">';
+								if ([[${session.supplyChainAuditPass}]]) {
+								/* text += '<li><a href="javascript:void(0);" onclick="auditPass(\'' + full.drawCashId + '\',\'' + full.auditState + '\',\'' + 
+									full.score + '\',\'' + full.handingCharge + '\',\'' + full.orderNo + '\',\'' + full.bankNo + '\',\'' + 
+									full.receiver + '\',\'' + full.bankName + '\',1)">通过</a></li>'; */
+									text += '<li><a href="javascript:void(0);" onclick="auditPass(\'' + full.drawCashId + '\',\'' + full.auditState + '\',\'' + full.orderNo + '\',1)">通过</a></li>';
+								}
+								if ([[${session.supplyChainAuditPass}]]) {
+								/* text += '<li><a href="javascript:void(0);" onclick="auditPass(\'' + full.drawCashId + '\',\'' + full.auditState + '\',\'' + 
+									full.score + '\',\'' + full.handingCharge + '\',\'' + full.orderNo + '\',\'' + full.bankNo + '\',\'' + 
+									full.receiver + '\',\'' + full.bankName + '\',2)">不通过</a></li>'; */
+									text += '<li><a href="javascript:void(0);" onclick="auditPass(\'' + full.drawCashId + '\',\'' + full.auditState + '\',\'' + full.orderNo + '\',2)">不通过</a></li>';
+								}
+								text = text + '</ul></div>';
+								return text;
+							}
+						}
+					}
+				],
+				"oLanguage" : {
+					"sProcessing" : "数据加载中······",
+					"sLengthMenu" : "显示 _MENU_ 条记录",
+					"sZeroRecords" : "没有您要搜索的内容！",
+					"sEmptyTable" : "列表中无数据存在！",
+					"sInfo" : "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+					"sInfoEmpty" : "显示 0 到 0 条记录",
+					"sInfoFiltered" : "数据列表中共  _MAX_ 条记录",
+					"oPaginate" : {
+						"sFirst" : "首页",
+						"sPrevious" : "上一页",
+						"sNext" : "下一页",
+						"sLast" : "末页"
+					}
+				},
+				"fnServerData" : function(sSource, aoData, fnCallback, oSettings) {
+					oSettings.jqXHR = $.ajax({
+						"dataType" : 'json',
+						"type" : "POST",
+						"async" : 'false',
+						"url" : sSource,
+						"data" : {
+							'pageNum' : (aoData[3].value / aoData[4].value) + 1,
+							'pageSize' : aoData[4].value,
+							'startDate' : $("#startDate").val(),
+							'endDate' : $("#endDate").val(),
+							'auditState' : $("#auditState").val(),
+							'orderNo' : $("#orderNo").val(),
+							'status' : $("#status").val(),
+							'telPhone' : $("#telPhone").val()
+//							'enterpriseName' : $("#enterpriseName").val()
+						},
+						"success" : fnCallback
+					});
+				},
+				"fnDrawCallback" : function() {
+					var api = this.api();
+					var startIndex = api.context[0]._iDisplayStart; //获取到本页开始的条数
+					api.column(0).nodes().each(function(cell, i) {
+						cell.innerHTML = startIndex + i + 1;
+					});
+				}
+			});
+		});
+	</script>
+</body>
+</html>

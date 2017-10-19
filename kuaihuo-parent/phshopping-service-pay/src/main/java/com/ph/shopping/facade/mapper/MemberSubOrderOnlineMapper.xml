@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MemberSubOrderOnlineMapper">
+
+  <!-- 根据会员订单号查询订单信息 -->
+  <select id="getMemberOrderByOrderNo" resultType="cm.ph.shopping.facade.order.entity.PhMemberSubOrderOnline">
+  		SELECT 
+  			  *
+  		  FROM
+  		  	  ph_member_sub_order_online
+  		 WHERE
+  		 	  orderNo=#{orderNo}
+  </select>
+</mapper>

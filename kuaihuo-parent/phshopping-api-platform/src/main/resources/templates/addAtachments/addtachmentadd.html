@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台系统</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--富文本  css文件-->
+    <!--<link rel="stylesheet" href="css/ueditor.css">-->
+    <!--图片点击放大  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/viewer/css/viewer.min.css}"/>
+</head>
+<body>
+<div class="MainContent">
+    <div class="current">当前位置：
+        <a href="#" alt="">商户管理 &gt;</a>
+        <a href="#" alt="">商户列表 &gt;</a>
+        <span th:text="${operateType =='update'?'修改商户':'添加商户'}"></span></div>
+    <div class="MainCont ">
+        <div class="ph_subConTit">
+            <h2 th:text="${operateType =='update'?'修改商户':'添加商户'}"></h2>
+        </div>
+        <form id="form">
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">企业名称:</span>
+                </label>
+                <input th:value="${merchantVO.companyName}" name="companyName" type="text" class="left validate[required]" placeholder="" onkeyup="clearNoNum(this)"/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">商户账号:</span>
+                </label>
+                <input th:value="${merchantVO.telPhone}" id="telPhone" name="telPhone" type="text" class="left validate[required,custom[phone]]" placeholder=""/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">管理费用比例:</span>
+                </label>
+                <input th:value="${merchantVO.businessProfitRatio}" name="businessProfitRatio" type="text"
+                       class="left validate[required,custom[number],min[0.13],max[0.39],maxSize[6]]," placeholder=""/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="">推广师手机号:</span>
+                </label>
+                <input th:value="${merchantVO.promoterTelPhone}" id="promoterAccount" type="text" class="left" placeholder=""/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="">推广师姓名:</span>
+                </label>
+                <input th:value="${merchantVO.promoterMemberName}" id="promoterAccountName" type="text" class="left" placeholder="自动获取推广师姓名" disabled/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">门店名称:</span>
+                </label>
+                <input th:value="${merchantVO.merchantName}" name="merchantName" type="text" class="left validate[required]" placeholder=""/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">联系人:</span>
+                </label>
+                <input th:value="${merchantVO.personName}" name="personName" type="text" class="left validate[required]" placeholder=""/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">门店地址:</span>
+                </label>
+                <div id="area_div"></div>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="">详细地址:</span>
+                </label>
+                <input th:value="${merchantVO.address}" name="address" class="validate[required]" type="text" id="tipinput" value='点击地图显示地址/输入地址显示位置' placeholder=""/>
+                <div id="message"></div>
+            </div>
+            <div class="mainFrom">
+                <div id="map_container" tabindex="0" class="relative">
+                    <div class="location_span absolute">当前经纬度：X:<span id="lng"></span>Y:<span id="lat"></span></div>
+                </div>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">行业分类:</span>
+                </label>
+                <p class="ph_add_headhunt" id="merchantType">
+                    <input class="add_headhuntBtn js_addhuntBtn" type="button" value="添加标签">
+                </p>
+            </div>
+            <div class="mainFrom imgupbox">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">营业执照:</span>
+                </label>
+                <div class="content-box">
+
+                    <div class="img-box addIndustry">
+                        <span class="imgup-notice">请上传您的营业执照，照片大小不超过10M.</span>
+                        <div class="img-box full">
+                            <section class="img-section">
+                                <div class="z_photo upimg-div" data-file-type=1>
+                                    <section class="z_file left">
+                                        <img th:src="@{/static/images/add.png}" class="add-img">
+                                        <input id="file0" type="file" class="file"
+                                               accept="image/jpg,image/jpeg,image/png,image/bmp"/>
+                                    </section>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mainFrom imgupbox">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">法人身份证:</span>
+                </label>
+                <div class="content-box">
+                    <div class="img-box addIndustry">
+                        <span class="imgup-notice">请上传您的身份证正反面，照片大小不超过10M.</span>
+                        <div class="img-box full">
+                            <section class="img-section">
+                                <div class="z_photo upimg-div" data-file-type=2 data-file-maxImage=2>
+                                    <section class="z_file left">
+                                        <img th:src="@{/static/images/add.png}" class="add-img">
+                                        <input id="file1" type="file" class="file"
+                                               data-file-maxImage=2 accept="image/jpg,image/jpeg,image/png,image/bmp" multiple/>
+                                    </section>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mainFrom imgupbox">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">门店照片:</span>
+                </label>
+                <div class="content-box">
+                    <div class="img-box addIndustry">
+                        <span class="imgup-notice">请上传门店照片，照片大小不超过10M.</span>
+                        <div class="img-box full">
+                            <section class="img-section">
+                                <div class="z_photo upimg-div" data-file-type=3>
+                                    <section class="z_file left">
+                                        <img th:src="@{/static/images/add.png}" class="add-img">
+                                        <input id="file2" type="file" class="file" value=""
+                                               accept="image/jpg,image/jpeg,image/png,image/bmp"/>
+                                    </section>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mainFrom imgupbox">
+                <label class="left">
+                    <span class="">其他认证资料:</span>
+                    <!--<span class="imgup_notice"></span>-->
+                </label>
+                <div class="content-box">
+                    <div class="img-box addIndustry">
+                        <span style="display: block;height: 16px;width: 200px;"></span>
+                        <div class="img-box full">
+                            <section class="img-section">
+                                <div class="z_photo upimg-div" data-file-type=4 data-file-maxImage=10>
+                                    <section class="z_file left">
+                                        <img th:src="@{/static/images/add.png}" class="add-img">
+                                        <input id="file3" type="file" class="file"
+                                               data-file-maxImage=10 accept="image/jpg,image/jpeg,image/png,image/bmp" multiple/>
+                                    </section>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="PopupBtn btnLeft" style="margin-bottom: 20px;padding-left: 104px;margin-top: 50px">
+                <input id="saveOrUpdate" class="submit addMerchant_save" type="button" th:value="${operateType =='update'?'修改':'保存'}">
+                <input onclick="window.history.back();" class="submit addMerchant_cancel" type="button" value="取消">
+            </div>
+            <!--推广师id-->
+            <input name="promoterId" type="hidden"/>
+            <input th:value="${merchantVO.id}" name="id" type="hidden"/>
+        </form>
+    </div>
+</div>
+<!--添加行业标签-->
+<div class="PopupBox" id="Js_addLinkman">
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <form class="form-inline" id="merchantTypeForm">
+                <table class="ph_tableBox">
+                    <div id="merchantTypeDiv"></div>
+                </table>
+            </form>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<!--图片上传插件-->
+<script type="text/javascript" th:src="@{/static/js/common/imgUp.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<!--<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>-->
+<!--属性输入框的增加和删除-->
+<script type="text/javascript" th:src="@{/static/js/common/attrbox.js}"></script><!--图片点击放大-->
+<script type="text/javascript" th:src="@{/static/js/plugins/viewer/viewer-jquery.min.js}"></script>
+<!--区域-->
+<script type="text/javascript" th:src="@{/static/js/common/cascade.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!--高德地图API-->
+<script type="text/javascript" src="//webapi.amap.com/maps?v=1.3&key=82cb1402e66fd67bee6e35dac65195f0"></script>
+<script type="text/javascript" th:src="@{/static/js/common/map_init.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/main.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<script th:inline="javascript">
+    //操作类型
+    var operateType = [[${operateType}]];
+    var bindMerchant = [[${merchantVO}]];
+    //修改
+    if (operateType === "update") {
+        //回填地图
+        $("#tipinput").change();
+        //回填图片
+        $(bindMerchant.merchantImageVOList).each(function (i, img) {
+            var section =
+                    '<section class="up-section left">' +
+                    '<span class="up-span"></span>' +
+                    '<img class="close-upimg" src="/static/images/img-del.png">' +
+                    '<img class="up-img zoom-img" data-img-upload-src="' + img.url + '" src="' + img.url + '">' +
+                    '</section>';
+            var divDataFileType = $("div[data-file-type='" + img.type + "']");
+            var lastChildren = divDataFileType.children(":last");
+            var maxImage = parseInt(divDataFileType.attr("data-file-maxImage")) || 1;
+            lastChildren.before(section);
+            if (divDataFileType.children().length === (maxImage + 1)) {
+                lastChildren.css("display", "none");
+            }
+        });
+        generateImg();
+        //回填行业类别标签
+        $(bindMerchant.merchantMerchantTypeVOList).each(function (i, merchantType) {
+            generateMerchantType(
+                    merchantType.secondMerchantTypeName,
+                    i,
+                    merchantType.firstMerchantTypeId,
+                    merchantType.secondMerchantTypeId);
+        });
+    }
+
+    cascade({
+        totalSelect: 4,
+        DivId: "area_div",
+        bindData: [bindMerchant.provinceId, bindMerchant.cityId, bindMerchant.countyId, bindMerchant.townId]
+    });
+
+    $(function () {
+        //保存或者修改
+        $("#saveOrUpdate").on("click", function () {
+            var $townSelect = $("select[name='townId']");
+            $(this).formSubmit({
+                startFun: function (opt) {
+                    var validateImgMsg = {
+                        "1": "营业执照",
+                        "2": "法人身份证",
+                        "3": "门店照片"
+                    };
+                    var types = [];
+                    $("input[data-validate-img-type]").each(function (i, img) {
+                        types.push($(img).attr("data-validate-img-type"));
+                    });
+                    types.join(",");
+                    for (var validateImgCol in validateImgMsg) {
+                        if (types.indexOf(validateImgCol) === -1) {
+                            layer.alert(validateImgMsg[validateImgCol] + "不能为空");
+                            opt.needContinue = false;
+                            break;
+                        }
+                    }
+                },
+                url: "/web/merchants/" + operateType,
+                data: {
+                    provinceId: $("select[name='provinceId']").attr("data-area-code-selected") || null,
+                    cityId: $("select[name='cityId']").attr("data-area-code-selected") || null,
+                    countyId: $("select[name='countyId']").attr("data-area-code-selected") || null,
+                    townId: $townSelect.attr("data-area-code-selected") || null,
+                    positionId: $townSelect.val() || null
+                },
+                backFun: function (result) {
+                    layer.alert(result.message);
+                    if (result.success) {
+                        setTimeout(function () {
+                            window.location.href = "/web/merchants/list";
+                        }, 1500)
+                    }
+                }
+            })
+        });
+        //根据账号（手机号）自动查询推广人
+        $("#telPhone").blur(function () {
+            var telPhone = $(this).val().trim();
+            if (isNull(telPhone)) {
+                return false;
+            } else {
+                $.post("/web/merchants/getPromoterByMerchantTel", {telPhone: telPhone}, function (result) {
+                    if (result.success) {
+                        $("#promoterAccount").val(result.data.telPhone);
+                        $("#promoterAccountName").val(result.data.userName);
+                        $("input[name='promoterId']").val(result.data.id);
+                        $("#promoterAccount").attr("disabled",true);
+                    } else {
+                        $("#promoterAccount").val("");
+                        $("#promoterAccountName").val("");
+                        $("input[name='promoterId']").val("");
+                        $("#promoterAccount").attr("disabled",false);
+                    }
+                })
+            }
+        });
+        //获取推广师姓名
+        $("#promoterAccount").blur(function () {
+            var telPhone = $(this).val().trim();
+            if (isNull(telPhone)) {
+                return false;
+            } else {
+                $.post("/web/member/getPromoterNameByTel", {telPhone: telPhone,isAgent:"1"}, function (result) {
+                    if (result.success) {
+                        $("#promoterAccountName").val(result.data.memberName);
+                        $("input[name='promoterId']").val(result.data.id);
+                    } else {
+                        $("#promoterAccountName").val(result.message);
+                    }
+                })
+            }
+        });
+        //上传图片
+        $(".file").each(function (i, file) {
+            $(file).takungaeImgup({
+                maxImage: $(file).attr("data-file-maxImage"),
+                needNameInput: false,
+                formData: {
+                    'module': 'merchant'
+                },
+                success: function () {
+                    generateImg();
+                }
+            });
+        });
+
+        //删除重新生成图片
+        $(".img-section").on("click", function () {
+            generateImg();
+        });
+
+        //行业类别标签
+        $('.mainFrom').on('click', '.js_addhuntBtn', function () {
+            layer.open({
+                type: 1,
+                title: '添加标签',
+                closeBtn: 0,
+                area: ['460px', '400px'],
+                btn: ['确定', '取消'],
+                btnAlign: 'c',
+                content: $('#Js_addLinkman'),
+                btn1: function (index) {
+                    var $merchantTypeForm = $("#merchantTypeForm");
+                    var $secondMerchantTypeId = $("select[name='secondMerchantTypeId']", $merchantTypeForm);
+                    var $firstMerchantTypeId = $("select[name='firstMerchantTypeId']", $merchantTypeForm);
+                    var from = $("#form");
+                    var merchantTypeCountLength = $("input.merchantTypeCount", from).length;
+                    if (isNotNull($secondMerchantTypeId.val())) {
+                        if (merchantTypeCountLength >= 5) {
+                            layer.alert("最多选择五个行业分类");
+                        } else if ($("input.merchantTypeCount[value=" + $secondMerchantTypeId.val() + "]", from).length > 0) {
+                            layer.alert("当前行业分类已经添加");
+                        } else {
+                            generateMerchantType($secondMerchantTypeId.find("option:selected").html(), merchantTypeCountLength
+                                    , $firstMerchantTypeId.val(), $secondMerchantTypeId.val()
+                            );
+                        }
+                    }
+                    $("#merchantTypeDiv").html("");
+                    layer.close(index);
+                },
+                btn2: function () {
+                    $("#merchantTypeDiv").html("");
+                }
+            });
+            cascade({
+                url: "/web/merchantType/getMerchantTypeByChildList",
+                totalSelect: 2,
+                DivId: "merchantTypeDiv",
+                selectNames: ["firstMerchantTypeId", "secondMerchantTypeId"],
+                requestIds: ["parentId"],
+                requestNames: ["merchantTypeName", "merchantTypeName"]
+            })
+        });
+        $('#merchantType').on('click', '.addLabelClose', function () {
+            var inputId = $(this).attr("data-merchantType-id");
+            $(this).parents('.addLabel').remove();
+            var dataMerchantTypeIndex = $("input[data-merchantType-id=" + inputId + "]").attr("data-merchantType-index");
+            $("input[data-merchantType-id]").each(function (i, input) {
+                var index = $(input).attr("data-merchantType-index");
+                if (parseInt(index) > parseInt(dataMerchantTypeIndex)) {
+                    $(input).prop("name", "merchantMerchantTypeDTOList[" + (parseInt(index) - 1) + "]" + $(input).prop("name").split("]")[1]);
+                    $(input).attr("data-merchantType-index", (parseInt(index) - 1));
+                }
+            });
+            $("[data-merchantType-id=" + inputId + "]").remove();
+        });
+    });
+
+    function generateImg() {
+        var zoomImage = $(".zoom-img");
+        $("input.zoom-img-input").remove();
+        zoomImage.each(function (i, img) {
+            var form = $("#form"),
+                    type = $(img).recursiveParentNode("div").attr("data-file-type"),
+                    src = $(img).attr("data-img-upload-src"),
+                    inputUrl = "<input class='zoom-img-input' type='hidden' name='merchantImageDTOList[" + i + "].url' value=" + src + ">",
+                    inputType = "<input data-validate-img-type=" + type + " class='zoom-img-input' type='hidden' name='merchantImageDTOList[" + i + "].type' value=" + type + ">";
+            $(inputUrl).appendTo(form);
+            $(inputType).appendTo(form);
+        })
+    }
+
+    function generateMerchantType(title, index, firstMerchantTypeVal, secondMerchantTypeVal) {
+        var from = $("#form");
+        var inputId = new Date().getTime() + Math.random() * 100000;
+        inputId = inputId.toString().split(".")[0];
+        $("#merchantType").append(
+                '<span class="addLabel">' + title + '' +
+                '<i class="addLabelClose" data-merchantType-id="' + inputId + '">x</i>' +
+                '</span>');
+        from.append("<input data-merchantType-id=" + inputId + " data-merchantType-index=" + index + "   type='hidden' name='merchantMerchantTypeDTOList[" + index + "].firstMerchantTypeId' " +
+                "value='" + firstMerchantTypeVal + "' >");
+        from.append("<input data-merchantType-id=" + inputId + " data-merchantType-index=" + index + " type='hidden' name='merchantMerchantTypeDTOList[" + index + "].secondMerchantTypeId' " +
+                "value='" + secondMerchantTypeVal + "' class='merchantTypeCount'>");
+    }
+    function clearNoNum(obj) {
+        obj.value = obj.value.replace(/[^\u4E00-\u9FA5a-zA-Z]/g, "");//清除“汉字”和“英文”以外的字符
+
+    }
+</script>
+</body>
+</html>
+

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>供货退款</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--日期  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/datepicker/css/bootstrap-datepicker.css}">
+    <!--弹窗 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/layer/layer.css}">
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">订单管理</a>&nbsp;&gt;&nbsp;<span>供货退款</span></div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+            <h2>供货退款</h2>
+            <shiro:hasPermission name="supplyRefundExport">
+                <div class="ph_snbBtn"><input name="" type="button" th:onclick="'exportExcel();'" value="导出"></div>
+            </shiro:hasPermission>
+        </div>
+        <!--end 标题-->
+        <!--筛选条件-->
+        <form id="queryForm">
+            <div class="ph_screen">
+            <table class="ph_tableBox">
+                <tr>
+                    <th>订单号：</th>
+                    <td><input name="" type="text" id="orderNo"></td>
+                    <th>下单时间：</th>
+                    <td colspan="2">
+                        <p class="dayBox">
+                            <input class="start_rise date start" name="" type="text" id="createTimeStr">&nbsp;-&nbsp;
+                            <input class="start_rise date end" name="" type="text" id="createTimeEnd">
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <th>进货商：</th>
+                    <td>
+                        <select class="selectpicker" data-live-search="true" name="purchaserId" id="purchaserId">
+                            <option value="">全部</option>
+                            <option th:if="${roleCode} != 1" th:each="user:${purchaseUser}" th:value="${user.id}">[[${user.name}]]</option>
+                            <option th:if="${roleCode} == 1" th:each="user:${purchaseUser}" th:value="${user.id}">
+                                <div th:switch="${user.type}">
+                                    <span th:case="1">【商户】</span>
+                                    <span th:case="2">【市代】</span>
+                                </div>
+                                [[${user.name}]]
+                            </option>
+                        </select>
+                    </td>
+                    <th>供应商：</th>
+                    <td>
+                        <select class="selectpicker" data-live-search="true" name="supplerId" id="supplerId">
+                            <option th:if="${roleCode} != 2" value="">全部</option>
+                            <option th:each="s:${supplier}" th:value="${s.userId}">[[${s.supplierName}]]</option>
+                        </select>
+                    </td>
+                    <th>订单状态：</th>
+                    <td>
+                        <select class="selectpicker" data-live-search="true" name="status" id="status">
+                            <option value="">全部</option>
+                            <option value="0">待付款</option>
+                            <option value="1">待发货</option>
+                            <option value="2">待收货</option>
+                            <option value="3">交易完成</option>
+                            <option value="4">交易取消</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>退款状态：</th>
+                    <td>
+                        <select class="selectpicker" id="refundStatus">
+                            <option value="">全部</option>
+                            <option value="0">审核中</option>
+                            <option value="1">退款中</option>
+                            <option value="2">退款完成</option>
+                            <option value="3">拒绝退款</option>
+                        </select>
+                    </td>
+                    <td colspan="4">
+                        <input name="" type="button" th:onclick="'query();'" value="查询">
+                        <input name="" type="button" th:onclick="'resetForm();'" value="重置">
+                    </td>
+                </tr>
+            </table>
+        </div>
+        </form>
+        <!--end 筛选条件-->
+        <!--商品列表-->
+        <div class="ph_wareBox">
+            <table class="ph_wareList" id="purchaseOrder"></table>
+        </div>
+        <!--end 商品列表-->
+    </div>
+    <!--end 主体内容-->
+</div>
+
+<!--退款详情弹窗-->
+<div class="PopupBox" id="Js_refundDetaBox">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <table class="ph_tableBox">
+                <tr>
+                    <th>退款说明：</th>
+                    <td>
+                        <textarea name=""  readonly >退款说明退款说明退款说明退款说明退款说明</textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <th>是否同意退款：</th>
+                    <td >不同意退款</td>
+                </tr>
+                <tr class="">
+                    <th>联系电话：</th>
+                    <td >1511837954</td>
+                </tr>
+                <tr class="">
+                    <th>拒绝理由：</th>
+                    <td><div class="refunData">退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明退款说明</div></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 退款详情弹窗-->
+
+<!--退款说明弹窗-->
+<div class="PopupBox" id="Js_refundBox">
+    <form action="" id="validateForm">
+        <!--内容-->
+        <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <table class="ph_tableBox">
+                <tr>
+                    <th>退款说明：</th>
+                    <td>
+                        <textarea name="" id="" readonly >退款说明退款说明退款说明退款说明退款说明</textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <th>是否同意退款：</th>
+                    <td>
+                        <span class="ph_radio"><input class="Js_radio" name="refund" type="radio" value="0" checked>同意退款</span>
+                        <span class="ph_radio"><input class="Js_radio" name="refund" type="radio" value="1">不同意退款</span>
+                    </td>
+                </tr>
+                <tr class="radioTxt hide">
+                    <th><span class="require">*</span>联系电话：</th>
+                    <td><input name="" type="text" id="telPhone" class="validate[required,custom[phone]]"></td>
+                </tr>
+                <tr class="radioTxt hide">
+                    <th><span class="require">*</span>拒绝理由：</th>
+                    <td><textarea style="background: #fff" name="" id="rejectedReason" class="validate[required]"></textarea></td>
+
+                </tr>
+            </table>
+        </div>
+    </div>
+        <!--end 内容-->
+    </form>
+
+</div>
+<!--end 退款说明弹窗-->
+
+<input type="hidden" id="roleCode" th:value="${roleCode}" />
+
+<!--导出start-->
+<div hidden>
+    <form action="/web/order/supply/refund/export"  id="orderExport" method="post">
+        <input type="hidden" name="createTimeStr" value="" id="e_createTimeStr"/>
+        <input type="hidden" name="createTimeEnd" value="" id="e_createTimeEnd"/>
+        <input type="hidden" name="orderNo" value="" id="e_orderNo"/>
+        <input type="hidden" name="purchaserId" value="" id="e_purchaserId"/>
+        <input type="hidden" name="supplerId" value="" id="e_supplerId"/>
+        <input type="hidden" name="status" value="" id="e_status"/>
+        <input type="hidden" name="refundStatus" value="" id="e_refundStatus"/>
+    </form>
+</div>
+<!--导出end-->
+
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!--分页-->
+<script type="text/javascript"   th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+<!--日期控件-->
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/bootstrap-datepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.timepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.datepair.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/datepicker.js}"></script>
+<!--验证-->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<!--弹窗-->
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    $(function() {
+        $("#validateForm").validationEngine({
+            addPromptClass: 'formError-text',
+            showArrow: false,
+            promptPosition: 'bottomLeft'
+        });
+        $('.ph_radio .Js_radio').on('click',function(){
+            var radioNm = $(this).val();
+            if(radioNm == '1'){
+                $(this).parents('tr').siblings('.radioTxt').removeClass('hide');
+            }else{
+                $(this).parents('tr').siblings('.radioTxt').addClass('hide');
+                $('#telPhone').val('');
+                $('#rejectedReason').val('');
+            }
+        });
+        //分页
+        tb=$("#purchaseOrder").DataTable({
+            "bServerSide": true,
+            "sPaginationType": "full_numbers",
+            "sDom": '<"">t<"F"ip>',
+            "sAjaxSource": "/web/order/supply/refund/list", //ajax调用接口
+            "aoColumnDefs": [{sDefaultContent: '',aTargets: [ '_all' ]}],
+            "aoColumns": [
+                { "sTitle" : "序号","mData": null, "sWidth" : "50px"},
+                { "sTitle" : "订单号","mData": "orderNo","sWidth" : "220px" },
+                { "sTitle" : "下单时间","mData": "createTime","sWidth" : "150px"},
+                { "sTitle" : "供应商","mData": "supplierName" },
+                { "sTitle" : "进货商","mData": "purchaseName" },
+                { "sTitle" : "商品金额(元)","mData": "money" },
+                { "sTitle" : "物流费用(元)","mData": "freight" },
+                { "sTitle" : "订单总额(元)","mData": "totalCost" },
+                { "sTitle" : "退款状态","mData": "refundStatus" ,"mRender" : function ( data, type, full ) {
+                    var text;
+                    if (full.refundStatus == 0) {
+                        text = "<span style='color: gray;'>审核中</span>";
+                    }else if (full.refundStatus == 1) {
+                        text = "退款中";
+                    }else if (full.refundStatus == 2) {
+                        text = "退款完成";
+                    }else if (full.refundStatus == 3) {
+                        text = "<span style='color: gray;'>拒绝退款</span>";
+                    }
+                    return text;
+                }},
+                {"sWidth": "110px","sTitle" : "操作","mData" : "id","sClass":"ph_tableShow", "mRender" : function ( data, type, full ) {
+                    var text = '<div class="ph_operateBox"><input class="ph_operate" name="" type="button" value="操作选项">';
+                    text = text+'<ul class="ph_operateList hide">';
+                    if ([[${session.supplyRefundOrderDetail}]]) {
+                        text += '<li><a href="javascript:void(0);" onclick="toDetail(\''+ full.id +'\')">订单详情</a></li>';
+                    }
+                    if ([[${session.supplyRefundDetail}]]) {
+                        text += '<li><a href="javascript:void(0);" onclick="refundDetail(\''+ full.id +'\');">退款详情</a></li>';
+                    }
+                    if (full.refundStatus == 0) {
+                        if ([[${session.supplyRefundCheck}]]) {
+                            text += '<li><a href="javascript:void(0);" onclick="checkRefund(\''+ full.id +'\');">退款审核</a></li>';
+                        }
+                    }
+                    text = text + '</ul></div>';
+                    return text;
+                }
+                }
+            ],
+            "oLanguage" : {
+                "sProcessing" : "数据加载中······",
+                "sLengthMenu" : "显示 _MENU_ 条记录",
+                "sZeroRecords" : "没有您要搜索的内容！",
+                "sEmptyTable" : "列表中无数据存在！",
+                "sInfo" : "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+                "sInfoEmpty" : "显示 0 到 0 条记录",
+                "sInfoFiltered" : "数据列表中共  _MAX_ 条记录",
+                "oPaginate" : {
+                    "sFirst" : "首页",
+                    "sPrevious" : "上一页",
+                    "sNext" : "下一页",
+                    "sLast" : "末页"
+                }
+            },
+            "fnServerData" : function ( sSource, aoData, fnCallback, oSettings ) {
+                oSettings.jqXHR = $.ajax( {
+                    "dataType" 	: 'json',
+                    "type" 		: "POST",
+                    "async"     : 'false',
+                    "url" 		: sSource,
+                    "data" 		: {
+                        'pageNum': (aoData[3].value/aoData[4].value)+1,
+                        'pageSize' :  aoData[4].value,
+                        'createTimeStr'  :  $("#createTimeStr").val(),
+                        'createTimeEnd' : $('#createTimeEnd').val(),
+                        'orderNo' : $('#orderNo').val(),
+                        'purchaserId' : $('#purchaserId').val(),
+                        'supplerId' : $('#supplerId').val(),
+                        'status' : $('#status').val(),
+                        'queryType' : 1,
+                        'refundStatus' : $('#refundStatus').val()
+                    },
+                    "success"	: fnCallback
+                } );
+            },
+            "fnDrawCallback" : function(){
+                var api = this.api();
+                var startIndex= api.context[0]._iDisplayStart;//获取到本页开始的条数
+                api.column(0).nodes().each(function(cell, i) {
+                    cell.innerHTML = startIndex + i + 1;
+                });
+
+            }
+        });
+    });
+    //条件查询重新加载数据
+    function query() {
+        tb.draw();
+    };
+
+    function resetForm() {
+        clearData("queryForm");
+    }
+
+
+    function exportExcel() {
+        $('#e_createTimeStr').val($('#createTimeStr').val());
+        $('#e_createTimeEnd').val($('#createTimeEnd').val());
+        $('#e_orderNo').val($('#orderNo').val());
+        $('#e_purchaserId').val($('#purchaserId').val());
+        $('#e_supplerId').val($('#supplerId').val());
+        $('#e_status').val($('#status').val());
+        $('#e_refundStatus').val($('#refundStatus').val());
+        $('#orderExport').submit();
+    }
+
+    /**
+     * 查看详情
+     * @param orderId
+     */
+    function toDetail(orderId) {
+        HtmlHelper.generateAutoSubmitForm({
+            url: "/web/order/supply/refund/orderDetail",
+            data: {
+                subOrderId : orderId,
+                type : 2
+            }
+        });
+    }
+
+    /**
+     * 退款申请详情
+     * @param orderId
+     */
+    function refundDetail(orderId) {
+        $.ajax({
+            async:false,
+            url:"/web/order/supply/refund/detail",
+            data:{orderId:orderId},
+            type:"POST",
+            dataType:"json",
+            success:function(data){
+                if(data.success){
+                    var tr = $('#Js_refundDetaBox table tr');
+                    tr.eq(0).find("td").text(data.data.appliReason);
+                    var status = data.data.appliStatus;
+                    if (status == 0) {
+                        //通过
+                        tr.eq(1).find("td").text("同意退款");
+                        tr.eq(2).addClass("hidden");
+                        tr.eq(3).addClass("hidden");
+                    } else if (status == 1) {
+                        //未通过
+                        tr.eq(1).find("td").text("不同意退款");
+                        tr.eq(2).find("td").text(data.data.telPhone);
+                        tr.eq(3).find("td").text(data.data.rejectedReason);
+                        tr.eq(2).removeClass("hidden");
+                        tr.eq(3).removeClass("hidden");
+                    } else if (status == 2) {
+                        //审核中
+                        tr.eq(1).find("td").text("审核中");
+                        tr.eq(2).addClass("hidden");
+                        tr.eq(3).addClass("hidden");
+                    }
+                    layer.open({
+                        type: 1,
+                        title: '退款详情',
+                        closeBtn : 0,
+                        area: ['442px','440px'],
+                        btn:['确认'],
+                        btnAlign: 'c',
+                        content: $('#Js_refundDetaBox')
+                    });
+                }else{
+                    layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                }
+            }
+        });
+    }
+
+    /**
+     * 审核退款
+     */
+    function checkRefund(orderId) {
+        $.ajax({
+            async:false,
+            url:"/web/order/supply/refund/detail",
+            data:{orderId:orderId},
+            type:"POST",
+            dataType:"json",
+            success:function(data){
+                if(data.success){
+                    var tr = $('#Js_refundBox table tr');
+                    tr.eq(0).find("td").text(data.data.appliReason);
+                    var id = data.data.id;
+                    layer.open({
+                        type: 1,
+                        title: '退款审核',
+                        closeBtn : 0,
+                        area: ['442px','440px'],
+                        btn:['确认', '取消'],
+                        btnAlign: 'c',
+                        content: $('#Js_refundBox'),
+                        yes:function (index,layero) {
+                            var flag = $("#validateForm").validationEngine("validate");
+                            if(!flag){
+                                return false;
+                            }
+                            var data = {};
+                            data.subOrderId = orderId;
+                            data.id = id;
+                            data.rejectedReason = $('#rejectedReason').val();
+                            data.telPhone = $('#telPhone').val();
+                            data.appliStatus = $('input[name = "refund"]:checked').val();
+                            $.ajax({
+                                async:false,
+                                url:"/web/order/supply/refund/check",
+                                data:data,
+                                type:"POST",
+                                dataType:"json",
+                                success:function(data){
+                                    clearData("validateForm");
+                                    if(data.success){
+                                        layer.close(index);
+                                        tb.draw(false);
+                                        layer.alert(data.message, {icon: 1,btnAlign: 'c', closeBtn : 0});
+                                    }else{
+                                        layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                                    }
+                                }
+                            });
+                        },btn2:function (index,layero) {
+                            clearData("validateForm");
+                            layer.close(index);
+                        }
+                    });
+                }else{
+                    layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                }
+            }
+        });
+    }
+
+    function clearData(id) {
+        $("#" + id)[0].reset();
+        var roleCode = $('#roleCode').val();
+        var selected = $("#" + id).find("select");
+        if (selected.length > 0) {
+            for (var i = 0, length = selected.length; i< length; i++) {
+                var id = selected.eq(i).attr("id");
+                if (roleCode != 1 ) {
+                    //if (id != "supplerId") {
+                        selected.eq(i).selectpicker('val','');
+                    //}
+                } else {
+                    selected.eq(i).selectpicker('val','');
+                }
+            }
+        }
+    }
+</script>
+</body>
+</html>

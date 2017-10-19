@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.searchhunter.SearchHunterDao">
+ <!-- 通过销售数量获取数据 -->
+ <select id="getHunterByNum" resultType="Map"  parameterType="Map">
+ <!-- select DISTINCT(p.hunter_id) as hId from alq_product as p  -->
+  select  DISTINCT phunter.id hId from (
+(
+select  h.*  from alq_hunter h where ifnull(h.state,1)=1 and  h.nickname like ${name}
+) 
+union all(
+select DISTINCT h.*   
+from alq_product as p 
+LEFT JOIN  alq_hunter as h on h.id=p.hunter_id 
+where p.`status`=1 and ifnull(h.state,1)=1 and p.name like ${name}
+) 
+) as phunter 
+where true 
+order by num DESC
+limit #{currentPage},#{numPage} 
+ 
+ </select>
+ <!-- 通过好评获取数据 -->
+ <select id="getHunterByGoodNum" resultType="Map"  parameterType="Map">
+ <!-- select DISTINCT(p.hunter_id) as hId from alq_product as p  -->
+  select  DISTINCT phunter.id hId from (
+(
+select  h.*  from alq_hunter h where  ifnull(h.state,1)=1 and  h.nickname like ${name}
+) 
+union all(
+select DISTINCT h.*   
+from alq_product as p 
+LEFT JOIN  alq_hunter as h on h.id=p.hunter_id 
+where p.`status`=1  and ifnull(h.state,1)=1 and p.name like ${name}
+) 
+) as phunter 
+where true 
+order by good_comment_num_order	DESC
+limit #{currentPage},#{numPage} 
+ 
+ </select>
+ <!-- 模糊查询获取数据通过距离进行排序 -->
+ <select id="getHunterByDistance" resultType="Map"  parameterType="Map">
+  select  DISTINCT phunter.id hId ,(dnDistance (
+			#{longitude},
+			#{latitude},
+			phunter.longitude,
+			phunter.latitude
+		) * 1
+	) AS distance
+  
+  from (
+(
+select  h.*  from alq_hunter h where  ifnull(h.state,1)=1 and h.nickname like ${name}
+) 
+union all ( select DISTINCT h.*  from alq_product as p
+
+LEFT JOIN  alq_hunter as h on h.id=p.hunter_id 
+
+where p.`status`=1  and ifnull(h.state,1)=1   and p.name like ${name}
+) 
+) as phunter 
+order by distance,phunter.id ASC
+limit #{currentPage},#{numPage} 
+ 
+ </select>
+ <select id="getProductByName" resultType="Map">
+ SELECT 
+		DISTINCT(spf.product_id),
+		ROUND(spf.sale_price/100,2) AS price , pro.name ,SUm(spf.sale_num ) as sale_num,pro.start_num as startNum
+		
+		FROM alq_product_specification AS spf 
+		
+		LEFT JOIN alq_product AS pro
+		
+		ON spf.product_id=pro.id 
+				
+	    WHERE pro.hunter_id=#{hId} AND pro.status=1 AND pro.name like ${name}
+	    GROUP By pro.id
+           
+ </select>
+ <select id="getHunterMessage" resultType="Map">
+  Select 
+    hun.nickName,hun.service,hun.level,hun.star,hun.good_comment_num_order  AS goodCommentNum,hun.num,area.letter,hun.province_name as province,
+   
+    attch.name,attch.address,hun.city_name as city,hun.county_name as countyname ,mm.im_id as IMId,
+    
+    hun.detail,ser.title,
+     hun.major
+    
+    FROM  alq_hunter as hun
+    
+    LEFT JOIN alq_attachment as attch
+    
+    ON attch.id=hun.logo_attachment_id
+    
+    LEFT JOIN alq_hunter_service as ser
+    
+    ON ser.hunter_id=hun.id
+    
+    LEFT JOIN alq_area AS  area
+     
+    ON area.id =hun.province_id 
+    
+    LEFT JOIN alq_member as mm
+
+    on mm.hunter_id=hun.id
+    
+    WHERE ifnull(hun.state,1)=1 and  hun.id=#{hId}
+ </select>
+ <!-- 通过批发商的匿名获取批发商的Id -->
+ <select id="getHunterByNickName" resultType="Map">
+ Select id from alq_hunter where nickname like #{name}
+ </select>
+ <select id="getSearchProductByName" resultType="Map">
+ SELECT 
+		DISTINCT(spf.product_id),
+		ROUND(spf.sale_price/100,2) AS price , pro.name ,pro.imageurl,SUm(spf.sale_num ) as sale_num,pro.start_num as startNum
+		
+		FROM alq_product_specification AS spf 
+		
+		LEFT JOIN alq_product AS pro
+		
+		ON spf.product_id=pro.id 
+				
+	    WHERE pro.hunter_id=#{hId} AND pro.status=1  and  pro.name like ${name}
+	    GROUP By pro.id
+        ORDER BY pro.sale_num
+        Limit #{currentPage},#{numPage}
+ </select>
+ <!-- 按照销售数量排序，并返回距离-->
+ <select id="getHunterMessageAddTude" resultType="Map">
+		 Select 
+		    hun.nickName,hun.service,hun.level,hun.star,hun.good_comment_num_order  AS goodCommentNum,hun.num,area.letter,hun.province_name as province,
+		   
+		    attch.name,attch.address,hun.city_name as city,hun.county_name as countyname ,mm.im_id as IMId,
+		    
+		    hun.detail,ser.title,
+		    hun.major,
+		      (dnDistance (
+							#{longitude},
+							#{latitude},
+							hun.longitude,
+							hun.latitude
+						) * 1
+					) AS distance
+		    
+		    FROM  alq_hunter as hun
+		    
+		    LEFT JOIN alq_attachment as attch
+		    
+		    ON attch.id=hun.logo_attachment_id
+		    
+		    LEFT JOIN alq_hunter_service as ser
+		    
+		    ON ser.hunter_id=hun.id
+		    
+		    LEFT JOIN alq_area AS  area
+		     
+		    ON area.id =hun.province_id 
+		    
+		    LEFT JOIN alq_member as mm
+		
+		    on mm.hunter_id=hun.id
+		    
+		    WHERE ifnull(hun.state,1) =1 and hun.id=#{hId}
+ </select>
+</mapper>

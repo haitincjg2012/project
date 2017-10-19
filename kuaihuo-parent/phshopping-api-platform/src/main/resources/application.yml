@@ -1,0 +1,54 @@
+#jsp配置
+spring:
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+
+  #上传文件大小配置
+  http:
+     multipart:
+       max-file-size: 5Mb
+       max-request-size: 5Mb
+      
+  #thymeleaf配置    
+  thymeleaf:
+      prefix: classpath:/templates/
+      suffix: .html
+      mode: HTML5
+      cache: false
+
+  #redis配置
+  redis:
+    host: 127.0.0.1
+    database: 0
+    port: 6379
+    password:
+    timeout: 60000
+    pool:
+      max-wait: -1
+      max-idle: 500
+      min-idle: 0
+
+#日志配置
+logging:
+  level: 
+    org.apache.zookeeper: off
+    com.alibaba: off
+    
+#端口配置    
+server:
+  port: 8083
+  tomcat:
+    protocol-header: X-Forwarded-Proto
+    protocol-header-https-value: https
+    basedir: /tmp
+    accesslog:
+      enabled: true
+      directory: /logs/puhui-tomcat/api-platform
+      pattern: common
+      prefix: phshopping-
+      suffix: .log
+    uri-encoding: UTF-8
+  session:
+    timeout: 30

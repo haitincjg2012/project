@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+<meta charset="UTF-8">
+<title>余额提现</title>
+<link th:href="@{/static/css/common/models.css}" type="text/css"
+	rel="stylesheet" />
+</head>
+<body>
+	<div class="MainContent">
+		<!--面包屑-->
+		<div class="current">
+			当前位置：<a href="#">帐户管理</a>&nbsp;&gt;&nbsp;<a href="#">帐户余额</a>&nbsp;&gt;&nbsp;<span>余额提现</span>
+		</div>
+		<!--end 面包屑-->
+		<!--主体内容-->
+		<div class="MainCont">
+			<!--标题-->
+			<div class="ph_subTit no_border">
+				<h2>余额提现</h2>
+			</div>
+			<!--end 标题-->
+			<!--余额提现-->
+			<div class="ph_methodBox ph_setUp">
+				<form id="accountCarry">
+					<p class="ph_methPass">
+						<label for="">账户名：</label> <input id="userId" name="userId"
+							th:value="${bindCardInfo.userId}" hidden="hidden"> <input
+							id="ownerName" name="ownerName" type="text"
+							th:value="${bindCardInfo.ownerName}" disabled>
+					</p>
+					<p class="ph_methPass">
+						<label for="">银行卡号：</label> <input id="cardNo" name="cardNo"
+							type="text" th:value="${bindCardInfo.cardNo}" disabled>
+					</p>
+					<p class="ph_methPass">
+						<label for="">所属银行：</label> <input id="bankName" name="bankName"
+							type="text" th:value="${bindCardInfo.bankName}" disabled>
+					</p>
+					<!-- <p class="ph_methPass">
+						<label for=""> <span class="require">*</span>提现金额：
+						</label> <input id="score" name="score" type="text"
+							onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}"
+							onafterpaste="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}"><span
+							class="ph_carryTxt" style="padding-left: 10px;">帐户余额：</span> <span
+							id="balance" type="text" name="balance" th:text="${userBalance}"
+							class="ph_carryTxt"></span>
+					</p> -->
+					<p class="ph_methPass">
+						<label for=""> <span class="require">*</span>提现金额：
+						</label> <input id="score" name="score" type="text"
+							onkeyup="clearNoNum(this)"><span
+							class="ph_carryTxt" style="padding-left: 10px;">帐户余额：</span> <span
+							id="balance" type="text" name="balance" th:text="${userBalance}"
+							class="ph_carryTxt"></span>
+					</p>
+				</form>
+			</div>
+			<!--end 余额提现-->
+			<!--返回按钮-->
+			<div class="PopupBtn btnLeft">
+				<input class="submit" id="drawCash" name="drawCash" type="button"
+					value="提现申请" onclick="getDrawCash()">
+			</div>
+			<!--end 返回按钮-->
+		</div>
+		<!--end 主体内容-->
+	</div>
+
+	<script type="text/javascript"
+		th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+	<!--弹窗-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/layer/layer.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/util.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/account/account_carry.js}"></script>
+	<script type="text/javascript" th:inline="javascript">
+	function clearNoNum(obj) {
+		 obj.value = obj.value.replace(/[^\d.]/g, "");//清除“数字”和“.”以外的字符
+		 obj.value = obj.value.replace(/^\./g, "");//验证第一个字符是数字而不是.
+		 obj.value = obj.value.replace(/\.{2,}/g, ".");//只保留第一个. 清除多余的.
+		 obj.value = obj.value.replace(".", "$#$").replace(/\./g,"").replace("$#$", ".");
+		}
+	</script>
+</body>
+</html>

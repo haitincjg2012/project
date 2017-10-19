@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IScoreDetailMapper">
+
+	<select id="getScoreDetails" resultType="com.ph.shopping.facade.profit.vo.ScoreDetailVO">
+			SELECT
+				m.telPhone,
+				m.isMarketing memberType,
+				m.memberName,
+				t.source,
+				s.createTime,
+				s.score score1,
+				s.handingCharge handingCharge1
+			FROM
+				ph_member m,
+				ph_score_total_trade s,
+				ph_transcode t
+			WHERE
+				m.id = s.memberId
+			AND t.transCode = s.transCode
+			<trim>
+				<if test="telPhone != null and telPhone != ''">
+					and m.telPhone = #{telPhone}
+				</if>
+				<if test="memberType == 1">
+					and m.isMarketing = #{memberType}
+				</if>
+				<if test="memberType == 2">
+					and m.isMarketing = #{memberType}
+				</if>
+				<if test="transCode != null and transCode != ''">
+					and t.transCode = #{transCode}
+				</if>
+				<if test="startDate != null and startDate != ''">
+					and date_format(s.createTime, '%Y-%m-%d') &gt;= #{startDate}
+				</if>
+				<if test="endDate != null and endDate != ''">
+					and date_format(s.createTime, '%Y-%m-%d') &lt;= #{endDate}
+				</if>
+				<if test="memberId != null and memberId != ''">
+					and m.id= #{memberId}
+				</if>
+			</trim>
+			ORDER BY s.createTime DESC
+	</select>
+
+	<!--添加提现积分-->
+	<update id="updateDrawCashScore" parameterType="com.ph.shopping.facade.member.entity.MemberDrawcashRecord">
+		UPDATE
+			ph_member_score
+		SET
+			drawcashScore = drawcashScore + #{score},
+			updateTime = #{updateTime}
+		WHERE memberId = #{memberId}
+	</update>
+</mapper>

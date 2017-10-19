@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.hunterstore.HunterStoreDao">
+
+	<!-- 查询该批发商的店铺列表-->
+	<select id="findHunterStoreList" resultType="map" parameterType="java.lang.Long">
+		SELECT s.`id`,s.`address`,s.`content` FROM alq_hunter_store_attachment s WHERE s.`hunter_id`=#{hunterid} AND s.`is_delete`=0 ORDER BY s.`created_time` DESC
+	</select>
+	
+	<!-- 根据id查询店铺详情-->
+	<select id="getHunterStoreById" resultType="map" parameterType="java.lang.Long">
+		SELECT s.`id`,s.`address`,s.`content` FROM alq_hunter_store_attachment s WHERE s.`id`=#{id}
+	</select>
+	
+	<!-- 批发商店铺列表 -->
+	<select id="getHunterStoreList" resultType="java.util.Map" >
+		SELECT 
+			s.`id`,s.`address`,s.`content` 
+		FROM alq_hunter_store_attachment s
+		LIMIT 6
+	</select>
+	
+	<select id="getHunterStoreCountByHunterId" resultType="int" parameterType="java.lang.Long">
+		SELECT COUNT(*) FROM alq_hunter_store_attachment s WHERE s.`hunter_id`=#{hunterid} AND s.`is_delete`=0
+	</select>
+</mapper>

@@ -1,0 +1,638 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.MerchantMapper">
+    <resultMap id="baseResultMap" type="com.ph.shopping.facade.spm.vo.MerchantVO">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="merchantName" property="merchantName" jdbcType="VARCHAR"/>
+        <result column="telPhone" property="telPhone" jdbcType="VARCHAR"/>
+        <result column="personName" property="personName" jdbcType="VARCHAR"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="contactAddress" property="contactAddress" jdbcType="VARCHAR"/>
+        <result column="agentId" property="agentId" jdbcType="BIGINT"/>
+        <result column="businessNo" property="businessNo" jdbcType="VARCHAR"/>
+        <result column="companyName" property="companyName" jdbcType="VARCHAR"/>
+        <result column="idCardNo" property="idCardNo" jdbcType="VARCHAR"/>
+        <result column="businessProfitRatio" property="businessProfitRatio" jdbcType="DECIMAL"/>
+        <result column="provinceId" property="provinceId" jdbcType="BIGINT"/>
+        <result column="cityId" property="cityId" jdbcType="BIGINT"/>
+        <result column="countyId" property="countyId" jdbcType="BIGINT"/>
+        <result column="townId" property="townId" jdbcType="BIGINT"/>
+        <result column="positionId" property="positionId" jdbcType="BIGINT"/>
+        <result column="promoterId" property="promoterId" jdbcType="BIGINT"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="isFrozen" property="isFrozen" jdbcType="TINYINT"/>
+        <result column="isDelete" property="isDelete" jdbcType="TINYINT"/>
+        <result column="statusLevel" property="statusLevel" jdbcType="TINYINT"/>
+        <result column="userId" property="userId" jdbcType="BIGINT"/>
+        <result column="createrId" property="createrId" jdbcType="BIGINT"/>
+        <result column="updaterId" property="updaterId" jdbcType="BIGINT"/>
+        <result column="createTime" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="longitude" property="longitude" jdbcType="VARCHAR"/>
+        <result column="latitude" property="latitude" jdbcType="VARCHAR"/>
+        <result column="cdKey" property="cdKey" jdbcType="VARCHAR"/>
+        <result column="views" property="views" jdbcType="INTEGER"/>
+        <result column="isCdKey" property="isCdKey" jdbcType="INTEGER"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="costMoney" property="costMoney" jdbcType="BIGINT"/>
+        <result column="isRecommend" property="isRecommend" jdbcType="TINYINT"/>
+        <result column="isRecommendType" property="isRecommendType" jdbcType="TINYINT"/>
+
+    </resultMap>
+    <resultMap id="imgResultMap" extends="baseResultMap" type="com.ph.shopping.facade.spm.vo.MerchantVO">
+        <result column="promoterTelPhone" property="promoterTelPhone" jdbcType="VARCHAR"/>
+        <result column="promoterMemberName" property="promoterMemberName" jdbcType="VARCHAR"/>
+        <collection property="merchantImageVOList" ofType="com.ph.shopping.facade.spm.vo.MerchantImageVO">
+            <id column="img_id" property="id" jdbcType="BIGINT"/>
+            <result column="img_url" property="url" jdbcType="VARCHAR"/>
+            <result column="img_sort" property="sort" jdbcType="INTEGER"/>
+            <result column="img_type" property="type" jdbcType="INTEGER"/>
+            <result column="img_merchantId" property="merchantId" jdbcType="BIGINT"/>
+            <result column="img_createrId" property="createrId" jdbcType="BIGINT"/>
+            <result column="img_createTime" property="createTime" jdbcType="TIMESTAMP"/>
+            <result column="merchantTypeName" property="merchantTypeName" jdbcType="VARCHAR"/>
+        </collection>
+        <collection property="merchantMerchantTypeVOList" ofType="com.ph.shopping.facade.spm.vo.MerchantMerchantTypeVO">
+            <result column="firstMerchantTypeId" property="firstMerchantTypeId" jdbcType="VARCHAR"/>
+            <result column="secondMerchantTypeId" property="secondMerchantTypeId" jdbcType="INTEGER"/>
+            <result column="secondMerchantTypeName" property="secondMerchantTypeName" jdbcType="VARCHAR"/>
+        </collection>
+        <collection property="dishVOList" ofType="com.ph.shopping.facade.spm.vo.DishVO">
+            <id column="dishid" property="id" jdbcType="BIGINT"/>
+            <result column="dishName" property="dishName" jdbcType="VARCHAR"/>
+            <result column="imgId" property="imgId" jdbcType="BIGINT"/>
+            <result column="dCount" property="dCount" jdbcType="BIGINT"/>
+            <result column="money" property="money" jdbcType="BIGINT"/>
+            <result column="imgAddress" property="imgAddress" jdbcType="VARCHAR"/>
+            <result column="type" property="type" jdbcType="INTEGER"/>
+            <result column="saleNum" property="saleNum" jdbcType="BIGINT"/>
+            <result column="isDelete" property="isDelete" jdbcType="BIGINT"/>
+            <result column="specification" property="specification" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+    <!-- 扩展返回字段 -->
+    <resultMap id="extendsResultMap" type="com.ph.shopping.facade.spm.vo.MerchantVO" extends="baseResultMap">
+        <result column="merchantUrl" property="merchantUrl" jdbcType="VARCHAR"/>
+        <result column="positionName" property="positionName" jdbcType="VARCHAR"/>
+        <result column="agentParentId" property="agentParentId" jdbcType="BIGINT"/>
+        <result column="parentName" property="parentName" jdbcType="VARCHAR"/>
+        <result column="distance" property="distance" jdbcType="VARCHAR"/>
+        <result column="merchantFirstTypeIds" property="merchantFirstTypeIds" jdbcType="VARCHAR"/>
+        <result column="merchantSecondIds" property="merchantSecondIds" jdbcType="VARCHAR"/>
+        <result column="merchantTypeName" property="merchantTypeName" jdbcType="VARCHAR"/>
+    </resultMap>
+    <!-- 商户主表字段 -->
+    <sql id="base_column_list">
+        mct.id, mct.merchantName, mct.telPhone, mct.personName, mct.address, mct.contactAddress, mct.agentId,
+        mct.businessNo,
+        mct.companyName,mct.idCardNo, mct.businessProfitRatio, mct.provinceId, mct.cityId, mct.countyId, mct.townId,
+        mct.positionId, mct.promoterId, mct.status, mct.isFrozen, mct.isDelete, mct.userId, mct.createrId,
+        mct.updaterId,
+        mct.createTime, mct.updateTime, mct.longitude, mct.latitude,
+        mct.merchantTypeId,mct.statusLevel,mct.views,mct.isCdKey,mct.cdKey,
+        mct.description,mct.costMoney,mct.isRecommend isRecommendSsss,mct.isRecommendType
+        <!--代理置顶显示：isRecommend   管理员置顶显示：recommendManage   1、运营置顶   3、代理置顶：isRecommendType-->
+    </sql>
+    <!-- 商户图片表字段 -->
+    <sql id="img_column_list">
+    	,img.id img_id, img.url img_url, img.sort img_sort,img.type img_type, img.merchantId img_merchantId, img.createrId img_createrId, img.createTime img_createTime
+  </sql>
+    <!-- 商户类别字段 -->
+    <sql id="merchant_type_column_list">
+		,firstMerchantTypeId,secondMerchantTypeId,secondMerchantTypeName
+	</sql>
+    <!--商户商品字段 -->
+    <sql id="dish_column_list">
+		,d.id dishid,d.dishName,d.imgId,d.money,d.count dCount,d.goodComment,d.comment,d.badComment,d.imgAddress,
+		d.type,d.saleNum
+	</sql>
+    <!-- 商户扩展字段 -->
+    <sql id="extends_column_list">
+        ,d.merchantTypeName,
+        d.merchantSecondIds,
+        d.merchantFirstTypeIds,
+        img.url merchantUrl
+    	,CONCAT(p.provinceName,p.cityName,p.countyName,p.townName,mct.address) positionName
+    	,agt.id agentParentId,CASE WHEN mct.agentId>0  THEN agt.agentName ELSE "平台添加" END parentName
+  </sql>
+    <!-- 商户扩展字段 -->
+    <sql id="extends_column1_list">
+    	,IF(FORMAT(getDistance(mct.latitude,mct.longitude,#{latitude},#{longitude}),2)>1,CONCAT(FORMAT(getDistance(mct.latitude,mct.longitude,#{latitude},#{longitude}),2),'km'),CONCAT(FORMAT(getDistance(mct.latitude,mct.longitude,#{latitude},#{longitude}),2)*1000,'m')) distance
+    	,getDistance (
+				mct.latitude,
+				mct.longitude ,#{latitude},#{longitude}
+			) sort
+  </sql>
+    <!-- 商户推广师扩展字段 -->
+    <sql id="member_column1_list">
+		,pm.telPhone promoterTelPhone,pm.memberName promoterMemberName
+	</sql>
+    <!-- 基础查询条件 -->
+    <sql id="where_general">
+        <!--管理员置顶显示  -->
+        <if test="isRecommendType != null">
+            and mct.isRecommendType = #{isRecommendType}
+        </if>
+        <if test="id != null">
+            and mct.id = #{id}
+        </if>
+        <if test="userId != null">
+            and mct.userId = #{userId}
+        </if>
+        <if test="agentId != null">
+            and mct.agentId = #{agentId}
+        </if>
+        <if test="statusLevel != null and statusLevel != ''">
+            and mct.statusLevel = #{statusLevel}
+        </if>
+        <if test="positionId != null">
+            and mct.positionId = #{positionId}
+        </if>
+        <if test="positionExtendsId != null and positionExtendsId != ''">
+            and (mct.provinceId = #{positionExtendsId} or mct.cityId = #{positionExtendsId} or mct.countyId =
+            #{positionExtendsId} or mct.townId = #{positionExtendsId})
+        </if>
+
+        <if test="merchantName != null and merchantName !='' ">
+            and mct.merchantName like CONCAT('%',TRIM(#{merchantName}),'%')
+        </if>
+        <if test="merchantTypeName != null and merchantTypeName !='' ">
+            and (merchantTypeName like CONCAT('%',TRIM(#{merchantTypeName}),'%') or
+            mct.merchantName like CONCAT('%',TRIM(#{merchantTypeName}),'%')
+            )
+        </if>
+        <if test="companyName != null and companyName !='' ">
+            and mct.companyName like CONCAT('%',TRIM(#{companyName}),'%')
+        </if>
+        <if test="telPhone != null and telPhone !='' ">
+            and mct.telPhone like CONCAT('%',TRIM(#{telPhone}),'%')
+        </if>
+        <if test="personName != null and personName !='' ">
+            and mct.personName like CONCAT('%',TRIM(#{personName}),'%')
+        </if>
+        <if test="idCardNo != null and idCardNo != '' ">
+            and mct.idCardNo = #{idCardNo}
+        </if>
+        <if test="merchantFirstTypeId != null ">
+            and CONCAT(',', d.merchantFirstTypeIds, ',') like CONCAT('%,',TRIM(#{merchantFirstTypeId}),',%')
+        </if>
+        <if test="merchantSecondTypeId != null ">
+            and CONCAT(',', d.merchantSecondIds, ',') like CONCAT('%,',TRIM(#{merchantSecondTypeId}),',%')
+        </if>
+        <if test="merchantTypeId != null ">
+            and (CONCAT(',', d.merchantSecondIds, ',') like CONCAT('%,',TRIM(#{merchantTypeId}),',%')
+            or CONCAT(',', d.merchantFirstTypeIds, ',') like CONCAT('%,',TRIM(#{merchantTypeId}),',%'))
+        </if>
+        <if test="latitude != null and latitude != ''  and longitude != null and longitude != '' and distanceNum != null ">
+            and getDistance(mct.latitude,mct.longitude,#{latitude},#{longitude}) &lt;= #{distanceNum}
+        </if>
+        <if test="agentIds != null ">
+            <if test="agentIds.size() > 0">
+                and mct.agentId in
+                <foreach collection="agentIds" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </if>
+        <if test="isDelete != null">
+            and mct.isDelete = #{isDelete}
+        </if>
+        <if test="isFrozen != null">
+            and mct.isFrozen = #{isFrozen}
+        </if>
+        <if test="status != null">
+            and mct.status = #{status}
+        </if>
+
+        <if test="provinceId != null and provinceId != ''">
+            and mct.provinceId = #{provinceId}
+        </if>
+        <if test="cityId != null and cityId != ''">
+            and mct.cityId = #{cityId}
+        </if>
+        <if test="countyId != null and countyId != ''">
+            and mct.countyId = #{countyId}
+        </if>
+        <if test="townId != null and townId != ''">
+            and mct.townId = #{townId}
+        </if>
+        <if test="description != null and description != ''">
+            and mct.description = #{description}
+        </if>
+        <if test="isRecommendType != null and isRecommendType != ''">
+            and mct.isRecommendType = #{isRecommendType}
+        </if>
+        <if test="isRecommend != null and isRecommend != ''">
+            and mct.isRecommend = #{isRecommend}
+        </if>
+        <if test="costMoney != null and costMoney != ''">
+            and mct.costMoney = #{costMoney}
+        </if>
+    </sql>
+
+    <!-- 商户查询列表详情 -->
+    <!-- <select id="getMerchantListDetail" resultMap="imgResultMap"
+        parameterType="com.ph.shopping.facade.spm.dto.MerchantDTO">
+        SELECT
+        ps.specification,
+        <include refid="base_column_list" />
+        <include refid="img_column_list" />
+        <include refid="dish_column_list" />
+        FROM
+        ph_merchant mct
+        LEFT JOIN ph_dish AS d ON d.merchantId = mct.id
+        LEFT JOIN ph_merchant_image AS img ON mct.id = img.merchantId
+        LEFT JOIN ph_dish_specification AS ps ON  d.dishSpecificationId=ps.id AND ps.merchantId=mct.id
+        WHERE mct.id=#{id} AND d.type=#{type} AND d.isDelete=0
+    </select> -->
+
+
+    <!-- 商户查询列表详情 -->
+    <select id="getMerchantListDetail" resultMap="imgResultMap"
+            parameterType="com.ph.shopping.facade.spm.dto.MerchantDTO">
+        SELECT
+        <include refid="base_column_list"/>
+        <include refid="img_column_list"/>
+        <include refid="member_column1_list"/>
+        <include refid="merchant_type_column_list"/>
+        FROM ph_merchant mct
+        LEFT JOIN ph_merchant_image img ON mct.id = img.merchantId
+        LEFT JOIN (select merchantId,firstMerchantTypeId,secondMerchantTypeId,c.merchantTypeName secondMerchantTypeName
+        FROM ph_merchant_merchant_type a
+        LEFT JOIN ph_merchant_type c on a.secondMerchantTypeId=c.id
+        ) mmt ON mct.id = mmt.merchantId
+        LEFT JOIN (
+        SELECT c.id,p.id pid,CONCAT(p.merchantTypeName,'/',c.merchantTypeName) merchantTypeName
+        FROM ph_merchant_type p
+        LEFT JOIN ph_merchant_type c ON p.id = c.parentId AND p.isDelete = 1 AND c.isDelete=1) d ON mct.merchantTypeId =
+        d.id
+        LEFT JOIN ph_member pm ON mct.promoterId = pm.id
+        <include refid="where_group_img"/>
+        group by img.url,img.type,secondMerchantTypeId ORDER BY updateTime desc
+    </select>
+
+    <update id="incrementViews" parameterType="java.lang.Long">
+      UPDATE ph_merchant set views = views+1 where id = #{merchantId}
+    </update>
+
+    <!-- 商户查询列表   -->
+    <select id="getMerchantList" resultMap="extendsResultMap"
+            parameterType="com.ph.shopping.facade.spm.dto.MerchantDTO">
+        SELECT
+        <include refid="base_column_list"/>
+        <include refid="extends_column_list"/>
+        <if test="latitude != null and latitude != ''  and longitude != null and longitude != '' and distanceNum != null ">
+            <include refid="extends_column1_list"/>
+        </if>
+        FROM ph_merchant mct
+        LEFT JOIN (
+        SELECT
+        GROUP_CONCAT(c.merchantTypeName separator '、') merchantTypeName,
+        GROUP_CONCAT(a.secondMerchantTypeId) merchantSecondIds,
+        GROUP_CONCAT(a.firstMerchantTypeId) merchantFirstTypeIds,
+        a.merchantId amerchantId
+        FROM
+        ph_merchant_merchant_type a
+        LEFT JOIN ph_merchant_type c ON c.id = a.secondMerchantTypeId AND c.isDelete = 0
+        GROUP BY amerchantId
+        ) d on d.amerchantId = mct.id
+        LEFT JOIN ph_merchant_image img ON mct.id = img.merchantId AND img.type = 3
+        LEFT JOIN ph_position p ON mct.positionId = p.id
+        LEFT JOIN ph_agent agt ON mct.agentId = agt.id
+        <include refid="where_clause"/>
+        GROUP BY mct.id
+        <choose>
+            <when test="sort == 'views'">
+                ORDER BY views DESC
+            </when>
+            <when test="latitude != null and latitude != ''  and longitude != null and longitude != '' and distanceNum != null">
+                ORDER BY sort
+            </when>
+            <otherwise>
+                ORDER BY mct.isRecommend ASC
+            </otherwise>
+        </choose>
+    </select>
+
+    <sql id="base_column_list_admin">
+        mct.id, mct.merchantName, mct.telPhone, mct.personName, mct.address, mct.contactAddress, mct.agentId,
+        mct.businessNo,
+        mct.companyName,mct.idCardNo, mct.businessProfitRatio, mct.provinceId, mct.cityId, mct.countyId, mct.townId,
+        mct.positionId, mct.promoterId, mct.status, mct.isFrozen, mct.isDelete, mct.userId, mct.createrId,
+        mct.updaterId,
+        mct.createTime, mct.updateTime, mct.longitude, mct.latitude,
+        mct.merchantTypeId,mct.statusLevel,mct.views,mct.isCdKey,mct.cdKey,
+        mct.description,mct.costMoney,mct.recommendManage isRecommendSsss,mct.isRecommendType
+        <!--代理置顶显示：isRecommend   管理员置顶显示：recommendManage   1、运营置顶   3、代理置顶：isRecommendType-->
+    </sql>
+
+    <!-- 查询管理员置顶的顺序 -->
+    <select id="getMerchantListAdmin" resultType="map"
+            parameterType="com.ph.shopping.facade.spm.dto.MerchantDTO">
+        SELECT
+        <include refid="base_column_list_admin"/>
+        <include refid="extends_column_list"/>
+        <if test="latitude != null and latitude != ''  and longitude != null and longitude != '' and distanceNum != null ">
+            <include refid="extends_column1_list"/>
+        </if>
+        FROM ph_merchant mct
+        LEFT JOIN (
+        SELECT
+        GROUP_CONCAT(c.merchantTypeName separator '、') merchantTypeName,
+        GROUP_CONCAT(a.secondMerchantTypeId) merchantSecondIds,
+        GROUP_CONCAT(a.firstMerchantTypeId) merchantFirstTypeIds,
+        a.merchantId amerchantId
+        FROM
+        ph_merchant_merchant_type a
+        LEFT JOIN ph_merchant_type c ON c.id = a.secondMerchantTypeId AND c.isDelete = 0
+        GROUP BY amerchantId
+        ) d on d.amerchantId = mct.id
+        LEFT JOIN ph_merchant_image img ON mct.id = img.merchantId AND img.type = 3
+        LEFT JOIN ph_position p ON mct.positionId = p.id
+        LEFT JOIN ph_agent agt ON mct.agentId = agt.id
+        <include refid="where_clause"/>
+        GROUP BY mct.id
+        <choose>
+            <when test="sort == 'views'">
+                ORDER BY views DESC
+            </when>
+            <when test="latitude != null and latitude != ''  and longitude != null and longitude != '' and distanceNum != null">
+                ORDER BY sort
+            </when>
+            <otherwise>
+                ORDER BY mct.recommendManage ASC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 通用查询条件 -->
+    <sql id="where_clause">
+        <trim prefix="where" prefixOverrides="and">
+            <include refid="where_general"/>
+        </trim>
+    </sql>
+    <!-- 查询商户图片条件 -->
+    <sql id="where_group_img">
+        <trim prefix="where" prefixOverrides="and">
+            <include refid="where_general"/>
+        </trim>
+    </sql>
+    <!-- 修改当前代理商所有商户   -->
+    <update id="updateMerchantByAgent" parameterType="com.ph.shopping.facade.spm.dto.MerchantDTO">
+        <if test="ids != null ">
+            <if test="ids.size() > 0">
+                update ph_merchant set agentId = #{agentId}
+                where id in
+                <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </if>
+    </update>
+    <!-- 修改审核等级 -->
+    <update id="updateMerchantByStatusLevle" parameterType="com.ph.shopping.facade.spm.dto.MerchantDTO">
+        <if test="isNotLevlIds != null ">
+            <if test="isNotLevlIds.size() > 0">
+                <if test="statusLevel != null and statusLevel != ''">
+                    update ph_merchant set
+                    statusLevel = #{statusLevel}
+                    where id in
+                    <foreach collection="isNotLevlIds" item="id" open="(" close=")" separator=",">
+                        #{id}
+                    </foreach>
+                </if>
+            </if>
+        </if>
+    </update>
+
+    <!-- 查询会员推广商户的个数-->
+    <select id="verifyMemberProMerchantNum" resultType="int">
+		SELECT
+			count(1)
+		FROM
+			ph_merchant ph
+		WHERE
+			ph.promoterId =  #{memberId}
+	</select>
+
+    <!-- insertAlqMember注册商户改造@维护商户表、原会员表根据快火批发APP接口的需要 -->
+    <insert id="insertAlqMember" parameterType="Map">
+		INSERT INTO alq_member(phone,password,created_time,token,im_id,im_password,im_sign,uuid)  
+		VALUES(#{phone},#{password},#{created_time},#{token},#{im_id},#{im_password},#{im_sign},#{uuid})
+	</insert>
+
+
+    <!-- 根据手机号获取id -->
+    <select id="getDataByphone" resultType="java.lang.Long" parameterType="String">
+ select id from ph_merchant where telPhone=#{phone}
+ </select>
+
+    <!-- 若是不存在在判断alq_member是是否存在和这个手机号 -->
+    <select id="getDataByphoneFromalq" resultType="java.lang.Long" parameterType="String">
+ select id from alq_member a where a.phone=#{phone}
+ </select>
+    <!-- 获取行业分类 -->
+    <select id="getMerchantTypeById" parameterType="java.lang.Long" resultType="string">
+ 	select t.merchantTypeName from ph_merchant_type t left join ph_merchant_merchant_type mt on mt.secondMerchantTypeId=t.id where mt.merchantId=#{id}
+ </select>
+    <!-- 获取商户基本信息 -->
+    <select id="getMerchantById" parameterType="java.lang.Long" resultType="com.ph.shopping.facade.spm.dto.MerchantDTO">
+ 		SELECT
+ 			 companyName,merchantName,telPhone,costMoney,openBeginTime,openEndTime,DATE_FORMAT(closeBeginTime,'%Y-%m-%d %H:%i') as closeBeginTime,DATE_FORMAT(closeEndTime,'%Y-%m-%d %H:%i') as closeEndTime,personName
+ 		FROM 
+ 			ph_merchant 
+ 		WHERE id=#{id}
+ </select>
+    <!-- 获取商户图片信息 -->
+    <select id="getmerchantImg" resultType="com.ph.shopping.facade.spm.dto.MerchantImageDTO"
+            parameterType="com.ph.shopping.facade.spm.dto.MerchantImageDTO">
+        SELECT
+        url
+        FROM
+        ph_merchant_image
+        WHERE
+        merchantId=#{merchantId} and type=#{type} <!--  1 营业执照图片 2 身份证图片 3 门店照片 4 其他-->
+    </select>
+
+    <!-- 代理修改商户置顶 -->
+    <update id="updateIsRecommend">
+        update ph_merchant set isRecommend =#{isRecommend},isRecommendType=#{isRecommendType} where telPhone=#{telPhone}
+    </update>
+    <!-- 运营中心修改商户置顶 -->
+    <update id="updateIsRecommendAdmin">
+        update ph_merchant set recommendManage =#{isRecommend},isRecommendType=#{isRecommendType} where telPhone=#{telPhone}
+    </update>
+
+    <!-- 修改营业时间 -->
+    <update id="updateMerchantInfoById" parameterType="map">
+		UPDATE ph_merchant 
+			set costMoney=#{costMoney},openBeginTime=#{openBeginTime},openEndTime=#{openEndTime},closeBeginTime=#{closeBeginTime},closeEndTime=#{closeEndTime},updateTime=now()
+		WHERE id=#{id}
+	</update>
+    <!-- 验证码验证 -->
+    <select id="provCodeByMerchanrId" parameterType="map" resultType="com.ph.shopping.facade.spm.entity.Merchant">
+		SELECT 
+			id
+		FROM 
+			ph_merchant 
+		WHERE 
+			id=#{id} and cdKey=#{cdKey}
+	</select>
+    <update id="updateCdkey" parameterType="map">
+		UPDATE ph_merchant 
+			SET isCdKey=1 
+		WHERE id=#{id}
+	</update><!-- 是否激活 0:未激活 1:激活 -->
+    <!-- 判断当前商户是否已经激活 -->
+    <select id="getmerchantisCdKey" parameterType="java.lang.Long"
+            resultType="com.ph.shopping.facade.spm.entity.Merchant">
+		SELECT 
+			isCdKey
+	    FROM
+	        ph_merchant where id=#{merchantId}
+	</select>
+    <select id="selectMemberShareByToPhone" parameterType="string" resultType="map">
+		SELECT
+			*
+	    FROM
+	        ph_member_share_record where toTelPhone=#{phone} and type=1
+	</select>
+
+    <!--修改手机号维护alq_member表-->
+    <select id="updateMemberByPhone" parameterType="String">
+        update alq_member set phone=#{Newphone} ,update_time = NOW() where phone = #{oldPhone}
+    </select>
+    <!--通过手机号获取-->
+    <select id="getMemberAndMerchant" parameterType="String" resultType="map">
+      select IFNULL(mer.isFrozen,"0") as frozen  from alq_member as mm LEFT JOIN ph_merchant as mer on mm.phone = mer.telPhone where mm.phone=#{phone}
+    </select>
+
+
+    <select id="findDissipateList" resultType="com.ph.shopping.facade.spm.vo.MerchanTimeSectionVO">
+    	select id,startTime,endTime,merchantId from ph_merchant_time_section WHERE merchantId=#{merchantId}
+    </select>
+
+    <delete id="delDissipate">
+    	delete  from ph_merchant_time_section where id =#{id}
+    </delete>
+    <!--用手机号获取商户注册信息-->
+    <select id="getMerchantMsgByPhone" resultType="Map">
+        SELECT pm.telPhone,pm.merchantName from ph_merchant pm WHERE pm.telPhone LIKE CONCAT(#{phone},'%')
+    </select>
+    <!--通过手机号来判断店面经理是否和其他商户绑定了-->
+    <select id="getStroeManagerMsg" resultType="Map">
+  SELECT * from ph_store_manager_record pr WHERE pr.telPhone=#{phone} AND pr.status = 0 AND pr.certification=1
+    </select>
+
+    <!--<insert id="insertAlqMember" parameterType="Map">
+        INSERT INTO alq_member(phone,password,created_time,token,im_id,im_password,im_sign,uuid)
+        VALUES(#{phone},#{password},#{created_time},#{token},#{im_id},#{im_password},#{im_sign},#{uuid})
+    </insert>-->
+    <insert id="addStoreManager">
+
+
+    </insert>
+
+    <insert id="addDissipateStartTime">
+        INSERT INTO ph_merchant_time_section(startTime,endTime,merchantId) VALUES (#{startTime},#{endTime},#{merchantId})
+    </insert>
+
+    <delete id="delDissipateTime">
+      DELETE  FROM   ph_merchant_time_section WHERE  merchantId=#{merchantId}
+    </delete>
+
+
+    <select id="getLevel" resultType="Map">
+        SELECT p.agentLevelId,p.cityId,p.countyId from  ph_agent p,ph_permission_common_user pu
+        WHERE  pu.id=p.userId AND pu.id=#{id} AND p.isFormSystem = 1
+
+    </select>
+
+
+    <select id="getHunter" resultType="Map" parameterType="com.ph.shopping.facade.spm.dto.MerchantImageDTO">
+
+        SELECT mct.nickname,
+        mm.phone,
+        IFNULL(mct.city_name,"") city_name,
+        IFNULL(mct.county_name,"") county_name,
+        IFNULL(mct.town_name,"") town_name,mct.id
+        FROM alq_hunter mct
+        LEFT  JOIN  alq_member mm ON  mm.hunter_id=mct.id
+        LEFT JOIN (
+        SELECT
+        GROUP_CONCAT(c.name separator '、') merchantTypeName,
+        GROUP_CONCAT(a.industry_type_id) merchantSecondIds,
+        GROUP_CONCAT(a.one_level_industry_type_id) merchantFirstTypeIds,
+        a.hunter_id amerchantId
+        FROM
+        alq_hunter_industry_type a
+
+        <!--改动-->
+        LEFT JOIN alq_industry_type c ON c.id = a.industry_type_id
+        GROUP BY amerchantId
+        ) d on d.amerchantId = mct.id
+        where
+        <if test="level ==1 ">
+            mct.position_level =1
+            AND
+            mct.ph_city_id =#{cityId}
+        </if>
+        <if test="level ==2">
+            mct.position_level =2
+            AND mct.ph_county_id =#{countyId}
+        </if>
+        <!--所属区域-->
+        <if test="provinceId != null and provinceId != ''">
+            and mct.ph_province_id = #{provinceId}
+        </if>
+        <if test="cityId != null and cityId != ''">
+            and mct.ph_city_id = #{cityId}
+        </if>
+        <if test="countyId != null and countyId != ''">
+            and mct.ph_county_id = #{countyId}
+        </if>
+        <if test="townId != null and townId != ''">
+            and mct.ph_town_id = #{townId}
+        </if>
+        <!-- 行业分类 -->
+        <if test="merchantFirstTypeId != null ">
+            and CONCAT(',', d.one_level_industry_type_id, ',') like CONCAT('%,',TRIM(#{merchantFirstTypeId}),',%')
+
+        </if>
+        <if test="merchantSecondTypeId != null ">
+            and CONCAT(',', d.industry_type_id, ',') like CONCAT('%,',TRIM(#{merchantSecondTypeId}),',%')
+        </if>
+        <if test="merchantTypeId != null ">
+            and (CONCAT(',', d.industry_type_id, ',') like CONCAT('%,',TRIM(#{merchantTypeId}),',%')
+            or CONCAT(',', d.one_level_industry_type_id, ',') like CONCAT('%,',TRIM(#{merchantTypeId}),',%'))
+        </if>
+        <!-- 公司名称 -->
+        <if test="companyName != null and companyName !='' ">
+            and mct.nickname like CONCAT('%',TRIM(#{companyName}),'%')
+        </if>
+        <!-- 商户号 -->
+        <if test="telPhone != null and telPhone !='' ">
+            and mct.phone like CONCAT('%',TRIM(#{telPhone}),'%')
+        </if>
+    </select>
+    <!--行业分类-->
+    <select id="getIndustry" resultType="Map">
+     SELECT DISTINCT  ai.`name` FROM alq_hunter_industry_type ah INNER JOIN alq_industry_type ai  ON  ah.industry_type_id=ai.id  where  `ah`.hunter_id =#{id}
+</select>
+    <!--查询商户的userid-->
+    <select id="getUserId" resultType="Map">
+    SELECT  pm.userId from ph_merchant pm where id=#{id}
+</select>
+
+    <select id="getPhoneByPermission" resultType="long" parameterType="string">
+      SELECT  COUNT(1) from ph_permission_common_user where telPhone=#{phone}
+    </select>
+    <select id="getPhoneByAlqMember" resultType="long" parameterType="string">
+      SELECT  COUNT(1) from alq_member where phone=#{phone}
+    </select>
+
+    <update id="updateStoreManager">
+      UPDATE ph_member  pm set pm.isStoreManager=1 , pm.userId=#{userid} where pm.id= #{memberid}
+    </update>
+
+</mapper>

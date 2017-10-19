@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.producttype.ProductTypeDao">
+
+	<resultMap id="BaseResultMap" type="com.alqsoft.vo.ProcudtTypeVO" >
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<!-- <result column="create_user" property="createUser" jdbcType="VARCHAR" />
+         <result column="created_ip" property="createdIp" jdbcType="VARCHAR" />
+         <result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
+         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />-->
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="parent_id" property="parentId" jdbcType="BIGINT" />
+	</resultMap>
+
+	<resultMap id="productTypeMap" type="com.alqsoft.entity.producttype.ProductType">
+		<id column="id" property="id" />
+		<association  property="parent" autoMapping="true" foreignColumn="id"  column="parent_id" javaType="com.alqsoft.entity.producttype.ProductType" select="selectProductTypeById" />
+		<association  property="hunter" autoMapping="true" foreignColumn="id"  column="hunter_id" javaType="com.alqsoft.entity.hunter.Hunter" select="selectHunterById" />
+	</resultMap>
+
+	<select id="selectProductTypeById" resultType="com.alqsoft.entity.producttype.ProductType" parameterType="Long">
+		SELECT * FROM alq_product_type WHERE id = #{parent_id}
+	</select>
+
+	<select id="selectHunterById" resultType="com.alqsoft.entity.hunter.Hunter" parameterType="Long">
+		SELECT * FROM alq_hunter WHERE  id=#{hunter_id}
+	</select>
+
+	<sql id="Base_Column_List" >
+        id, name, parent_id
+    </sql>
+
+	<select id="getProductTypeList" resultMap="BaseResultMap"  parameterType="java.util.Map">
+		select id, content name, parent_id  from alq_product_type
+		<where>
+			<if test="pid != null">
+				and parent_id = #{pid,jdbcType=BIGINT} and  hunter_id = #{hid,jdbcType=BIGINT}
+			</if>
+
+			<if test="pid == null">
+				and parent_id is  null and  hunter_id = #{hid,jdbcType=BIGINT}
+			</if>
+
+		</where>
+
+	</select>
+
+
+	<select id="getProductTypeById" resultMap="productTypeMap" parameterType="Long">
+    
+    	select * from alq_product_type where id=#{id}
+    </select>
+	<!-- 查询一级分类下是否有二级分类 -->
+	<select id="selectProductTypeSon" resultType="int" parameterType="Long">
+		SELECT count(*) FROM alq_product_type WHERE parent_id = #{id}
+	</select>
+	<!-- 获取一级分类以及一级分类下商品种类数量 -->
+	<select id="getProductTypeFirst" resultType="Map" parameterType="Long">
+		SELECT
+		type.content ,type.sum_product as sumProduct,type.id
+		FROM alq_product_type AS type WHERE
+		type.hunter_id=#{id} and type.parent_id is null
+		<!--  (select types.id from alq_product_type as types) -->
+	</select>
+	<!-- 获取二级分类，以及二级分类的下的商品的数量 -->
+	<select id="getProductTypeSeconde" resultType="Map" parameterType="Long">
+	SELECT 
+	type.content ,type.sum_product as sumProduct,type.id
+	FROM alq_product_type AS type WHERE type.hunter_id=#{id} and type.parent_id is not null
+	</select>
+	<!-- 获取ip -->
+	<select id="getIp" resultType="String" parameterType="Long">
+	SELECT log.created_ip FROM alq_user_log 
+	AS log LEFT JOIN alq_hunter 
+	AS hunter on hunter.phone=log.login_name
+	WHERE hunter.id=#{id}
+	</select>
+	<!-- 获取一级的id -->
+	<select id="getFirstIdByContent" resultType="Long" parameterType="String">
+	SELECT id from alq_product_type where content=#{content}
+	</select>
+	<select id="getCount" resultType="Long">
+	Select count(1) from alq_product_type
+	</select>
+	<!-- 获取当前的sortNum -->
+	<select id="getSortNumById" resultType="Integer" parameterType="Long">
+	SELECT sort_num as sortNum from alq_product_type where id=#{id}
+	</select>
+	<!-- 获取当前所有的大于sortNum的sortNum集合 -->
+	<select id="getSortNumMax" resultType="Map" parameterType="Integer">
+	Select sort_num as sortNum , id from alq_product_type where sort_num >= #{sortNum} and #{sortNum} Order by sort_num desc
+	</select>
+	<!-- <select id="getSortNumMin" resultType="Map" parameterType="Integer">
+	Select sort_num as sortNum , id from alq_product_type where sort_num <= #{sortNum} and #{sortNum}
+	</select>  -->
+	<select id="getSortNumMin" resultType="Map" parameterType="Integer">
+	Select sort_num as sortNum , id from alq_product_type where #{sortNum} >= sort_num and #{sortNum} Order by sort_num desc
+	</select>
+	<!-- 获取所有分离 -->
+	<select id="getAllClass" resultType="Map" >
+	SELECT pt.id,pt.content,pt.sort_NUM as sortNum,pt.sum_product as sumProduct,(SELECT  COUNT(ps.product_id) FROM alq_product_specification ps WHERE ps.`product_type_id`=pt.id) num 
+    FROM alq_product_type pt  WHERE  pt.`hunter_id` =#{id} ORDER BY pt.sort_num ASC LIMIT #{currentPage},#{numPage}  
+	
+	</select>
+
+	<!-- 获取该批发商商品分类的一级分类 -->
+	<select id="getFirstProductType" resultType="Map" parameterType="java.lang.Long">
+		SELECT 
+			pt.`id`,
+			pt.`hunter_id` AS hunterid,
+			pt.`sort_num` AS sortnum,
+			pt.`content` AS content,
+			IFNULL(pt.`sum_product`,0) AS sum_product
+		FROM alq_product_type pt WHERE pt.`hunter_id`=#{hunterid} AND pt.`parent_id` IS NULL ORDER BY pt.`sort_num`
+	</select>
+	<!-- 获取该批发商商品分类的二级分类 -->
+	<select id="getSecondProductType" resultType="Map" parameterType="java.lang.Long">
+		SELECT 
+			pt.`id`,
+			pt.`hunter_id` AS hunterid,
+			pt.`sort_num` AS sortnum,
+			pt.`content` AS content,
+			pt.created_time AS Time,
+			IFNULL(pt.`sum_product`,0) AS sum_product
+	FROM alq_product_type pt WHERE pt.`parent_id`=#{firstid} ORDER BY pt.created_time ASC
+	</select>
+
+	<!--销售商品分类 -->
+	<select id="saleProductType" resultType="Map" parameterType="Long">
+	select pt.content as classifyone,pt.id as classId from alq_product_type as pt where  pt.id in (select DISTINCT(spn.product_type_id) from  alq_product_specification as spn WHERE spn.product_id=#{pId}) 
+
+	</select>
+	<!--销售商品的规格 -->
+	<select id="saleProductStandard" resultType="Map" parameterType="Long">
+	select pf.content as standard ,pf.id as standardId from alq_product_specification as pf where pf.product_id=#{pId} AND (pf.is_delete=0 OR pf.is_delete IS NULL)
+	</select>
+	<select id="getRightOrError" resultType="ProductType">
+	SELECT * FROM alq_product_type as pt where pt.id=#{Id} AND pt.hunter_id=#{hId} AND pt.parent_id=#{parentId}
+	</select>
+	<select id="findRightOrError" resultType="ProductType" >
+    SELECT * FROM alq_product_type as pt where pt.content=#{firstType} AND pt.hunter_id =#{id} AND pt.id not in(#{pId}) 
+    </select>
+	<!-- 通过cId，hId，sortNUm获取对应的ProductType -->
+	<select id="getRightOrErrorAll" resultType="ProductType">
+     Select * From alq_product_type where id=#{cId} and hunter_id=#{hId} and sort_num=#{sortNum}
+    </select>
+	<!-- 通过cId获取信息 -->
+	<select id="getFirstProductById" resultType="ProductType" parameterType="Long">
+    Select * From alq_product_type where id=#{cId} and hunter_id=#{hId}
+    </select>
+	<!-- 获取二级类名的重复个数 -->
+	<select id="getSecondTypeName" resultType="int" parameterType="Map">
+    select count(*) from alq_product_type as pt where pt.hunter_id =#{hId} and pt.content=#{name} and pt.parent_id=#{idFirst}
+    </select>
+
+	<!--获取批发商商品二级类型-->
+	<select id="getProductTypeByHunterId" resultType="com.alqsoft.vo.ProcudtTypeVO" parameterType="Long">
+		select id,content as name,parent_id as parentId from alq_product_type
+		where hunter_id = #{hunterId}
+		and parent_id is null order by sort_num
+	</select>
+</mapper>

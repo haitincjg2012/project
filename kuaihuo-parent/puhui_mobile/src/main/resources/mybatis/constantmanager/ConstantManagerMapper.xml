@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.constantmanager.ConstantManagerDao">
+<resultMap type="constantmanager" id="constantmanagerMap">
+<result column="id" property="id"/>
+<result column="china_name" property="chinaName"/>
+<result column="english_name" property="englishName"/>
+<result column="constant_value" property="constantValue"/>
+<result column="unit" property="unit"/>
+<result column="is_memory" property="isMemory"/>
+</resultMap>
+
+	<sql id="base_sql">
+		id,china_name,english_name,constant_value,unit,is_memory
+	</sql>
+	
+	<!-- 查询是否放入内存中的常量列表 -->
+	<select id="findConstantManagerByIsMemory" resultMap="constantmanagerMap" parameterType="int">
+		SELECT
+		<include refid="base_sql" />
+		FROM alq_constant_manager WHERE is_memory=#{isMemory}
+	</select>
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MemberIntegralMapper">
+
+	<!-- 新增会员时向会员积分表新增数据 -->
+	<insert id="insertMemberScore" parameterType="com.ph.shopping.facade.member.dto.MemberIntegralDTO">
+		INSERT INTO ph_member_score (
+			memberId,
+			enableScore,
+			standbyScore,
+			drawcashScore,
+			memberProfitScore,
+			memberRewardScore,
+			merchantRewardScore,
+			status,
+			createrId,
+			createTime,
+			updateTime
+		)
+		VALUES(
+			#{memberId},
+			#{enableScore},
+			#{standbyScore},
+			#{drawcashScore},
+			#{memberProfitScore},
+			#{memberRewardScore},
+			#{merchantRewardScore},
+			#{status},
+			#{createrId}, 
+			now(),
+			now()
+		)
+	</insert>
+	
+	<!-- 查询会员积分数据 -->
+	<select id="selectMemberIntegralListInfo" parameterType = "com.ph.shopping.facade.member.dto.MemberIntegralDTO" resultType="com.ph.shopping.facade.member.dto.MemberIntegralDTO">
+		SELECT a.* from (
+		SELECT  pstt.memberId memberId,
+		pm.memberName,
+		pstt.orderNo,
+		pstt.createTime,
+		ROUND(pstt.score/10000,2) score,
+		pt.transCode,
+		pt.source,
+		pt.remark
+		from ph_score_total_trade pstt
+		INNER JOIN ph_transcode pt ON pstt.transCode = pt.transCode
+		INNER JOIN ph_member pm ON pm.id = pstt.memberId
+		WHERE pstt.memberId = #{memberId}
+
+		<if test="memberName != null and memberName != ''">
+			AND pm.memberName = #{memberName}
+		</if>
+		<if test="transCode != null ">
+			AND pt.transCode = #{transCode}
+		</if>
+		<if test="orderNo != null and orderNo != ''">
+			AND pstt.orderNo = #{orderNo}
+		</if>
+		<if test="createStartTime != null ">
+			AND DATE_FORMAT(pstt.createTime,'%Y-%m-%d') >= str_to_date(#{createStartTime},'%Y-%m-%d')
+		</if>
+		<if test="createEndTime != null ">
+            AND DATE_FORMAT(pstt.createTime,'%Y-%m-%d') &lt;= str_to_date(#{createEndTime},'%Y-%m-%d')
+		</if>
+		)a
+		ORDER BY a.createTime DESC
+	</select>
+	
+	<!-- 查询会员积分来源字典数据 -->
+	<select id="selectMemberIntegralSource" resultType="com.ph.shopping.facade.member.vo.MemberIntegralSourceVO">
+		SELECT
+			transCode,
+			source,
+			remark
+		FROM
+			ph_transcode
+	</select>
+</mapper>

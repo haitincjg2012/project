@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>货源管理-全国商品</title>
+    <link rel="stylesheet"  th:href="@{/static/css/common/models.css}" />
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet"   th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet"  th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+       <link rel="stylesheet" th:href="@{/static/js/plugins/layer/layer.css}" />
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">货源管理</a>&nbsp;&gt;&nbsp;<span>全国商品</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+            <h2>全国商品</h2>
+        </div>
+        <!--end 标题-->
+        <!--筛选条件-->
+         <shiro:hasPermission name="countryQuery">
+        <div class="ph_screen">
+            <table class="ph_tableBox">
+                <tr>
+                 <th>供应商：</th>
+                    <td>
+                        <select class="selectpicker" data-live-search="true"  id="supplierId">
+                            <option value="">请选择</option>
+                             <option  th:each="sp:${spList}"   th:value="${sp.id}" 
+                th:text="${sp.supplierName}"></option>
+                        </select>
+                    </td>
+                    <th>商品分类：</th>
+                    <td class="ph_select" colspan="3" >
+                      <select class="selectpicker"  id="first" data-live-search="true" onchange="getClass(this.options[this.selectedIndex].value,'second');" >
+                            <option value="">请选择</option>
+                              <option  th:each="list:${list}"   th:value="${list.id}" 
+                th:text="${list.classifyName}"></option>
+                        </select>
+                        <select class="selectpicker" id="second"   data-live-search="true" onchange="getClass(this.options[this.selectedIndex].value,'three');">
+                            <option value="">请选择</option>
+                        </select>
+                        <select class="selectpicker"  id="three"   data-live-search="true">
+                            <option value="">请选择</option>
+                        </select>
+                    </td>
+                    
+                <tr>
+                    <th>商品名称：</th>
+                    <td><input type="text" id="productName" name="productName" ></td>
+                    <td colspan="2">
+                        <input name="" type="button"  onclick="javascript:query();" value="查询"><input name="" type="button"  onclick="reset();" value="重置">
+                    </td>
+                </tr>
+            </table>
+            <input type="hidden"    id="levleHidden"  value=""/> 
+	       	<input type="hidden"    id="productClassifyId"  name="productClassifyId" value=""/> 
+        </div>
+          </shiro:hasPermission>
+        <!--end 筛选条件-->
+        <!--商品列表-->
+        <div class="ph_wareBox">
+            <table class="ph_wareList" id="example"></table>
+        </div>
+        <!--end 商品列表-->
+         <div class="PopupBtn pageBtn ph_pageRel">
+            <!-- <input class="submit mitAll" id="checkAll" name="" type="button" value="全选"> -->
+              <shiro:hasPermission name="countryBulkPurchase">
+            <input class="submit" name=""  id="pur" type="button" value="批量进货" onclick="bulkPurchase();">
+            </shiro:hasPermission>
+        </div>
+    </div>
+    <!--end 主体内容-->
+
+<!--查看规格弹窗-->
+<div class="PopupBox"  id="skuShow">
+    <div class="PopupCon">
+        <div class="lookCon ph_wareBox">
+            <table class="ph_wareList">
+                <thead>
+                    <tr>
+                        <th>规格</th>
+                        <th>参考价（元）</th>
+                        <th>零售价（元）</th>
+                        <th>进货价（元）</th>
+                        <th>结算价（元）</th>
+                        <th>数量</th>
+                    </tr>
+                </thead>
+                <tbody  id="skuList">
+                    	
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 查看规格弹窗-->
+
+
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+
+<!--bootstrap-select-->
+<script type="text/javascript"  th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/formCheck.js}"></script>
+<!--分页-->
+<script type="text/javascript"   th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/common/number.js}"></script>
+<script type="text/javascript"   th:inline="javascript">
+//代理商冻结状态
+var  isFrozenAgent=[[${isFrozenAgent}]];
+//当前用户登录的角色
+var  userRole="[[${userRole}]]";
+
+// //代理商冻结状态
+// var  isFrozenAgent="1";
+// //当前用户登录的角色
+// var  userRole="6";
+
+
+
+var tb;
+$(function() {
+    var Popupe = new PopupBase();
+    Popupe.show('.ph_wareBox','.lookBtn', '.maskBox,.ph_lookBox');
+    Popupe.show('.ph_wareBox','.lookBtn', '.maskBox,.ph_lookBox');
+    Popupe.show('.ph_wareBox','.Js_btn', '.maskBox,.DeterBox');
+    Popupe.showHide('.submit', '.DeterBox','.SucBox');
+    Popupe.hide('.close', '.maskBox,.DeterBox,.SucBox,.ph_lookBox');
+    tb=$('#example').DataTable({
+        "bServerSide": true,
+        "autoWidth": false,
+         "sPaginationType": "full_numbers",
+         //"bJQueryUI": true,
+         "sDom": '<"">t<"F"ip>',
+        "sAjaxSource": "/web/supply/manager/getCountryPageList", //ajax调用接口
+         "aoColumnDefs": [{sDefaultContent: '',bSortable:false,aTargets: 0}],
+         "aoColumns": [
+                       /* 复选框  1*/
+					/* 	{ "sWidth":"50px","sTitle" : "<input type='checkbox'  class='check-all' id='titleId'/>","mData": "id" ,"class":"sClass","mRender":function(data, type, full){
+					  		return "<input type='checkbox' class='ids' pName='"+full.productName+"' ide='"+full.isFrozen+"'  ref='"+full.productCount+"'  name='checkOne'  value='"+full.id+"' id='id'/>";
+	        				}
+					  	}, */
+					  	{ "sTitle" : "ID","mData": "id"},
+         { "sTitle" : "供应商","mData": "supplierName"},
+         { "sTitle" : "商品名称","mData": "productName" ,"mRender":function(data, type, full){
+         	var text;
+        	if(userRole=='6'){
+        		text=full.productName;
+     	}else{
+        	if(full.isFrozen=='1'){
+        		text="<font color='#10c8ef'>[冻结]</font>";
+        		text+=full.productName;
+        	}else if(full.isFrozen=='2'){
+        		text="<font color='#10c8ef'>[暂冻]</font>";
+        		text+=full.productName;
+        	}else{
+        		text=full.productName;
+        	}
+     	}
+    	return text;
+		}},
+         { "sTitle" : "商品分类","mData": "productClassifyName" },
+         { "sTitle" : "总库存","mData": "productCount" },
+         { "sTitle" : "规格","mData": "id","mRender":function(data, type, full){
+	         	var text="<a  href='javascript:;' onclick='openSku("+full.id+");' color='#10c8ef'>查看</a>";
+	            return text;
+			} },
+         { "sWidth": "110px", "sTitle" : "操作","mData" : "id","sClass":"ph_tableShow", "mRender" : function ( data, type, full ) {
+         			var text = '<div class="ph_operateBox"><input class="ph_operate" name="" type="button" value="操作选项">';
+       				  text = text+'<ul class="ph_operateList hide" role="menu">';
+       				 if ([[${session.countryDetail}]]) {
+	       	   	  text += "<li><a href='/web/product/countryProductDetail?id=" + full.id + "'>商品详情</a></li>";
+       				 }
+			   if(full.isFrozen==0){
+				   if(isFrozenAgent==0&&userRole=="6"){
+	      				 if ([[${session.countryStock}]]) {
+			       	 	  text += '<li><a href="javascript:;" onclick="bulkPurchaseOne(\''+full.id+',\');">立即进货</a></li>';
+			        }
+	      		 }else if(isFrozenAgent==0&&userRole!="6"){
+    				 if ([[${session.countryStock}]]) {
+			       	 	  text += '<li><a href="javascript:;" onclick="bulkPurchaseOne(\''+full.id+',\');">立即进货</a></li>';
+			        }
+    				 }
+		        else{
+	      			text+="";
+	      		 }
+			   	} else   if(full.isFrozen==2&&userRole=="6"){
+	      			 if ([[${session.countryStock}]]) {
+			       	 	  text += '<li><a href="javascript:;" onclick="bulkPurchaseOne(\''+full.id+',\');">立即进货</a></li>';
+			        }
+	      		 }else   if(full.isFrozen==1&&userRole=="6"){
+	      			 if ([[${session.countryStock}]]) {
+			       	 	  text += '<li><a href="javascript:;" onclick="bulkPurchaseOne(\''+full.id+',\');">立即进货</a></li>';
+			        }
+	      		 }
+			   	else{
+	      			text+="";
+	      		 }
+	       	 	  return text;
+         }
+         }
+         ],
+        "oLanguage" : {
+            "sProcessing" : "数据加载中······",
+            "sLengthMenu" : "显示 _MENU_ 条记录",
+            "sZeroRecords" : "没有您要搜索的内容！",
+            "sEmptyTable" : "列表中无数据存在！",
+            "sInfo" : "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+            "sInfoEmpty" : "显示 0 到 0 条记录",
+            "sInfoFiltered" : "数据列表中共  _MAX_ 条记录",
+            "oPaginate" : {
+                "sFirst" : "首页",
+                "sPrevious" : "上一页",
+                "sNext" : "下一页",
+                "sLast" : "末页"
+            }
+        },
+        "fnServerData" : function ( sSource, aoData, fnCallback, oSettings ) {
+            oSettings.jqXHR = $.ajax( {
+                "dataType" 	: 'json',
+                "type" 		: "GET",
+                "async"     : 'false',
+                "url" 		: sSource,
+                "data" 		: {
+                    'pageNum': (aoData[3].value/aoData[4].value)+1,
+                    'pageSize' :  aoData[4].value,
+//                     'createrId':"${createrId}",
+					 'createrId':[[${createrId}]],
+                    'productClassifyId' : $('#productClassifyId').val(),
+                    'supplierId' : $('#supplierId').val(),
+                    'productName' : $('#productName').val(),
+                },
+                "success"	: fnCallback
+            } );
+        }
+    });
+    
+});
+
+//条件查询重新加载数据
+function query() {
+	if($("#first").val()!=""&&$("#second").val()==""&&$("#three").val()==""){
+		$("#productClassifyId").val($("#first").val());
+	}
+	if($("#first").val()!=""&&$("#second").val()!=""&&$("#three").val()==""){
+		$("#productClassifyId").val($("#second").val());
+	}
+	if($("#first").val()!=""&&$("#second").val()!=""&&$("#three").val()!=""){
+		$("#productClassifyId").val($("#three").val());
+	}
+	if($("#first").val()==""&&$("#second").val()==""&&$("#three").val()==""){
+		$("#productClassifyId").val("");
+	}
+	  tb.draw();
+};
+	
+//通过上商品id查看对应的sku
+function  openSku(id){
+	$.ajax({url:'/web/product/seeProductSku',data:{
+		id:id
+		},dataType:"json",type:"get",success:skuCallback,error:function(data){
+				layer.alert('与服务器连接中断', {icon: 2,btnAlign: 'c', closeBtn : 0});
+ }});
+}
+//成功回调方法
+function  skuCallback(data){
+	$("#skuList").html("");
+		//使用layer弹窗
+		console.log(data.data);
+		var html;
+		for(var i=0; i<data.data.length;i++){
+			 html+="<tr>";
+			 html+="<td title='"+data.data[i].skuName+"'><span title='"+data.data[i].skuName+"'>"+data.data[i].skuName+"</span></td>";
+			 html+="<td>"+toDecimal(data.data[i].referencePrice)+"</td>";
+			 html+="<td title=''>"+toDecimal(data.data[i].retailPrice)+"</td>";
+		     html+="<td title=''>"+toDecimal(data.data[i].purchasePrice)+"</td>";
+		     if(userRole=="6"){
+		    	 html+="<td>-</td>";
+		     }else{
+		    	  html+="<td>"+toDecimal(data.data[i].settlementPrice)+"</td>";
+		     }
+			 html+="<td>"+data.data[i].skuCount+"</td>";
+			 html+="</tr>";
+        }
+		$("#skuList").append(html);
+		
+		layer.open({
+            type: 1,
+            title: '查看规格',
+            closeBtn : 0,
+            area: ['900px','500px'],
+            btn:['取消'],
+            btnAlign: 'c',
+            content: $('#skuShow')
+        });
+}
+
+//分类联动方法
+function getClass(id,level){
+	$("#levleHidden").val("");
+	$("#levleHidden").val(level);
+	if(level=="second"){
+		 document.getElementById("second").options.length=0;
+		$("#second").prepend("<option value=''>请选择</option>");
+		 document.getElementById("three").options.length=0;
+		$("#three").prepend("<option value=''>请选择</option>");
+		$('.selectpicker').selectpicker('refresh');
+	}
+	if(level=="three"){
+		 document.getElementById("three").options.length=0;
+		$("#three").prepend("<option value=''>请选择</option>");
+		$('.selectpicker').selectpicker('refresh');
+	}
+	if(id!=""){
+	$.ajax({url:'/web/product/productClassify/selectClass?id='+id,dataType:"json",type:"post",success:savecallbackOne,error:function(data){
+				layer.alert('与服务器连接中断', {icon: 2,btnAlign: 'c', closeBtn : 0});
+ }});
+	}
+}
+function savecallbackOne(data){
+	console.log(data.data); 
+	var levle=$("#levleHidden").val();
+	if(levle=="second"){
+		$("#three").find("option").remove();
+		$("#three").prepend("<option value=''>请选择</option>");
+		$('.selectpicker').selectpicker('refresh');
+	}
+	$("#"+levle).find("option").remove();
+	$("#"+levle).prepend("<option value=''>请选择</option>");
+	for(var i=0; i<data.data.length;i++){
+        $("#"+levle).append("<option value='"+data.data[i].id+"'>"+data.data[i].classifyName+"</option>");
+    }
+	$('.selectpicker').selectpicker('refresh');
+}
+
+function  reset(){
+    $('#productClassifyId').val(""),
+     $('#supplierId').val("");
+    $('#productName').val("");
+    $("#first").selectpicker('val','');
+	 document.getElementById("second").options.length=0;
+	$("#second").prepend("<option value=''>请选择</option>");
+	 document.getElementById("three").options.length=0;
+	$("#three").prepend("<option value=''>请选择</option>");
+	$('.selectpicker').selectpicker('refresh');
+}
+
+//单挑进货按钮方法
+function  bulkPurchaseOne(ids){
+	  if(!ckeckProductCount()){
+		  return false;
+	  }
+// 	  alert(ids);
+    HtmlHelper.generateAutoSubmitForm({
+	           url: "/web/order/purchase/toCountryOneAdd",
+	           method:"POST",
+	           data: {
+	               ids : ids
+	           }
+	       });
+}
+
+//批量进货按钮调用方法
+function  bulkPurchase(){
+	if(!checkInfo()){
+		return false;
+	}
+	
+	 if(userRole!="6"){
+		 if(!checkAgent()){
+		 	return false;
+		 }
+	 }else{
+			if(!checkD()){
+				return false;
+			}
+	 }
+	 var num=$("input[type='checkbox'][name='checkOne']:checked").length;
+	  if (num == 0) {
+		layer.alert('请至少选择一种商品', {icon: 2}); 
+		return false;
+	}
+	  if(!ckeckProductCount()){
+		  return false;
+	  }
+	  var  Ids = "";
+	$("input[type='checkbox'][name='checkOne']:checked").each(function(index){
+		Ids += $(this).val() + ",";
+	  });
+// 		alert(Ids);
+    HtmlHelper.generateAutoSubmitForm({
+	           url: "/web/order/purchase/toCountryAdd",
+	           method:"POST",
+	           data: {
+	               ids : Ids
+	           }
+	       });
+}
+//校验商品数量为零
+function  ckeckProductCount(){
+	var isGo=true;
+	$("input[type='checkbox'][name='checkOne']:checked").each(function(){
+		 var count=$(this).attr("ref");
+		 var id=$(this).val();
+		 console.log(id);
+		 console.log(count);
+		 if(count=="0"){
+				layer.alert('编号为'+id+'的商品数量为0，请重新选择', {icon: 2}); 
+				isGo=false;
+				return isGo;
+		 }
+	  });
+	return isGo;
+}
+
+//商户进货时验证商品是否冻结
+function  checkD(){
+	var	isGo=true;
+	 if(userRole=="6"&&isFrozenAgent!="0"){
+		 isGo=false;
+		 layer.alert('您的市级代理商已经被冻结或暂冻，无法进货', {icon: 2}); 
+		 return  isGo;
+	 }
+	 return  isGo;
+}
+//代理商进货时验证商品是否冻结
+function  checkAgent(){
+	var	isGo=true;
+	if(isFrozenAgent!=0&&userRole==3){
+		 layer.alert('代理商您已被暂冻,无法进货', {icon: 2}); 
+		 isGo=false;
+		 return  isGo;
+	}
+		
+	$("input[type='checkbox'][name='checkOne']:checked").each(function(index){
+		if($(this).attr("ide")!="0"){
+			 isGo=false;
+			var name=$(this).attr("pName")
+			 layer.alert('商品:'+name+'供应商已经冻结或暂冻,无法进货', {icon: 2}); 
+		}
+		 return  isGo;
+  });
+	return  isGo;
+}
+
+//点击批量进货的时候验证列表是否有数据
+function  checkInfo(){
+	var isGo=false;
+	if(	$("input[type='checkbox'][name='checkOne']").length>0){
+		isGo=true;
+	}else{
+		 layer.alert('列表中无商品信息，无法进货', {icon: 2}); 
+	}
+	return isGo;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://code.alibabatech.com/schema/dubbo
+       http://code.alibabatech.com/schema/dubbo/dubbo.xsd"
+	default-lazy-init="true">
+<!-- 使用redist广播注册中心暴露服务地址 -->
+	<!-- <dubbo:registry protocol="redis" address="${dubbo.redis.host.pay}"
+		username="alqsoft" password="123456" />
+		<dubbo:reference id="rpcPayService" 
+			interface="com.alqsoft.rpc.pay.RpcPayService"  timeout="20000"/> -->
+			
+			
+		<!-- <dubbo:reference id="rpcPayService" interface="com.alqsoft.rpc.pay.RpcPayService" 
+			cache="false" check="false" timeout="1200000" url="${dubbo.redis.host.pay}"/>  -->
+			<dubbo:reference id="rpcPayService" interface="com.alqsoft.rpc.pay.RpcPayService"
+		cache="false"  timeout="1200000" url="dubbo://118.89.229.182:20880" />
+		
+</beans>

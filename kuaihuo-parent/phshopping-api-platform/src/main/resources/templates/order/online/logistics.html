@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>查看物流</title>
+  <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+</head>
+<body>
+<div class="MainContent">
+  <!--面包屑-->
+  <div class="current">当前位置：<a href="#">订单管理</a>&nbsp;&gt;&nbsp;<a href="#">线上订单</a>&nbsp;&gt;&nbsp;<span>查看物流</span> </div>
+  <!--end 面包屑-->
+  <!--主体内容-->
+  <div class="MainCont">
+    <!--标题-->
+    <div class="ph_subTit no_border">
+      <h2>订单信息</h2>
+    </div>
+    <!--end 标题-->
+    <!--查看物流-->
+    <div class="ph_logistics">
+      <p><span>订单号：</span><em th:text="${result.data.orderResult.orderNo}"></em></p>
+      <p><span>配送方式：</span>
+          <em th:if="${result.data.orderResult.shippingType==0}" th:text="自提方式"></em>
+          <em th:if="${result.data.orderResult.shippingType==1}" th:text="送货到家"></em>
+      </p>
+      <p><span>物流公司：</span><em th:text="${result.data.orderResult.logisticsName}"></em></p>
+      <p><span>物流单号：</span><em th:text="${result.data.orderResult.logisticsNo}"></em></p>
+    </div>
+    <!--end 查看物流-->
+    <!--标题-->
+    <div class="ph_subTit no_border">
+      <h2>物流信息</h2>
+    </div>
+    <!--end 标题-->
+    <ul class="ph_logisticsList" th:if=" ${result.data.logistic !=null and result.data.logistic.flag == true} ">
+      <span class="ph_topbor"></span><span class="ph_topbot"></span>
+      <th:block th:each="logistic,index:${result.data.logistic.data}">
+        <li th:if="${index.count==1}"><span class="ph_logIcon ph_logImg"></span><span th:text="${logistic.time}"></span>&nbsp;&nbsp;<span th:text="${logistic.context}"></span></li>
+        <li th:if="${index.count!=1}"><span class="ph_logIcon"></span><span th:text="${logistic.time}"></span>&nbsp;&nbsp;<span th:text="${logistic.context}"></span></li>
+      </th:block>
+    </ul>
+    <ul class="ph_logisticsList" th:if="${result.data.logistic !=null and result.data.logistic.flag == false}">
+      <span class="ph_topbor"></span><span class="ph_topbot"></span>
+      <li ><span class="ph_logIcon"></span><span th:text="${result.data.logistic.msg}"></span></li>
+    </ul>
+    <ul class="ph_logisticsList" th:if="${result.data.logistic ==null}">
+      <span class="ph_topbor"></span><span class="ph_topbot"></span>
+      <li ><span class="ph_logIcon"></span><span th:text="没有相应的物流公司"></span></li>
+    </ul>
+    <div class="PopupBtn">
+      <input class="submit" name="" type="button" th:onclick="'toListPage();'" value="返回">
+    </div>
+
+  </div>
+  <!--end 主体内容-->
+</div>
+<script type="text/javascript">
+    function toListPage() {
+        window.location.href="/web/orderOnline/toListPage";
+    }
+</script>
+</body>
+</html>

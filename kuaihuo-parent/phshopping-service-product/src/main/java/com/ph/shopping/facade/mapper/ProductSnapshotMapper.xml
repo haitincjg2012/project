@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.ProductSnapshotMapper" >
+  <resultMap id="BaseResultMap" type="com.ph.shopping.facade.product.vo.ProductSnapshotVO">
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="productId" property="productId" jdbcType="BIGINT" />
+    <result column="productName" property="productName" jdbcType="VARCHAR" />
+    <result column="productCount" property="productCount" jdbcType="INTEGER" />
+    <result column="productClassifyId" property="productClassifyId" jdbcType="BIGINT" />
+    <result column="productForm" property="productForm" jdbcType="TINYINT" />
+    <result column="barCode" property="barCode" jdbcType="VARCHAR" />
+    <result column="supplierId" property="supplierId" jdbcType="BIGINT" />
+    <result column="productType" property="productType" jdbcType="TINYINT" />
+    <result column="createTime" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="createrId" property="createrId" jdbcType="BIGINT" />
+    <result column="commoditySales" property="commoditySales" jdbcType="INTEGER" />
+    <result column="updaterId" property="updaterId" jdbcType="BIGINT" />
+     <result column="description" property="description" jdbcType="LONGVARCHAR" />
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    id, productId, productName, productCount, productClassifyId, productForm, barCode, 
+    supplierId, productType, createTime, updateTime, createrId, commoditySales, updaterId,description
+  </sql>
+  
+  	<!-- 动态条件 -->
+	<sql id="whereSqlDateil">
+		<trim prefix="where" prefixOverrides="and">
+			<if test="id!=null and  id!=''">
+				and id =#{id}
+			</if>
+			<if test="productId!=null and  productId!=''">
+				and productId =#{productId}
+			</if>
+<!-- 			<if test="productName !=null and productName !=''"> -->
+<!-- 				and productName like -->
+<!-- 				CONCAT('%',TRIM(#{productName}),'%') -->
+<!-- 			</if> -->
+			<if test="productCount !=null ">
+				and productCount =#{productCount}
+			</if>
+			<if test="productClassifyId !=null and productClassifyId !=''">	
+				and  productClassifyId=#{productClassifyId}
+			</if>
+			<if test="productForm !=null ">
+				and productForm =#{productForm}
+			</if>
+			<if test="barCode !=null and barCode !=''">
+				and barCode =#{barCode}
+			</if>
+			<if test="supplierId !=null and supplierId !=''">
+				and supplierId =#{supplierId}
+			</if>
+			<if test="productType !=null">
+				and productType =#{productType}
+			</if>
+			<if test="createTime !=null and createTime !=''">
+				and createTime=#{createTime}
+			</if>
+			<if test="updateTime !=null and updateTime !=''">
+				and updateTime=#{updateTime}
+			</if>
+			<if test="createrId !=null and createrId !=''">
+				and createrId=#{createrId}
+			</if>
+			<if test="updaterId !=null and updaterId !=''">
+				and updaterId=#{updaterId}
+			</if>
+		</trim>
+		<!-- order by createTime desc -->
+	</sql>
+  
+  
+  <select id="selectProductSnapshotByproductId" resultMap="BaseResultMap" parameterType="com.ph.shopping.facade.product.dto.ProductSnapshotDTO" >
+   		 select 
+    	<include refid="Base_Column_List" />
+   			 from ph_product_snapshot
+   		<include refid="whereSqlDateil" />
+		order by createTime desc
+  </select>
+</mapper>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.ph.shopping.facade.mapper.SalesmanMapper">
+
+	<!-- 添加业务员 -->
+	<insert id="addSaleman" parameterType="com.ph.shopping.facade.member.dto.MemberDTO">
+		insert into ph_member
+		(telPhone,memberName,idCardNo,memberPwd,createTime,createrId,agentId,salesmanTime,isFrozen)
+		values (#{telPhone}, #{memberName}, #{idCardNo}, #{memberPwd}, NOW(), #{agentId}, #{agentId},NOW(),0);
+	</insert>
+
+
+	<!--根据代理查寻相应的业务员-->
+	<select id="getSalesmanByAgentId" parameterType="Long" resultType="com.ph.shopping.facade.member.vo.MemberVO">
+		SELECT
+			telPhone,
+			memberName,
+			idCardNo,
+			salesmanTime
+		FROM ph_member
+		WHERE agentId = #{id}
+	</select>
+
+	<!-- 根据手机号查询用户 -->
+	<select id="getMemberByTelPhone" parameterType="String" resultType="com.ph.shopping.facade.member.dto.MemberDTO">
+		select
+		id,agentId
+		from ph_member
+		where telPhone = #{telPhone}
+	</select>
+
+	<!-- 将用户升级为业务员 -->
+	<update id="updateMemberBecomeSaleman" parameterType="com.ph.shopping.facade.member.dto.MemberDTO">
+		update
+		ph_member set updateTime = now(),
+		agentId = #{agentId},
+		salesmanTime = NOW() ,
+		isFrozen = 0,
+		isMarketing = 1          <!--1是业务员，2是会员-->
+		where id = #{id}
+	</update>
+
+	<!--冻结业务员-->
+	<update id="frozenSalesman">
+		UPDATE ph_member
+		SET
+			updateTime = NOW(),
+			isFrozen = #{isFrozen}
+		WHERE id = #{id}
+	</update>
+
+	<!--查询业务员推广企业-->
+	<select id="getShareCompanyBySalesmanId" parameterType="Long" resultType="com.ph.shopping.facade.spm.vo.MerchantVO">
+	SELECT
+		merchantName,
+		telPhone,
+		address,
+	FROM ph_merchant
+	WHERE provinceId = #{id}
+
+	</select>
+
+	<!--返回的首页的展示-->
+	<select id="saleManDataList" resultType="map" parameterType="map">
+          select m.id as id,m.memberName as name ,m.idCardNo as card ,DATE_FORMAT(m.updateTime,'%Y-%m-%d %H:%i') as date,
+           m.isFrozen as frozen,m.telPhone as phone
+
+        from  ph_member as m,ph_agent as ent,
+        ph_permission_common_user as com
+        where com.telphone=ent.telphone and m.agentId=ent.id
+        <if test="telPhone!=null and telPhone!=''">
+			AND ent.telPhone=#{telPhone}
+		</if>
+
+	</select>
+
+	<!--通过手机号获取id-->
+	<select id="findMemberIdByPhone" resultType="map">
+		select id  from ph_member where telPhone=#{phone}
+	</select>
+    <!--保存到Member表中-->
+	<select id="addMember" >
+    update ph_member set updateTime = now(),agentId = #{gId},updateTime = NOW(),
+		memberName = #{name},
+		idCardNo = #{card},
+		isFrozen = 0,
+		isMarketing = 1
+		where telPhone=#{phone}
+
+
+
+		<!--update ph_member set updateTime=NOW(),agentId=#{gId} where telPhone=#{phone}-->
+	</select>
+
+	<!--通过用户名获取agent的id-->
+	<select id="findAgentIdByUserName" resultType="map" parameterType="String">
+    select ent.id from ph_permission_common_user as com LEFT JOIN
+    ph_agent as ent on ent.telPhone =com.telPhone where com.userName=#{username}
+	</select>
+
+	<!--通过冻结状态-->
+	<select id="findDataById" resultType="map" parameterType="Long">
+    select IFNULL(isFrozen,0) as isFrozen from ph_member where id=#{id}
+
+	</select>
+
+	<!--修改冻结的状态-->
+	<select id="updateFrozenTypeById">
+    update ph_member set isFrozen=#{type}  where  id =#{id}
+
+	</select>
+</mapper>

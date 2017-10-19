@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.ProductSpecificationMapper">
+    <!-- 规格VO base -->
+    <resultMap id="baseResultMap" type="com.ph.shopping.facade.product.vo.ProductSpecificationVO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="productId" property="productId" jdbcType="BIGINT" />
+        <result column="specificationName" property="specificationName" jdbcType="VARCHAR" />
+        <result column="createrId" property="createrId" jdbcType="BIGINT" />
+        <result column="createTime" property="createTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <!-- 规格VO 包含对应的规则值集合 -->
+    <resultMap id="productSpecificationVOResultMap" extends="baseResultMap"
+               type="com.ph.shopping.facade.product.vo.ProductSpecificationVO">
+        <collection property="productSpecificationValVOList"
+                    ofType="com.ph.shopping.facade.product.vo.ProductSpecificationValVO">
+            <id column="sv_id" property="id" jdbcType="BIGINT" />
+            <result column="sv_specificationId" property="specificationId" jdbcType="BIGINT" />
+            <result column="sv_specificationValue" property="specificationValue" jdbcType="VARCHAR" />
+            <result column="sv_createrId" property="createrId" jdbcType="BIGINT" />
+            <result column="sv_createTime" property="createTime" jdbcType="TIMESTAMP" />
+        </collection>
+    </resultMap>
+
+    <!--规格主表 -->
+    <sql id="base_column_list">
+        s.id, s.productId, s.specificationName, s.createrId, s.createTime
+    </sql>
+    <!--值 -->
+    <sql id="val_column_list">
+       , sv.id sv_id,  sv.specificationId sv_specificationId, sv.specificationValue sv_specificationValue,
+       sv.createrId sv_createrId, sv.createTime sv_createTime
+    </sql>
+    <select id="getProductSpecificationVOListByProductId"
+            parameterType="com.ph.shopping.facade.product.dto.ProductDTO"
+            resultMap="productSpecificationVOResultMap">
+        SELECT
+        <include refid="base_column_list" />
+        <include refid="val_column_list" />
+        FROM ph_product_specification s left join ph_product_specification_val sv on s.id=sv.specificationId
+        WHERE s.productId=#{id}
+    </select>
+
+    <!-- 根据商品id联表物理删除商品规格和规格值(用于商品修改) -->
+    <delete id="deleteProductSpecificationAndValByProductId"
+            parameterType="java.lang.Long">
+        DELETE ps,psv FROM ph_product_specification ps, ph_product_specification_val psv
+        WHERE ps.id=psv.specificationId and ps.productId=#{id};
+    </delete>
+</mapper>

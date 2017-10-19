@@ -1,0 +1,449 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台系统</title>
+     <link th:href="@{/static/images/favicon.ico}" rel="icon" type="image/x-icon"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--富文本  css文件-->
+    <!--<link rel="stylesheet" href="css/ueditor.css">-->
+    <!--图片点击放大  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/viewer/css/viewer.min.css}"/>
+</head>
+<body>
+<div class="MainContent">
+    <div data-agent-operate-type="add,update" style="display: none" class="current">当前位置：
+        <a href="#" alt="">管理首页 &gt;</a>
+        <a href="#" alt="">代理管理 &gt;</a>
+        <a href="#" alt="">商户代理列表 &gt;</a>
+        <span th:text="${operateType =='update'?'修改代理':operateType =='applyAgent'?'代理申请':'添加代理'}"></span>
+    </div>
+    <div class="MainCont ">
+        <div class="ph_subConTit">
+            <h2 th:text="${operateType =='update'?'修改代理':operateType =='applyAgent'?'代理申请':'添加代理'}"></h2>
+        </div>
+        <form id="form">
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">代理级别:</span>
+                </label>
+                <div id="agent_level_div"></div>
+            </div>
+             <!-- 0：快火代理  1：批发代理 -->
+             	<input type="hidden" value="0"  name="isFormSystem">
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">企业名称:</span>
+                </label>
+                <input th:value="${agentVO.agentName}" name="agentName" type="text" class="left validate[required]" placeholder="" onkeyup="clearNoNum(this)"/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">登录手机:</span>
+                </label>
+                <input th:value="${agentVO.telPhone}" id="telPhone" name="telPhone" type="text" class="left validate[required,custom[phone]]" placeholder=""/>
+            </div>
+           <div class="mainFrom" style="display:none">
+                <label class="left">
+                    <span class="">推广师手机号:</span>
+                </label>
+                <input th:value="${agentVO.promoterTelPhone}" id="promoterAccount" type="text" class="left" placeholder=""/>
+            </div>
+            <div class="mainFrom"  style="display:none">
+                <label class="left">
+                    <span class="">推广师姓名:</span>
+                </label>
+                <input th:value="${agentVO.promoterMemberName}" id="promoterAccountName" type="text" class="left" placeholder="自动获取推广师姓名" disabled/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">管辖区域:</span>
+                </label>
+                <div id="jurisdiction_area"></div>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">联系人:</span>
+                </label>
+                <input th:value="${agentVO.personName}" name="personName" type="text" class="left validate[required]" placeholder=""/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">联系地址:</span>
+                </label>
+                <div id="area_div"></div>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">详细地址:</span>
+                </label>
+                <input th:value="${agentVO.address}" name="address" class="validate[required] left" type="text" placeholder="填写详细地址"/>
+            </div>
+            <div class="mainFrom imgupbox">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">营业执照:</span>
+                </label>
+                <div class="content-box">
+                    <div class="img-box addIndustry">
+                        <span class="imgup-notice">请上传您的营业执照，照片大小不超过10M.</span>
+                        <div class="img-box full">
+                            <section class="img-section">
+                                <div class="z_photo upimg-div" data-file-type=1>
+                                    <section class="z_file left">
+                                        <img th:src="@{/static/images/add.png}" class="add-img">
+                                        <input id="file0" type="file" class="file"
+                                               accept="image/jpg,image/jpeg,image/png,image/bmp"/>
+                                    </section>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mainFrom imgupbox">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">法人身份证:</span>
+                </label>
+                <div class="content-box">
+                    <div class="img-box addIndustry">
+                        <span class="imgup-notice">请上传您的身份证正反面，照片大小不超过10M.</span>
+                        <div class="img-box full">
+                            <section class=" img-section">
+                                <div class="z_photo upimg-div" data-file-type=2 data-file-maxImage=2>
+                                    <section class="z_file left">
+                                        <img th:src="@{/static/images/add.png}" class="add-img">
+                                        <input id="file1" type="file" class="file"
+                                               data-file-maxImage=2 accept="image/jpg,image/jpeg,image/png,image/bmp" multiple/>
+                                    </section>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mainFrom imgupbox">
+                <label class="left">
+                    <span class="">其他认证资料:</span>
+                </label>
+                <div class="content-box">
+                    <div class="img-box addIndustry">
+                        <span style="display: block;height: 16px;width: 200px;"></span>
+                        <div class="img-box full">
+                            <section class=" img-section">
+                                <div class="z_photo upimg-div" data-file-type=3 data-file-maxImage=10>
+                                    <section class="z_file left">
+                                        <img th:src="@{/static/images/add.png}" class="add-img">
+                                        <input id="file3" type="file" class="file"
+                                               data-file-maxImage=10 accept="image/jpg,image/jpeg,image/png,image/bmp" multiple/>
+                                    </section>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div data-agent-operate-type="add,update" class="PopupBtn btnLeft" style="margin-bottom: 20px;padding-left: 104px;margin-top: 50px;display: none">
+                <input id="saveOrUpdate" class="submit addMerchant_save" type="button" th:value="${operateType =='update'?'修改':'保存'}">
+                <input onclick="window.history.back();" class="submit addMerchant_cancel" type="button" value="取消">
+            </div>
+            <div data-agent-operate-type="applyAgent" style="display: none">
+                <div class="mainFrom">
+                    <label class="yzmlabel left">
+                        <span>验证码:</span>
+                    </label>
+                    <div class="yzmTxt">
+                        <input class="proving" name="yzm" type="text" placeholder="请输入验证码">
+                        <p class="provingImg provBtn"><input class="provingTxt realNameCode" type="button" value="获取验证码"/></p>
+                        <span id="smsBtn" class="loginErr"></span>
+                    </div>
+
+                </div>
+                <p class="ph_applyTxt"><input class="agency_check" type="checkbox"/>我已阅读并同意
+                    <a target="_blank"
+                       href="/web/agent/proxyServiceAgreement">《普惠用户服务协议条款》</a>
+                </p>
+                <div class="PopupBtn btnLeft clearfix" style="height: 40px; margin-bottom: 10px;">
+                    <input id="apply" style="background-color: #999;" class="summit agency_apply" type="button" value="申请" disabled>
+                </div>
+                <p class="ph_applyTxt">已有帐号，<a href="/login">直接去登录</a></p>
+            </div>
+            <input name="promoterId" type="hidden"/>
+            <input th:value="${agentVO.id}" name="id" type="hidden"/>
+        </form>
+    </div>
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<!--图片上传插件-->
+<script type="text/javascript" th:src="@{/static/js/common/imgUp.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<!--属性输入框的增加和删除-->
+<script type="text/javascript" th:src="@{/static/js/common/attrbox.js}"></script><!--图片点击放大-->
+<script type="text/javascript" th:src="@{/static/js/plugins/viewer/viewer-jquery.min.js}"></script>
+<!--区域-->
+<script type="text/javascript" th:src="@{/static/js/common/cascade.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<script th:inline="javascript">
+    //角色 code  3 市级代理 4 县级代理 5社区代理
+    var agentCodes = "3,4,5";
+    //操作类型
+    var operateType = [[${operateType}]];
+    var loginRoleCode = [[${loginRoleCode}]];
+    var positionUrl = operateType === "applyAgent" ? "/web/position/getPositionNoAuthorityList" : "/web/position/getPositionList";
+    $("[data-agent-operate-type]").each(function (i, html) {
+        if ($(html).attr("data-agent-operate-type").indexOf(operateType) !== -1) {
+            $(html).css("display", "block");
+        }
+    });
+    var bindAgent = [[${agentVO}]];
+    //修改
+    if (operateType === "update") {
+        //回填图片
+        $(bindAgent.agentImageVOList).each(function (i, img) {
+            var section =
+                '<section class="up-section left">' +
+                '<span class="up-span"></span>' +
+                '<img class="close-upimg" src="/static/images/img-del.png">' +
+                '<img class="up-img zoom-img" data-img-upload-src="' + img.url + '" src="' + img.url + '">' +
+                '</section>';
+            var divDataFileType = $("div[data-file-type='" + img.type + "']");
+            var lastChildren = divDataFileType.children(":last");
+            var maxImage = parseInt(divDataFileType.attr("data-file-maxImage")) || 1;
+            lastChildren.before(section);
+            if (divDataFileType.children().length === (maxImage + 1)) {
+                lastChildren.css("display", "none");
+            }
+        });
+        generateImg();
+        //代理申请
+    } else if (operateType === "applyAgent") {
+        $(".provingImg").css("right", "0");
+        $(".MainCont").css({
+            width: "960px",
+            margin: "0 auto",
+            border: "none"
+        });
+    }
+    //代理级别
+    cascade({
+        url: "/web/agentLevel/getAgentLevelList",
+        totalSelect: 1,
+        DivId: "agent_level_div",
+        bindData: [bindAgent.agentLevelId],
+        bindCols: ["id"],
+        selectNames: ["agentLevelId"],
+        requestNames: ["levelName"],
+        backFun: function () {
+            var selectAgentLevel = $("select[name='agentLevelId']");
+            if (agentCodes.indexOf(loginRoleCode.toString()) !== -1) {
+                selectAgentLevel.find("option:gt(0):lt(" + parseInt(loginRoleCode - 2) + ")").remove();
+                bootstrapSelectInit(selectAgentLevel);
+            }
+            //管辖区域根据代理级别切换
+            (function jurisdictionArea(totalSelect, isBind) {
+                cascade({
+                    url: positionUrl,
+                    totalSelect: totalSelect,
+                    DivId: "jurisdiction_area",
+                    bindData: [bindAgent.provinceId, bindAgent.cityId, bindAgent.countyId, bindAgent.townId],
+                });
+                if (isBind) {
+                    selectAgentLevel.on("change", function () {
+                        var totalSelect = 1 + parseInt($(this).find("option:selected").val());
+                        totalSelect = totalSelect < 2 ? 2 : totalSelect;
+                        jurisdictionArea(totalSelect, false);
+                    });
+                }
+            })(selectAgentLevel.find("option:selected").val() + 1 < 2 ? 2 : 1 + parseInt(selectAgentLevel.find("option:selected").val()), true);
+        }
+    });
+    //联系地址
+    cascade({
+        url: "/web/position/getPositionNoAuthorityList",
+        totalSelect: 3,
+        DivId: "area_div",
+        bindData: [bindAgent.contactProvinceId, bindAgent.contactCityId, bindAgent.contactCountyId],
+        selectNames: ["contactProvinceId", "contactCityId", "contactCountyId"]
+    });
+    $(function () {
+        $(".agency_check").click(function () {
+            var $apply = $("#apply");
+            if ($(this).is(":checked")) {
+                $apply.css("background-color", "#10c8ef").removeAttr("disabled");
+            } else {
+                $apply.attr("disabled", "true");
+                $apply.css("background-color", "#999");
+            }
+        });
+
+        //保存或者修改
+        $("#saveOrUpdate,#apply").on("click", function () {
+            var $townSelect = $("select[name='townId']");
+            var $countySelect = $("select[name='countyId']");
+            var $citySelect = $("select[name='cityId']");
+            $(this).formSubmit({
+                startFun: function (opt) {
+                    var validateImgMsg = {
+                        "1": "营业执照",
+                        "2": "法人身份证"
+                    };
+                    var types = [];
+                    $("input[data-validate-img-type]").each(function (i, img) {
+                        types.push($(img).attr("data-validate-img-type"));
+                    });
+                    types.join(",");
+                    for (var validateImgCol in validateImgMsg) {
+                        if (types.indexOf(validateImgCol) === -1) {
+                            layer.alert(validateImgMsg[validateImgCol] + "不能为空");
+                            opt.needContinue = false;
+                            break;
+                        }
+                    }
+                    if (operateType === "applyAgent") {
+                        if (isNull($("input[name='yzm']").val())) {
+                            layer.alert("验证码不能为空");
+                            opt.needContinue = false;
+                        }
+                    }
+                },
+                url: "/web/agent/" + operateType,
+                data: {
+                    provinceId: $("select[name='provinceId']").attr("data-area-code-selected") || null,
+                    cityId: $citySelect.attr("data-area-code-selected") || null,
+                    countyId: $countySelect.attr("data-area-code-selected") || null,
+                    townId: $townSelect.attr("data-area-code-selected") || null,
+                    positionId: $townSelect.val() || $countySelect.val() || $citySelect.val() || null,
+                    contactPositionId: $("select[name='contactCountyId']").val() || null
+                },
+                backFun: function (result) {
+                    layer.alert(result.message);
+                    if (result.success) {
+                        setTimeout(function () {
+                            window.location.href = operateType === "applyAgent" ? "/login" : "/web/agent/list";
+                        }, 2000)
+                    }
+                }
+            })
+        });
+        //获取推广师姓名
+        $("#promoterAccount").blur(function () {
+            var telPhone = $(this).val().trim();
+            if (isNull(telPhone)) {
+                return false;
+            } else {
+                $.post("/web/member/getPromoterNameByTel", {telPhone: telPhone,isAgent:"0"}, function (result) {
+                    if (result.success) {
+                        $("#promoterAccountName").val(result.data.memberName);
+                        $("input[name='promoterId']").val(result.data.id);
+                    } else {
+                        $("#promoterAccountName").val(result.message);
+                    }
+                })
+            }
+        });
+        //上传图片
+        $(".file").each(function (i, file) {
+            $(file).takungaeImgup({
+                maxImage: $(file).attr("data-file-maxImage"),
+                needNameInput: false,
+                formData: {
+                    'module': 'agent'
+                },
+                success: function () {
+                    generateImg();
+                }
+            });
+        });
+        //删除重新生成图片
+        $(".img-section").on("click", function () {
+            generateImg();
+        });
+        //获取短信验证码
+        $(".realNameCode").click(function () {
+            var telPhone = $('#telPhone');
+            var validCode = telPhone.validationEngine("validate");
+            if (!validCode) {
+                layer.alert("无效的手机号");
+                return false;
+            }
+            var time = 60;
+            var $this = $(this);
+            if (validCode) {
+                validCode = false;
+                //获取验证码
+                $.ajax({
+                    url: "/web/sms/sendSmsHaveCode",
+                    data: {
+                        "telPhone": telPhone.val(),
+                        "smsCodeTypeCode": [[${smsCodeTypeCode}]],//申请普惠代理
+                        "sourceCode": [[${sourceCode}]]//代理商
+                    },
+                    type: "post",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.code === "200") {
+                            layer.alert("验证码已发送！", {icon: 1});
+                            $this.addClass("msgs1");
+                            $this.prop("disabled", "true");
+                            var t = setInterval(function () {
+                                time--;
+                                $this.val(time + "秒");
+                                if (time === 0) {
+                                    clearInterval(t);
+                                    $(".provingTxt").val("重新获取");
+                                    validCode = true;
+                                    $this.removeAttr("disabled");
+                                    $this.removeClass("msgs1");
+                                }
+                            }, 1000)
+                        } else {
+                            validCode = true;
+                            layer.alert(data.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    function generateImg() {
+        var zoomImage = $(".zoom-img");
+        $("input.zoom-img-input").remove();
+        zoomImage.each(function (i, img) {
+            var form = $("#form"),
+                type = $(img).recursiveParentNode("div").attr("data-file-type"),
+                src = $(img).attr("data-img-upload-src"),
+                inputUrl = "<input class='zoom-img-input' type='hidden' name='agentImageDTOList[" + i + "].url' value=" + src + ">",
+                inputType = "<input data-validate-img-type=" + type + " class='zoom-img-input' type='hidden' name='agentImageDTOList[" + i + "].type' value=" + type + ">";
+            $(inputUrl).appendTo(form);
+            $(inputType).appendTo(form);
+        })
+    };
+    function clearNoNum(obj) {
+		 obj.value = obj.value.replace(/[^\u4E00-\u9FA5a-zA-Z]/g, "");//清除“汉字”和“英文”以外的字符
+		 
+	}
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.ph</groupId>
+		<artifactId>phshopping-parent</artifactId>
+		<version>2.1-release</version>
+	</parent>
+	<artifactId>phshopping-service-spm</artifactId>
+	<name>phshopping-service-spm</name>
+	<description>phshopping-service-spm</description>
+
+	<repositories>
+		<repository>
+			<id>phshopping repo</id>
+			<url>http://192.168.0.88:8081/repository/phshopping/</url>
+		</repository>
+	</repositories>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-spm</artifactId>
+			<version>${facade-spm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+		<!-- zkclient -->
+		<dependency>
+			<groupId>com.101tec</groupId>
+			<artifactId>zkclient</artifactId>
+		</dependency>
+		<!-- dubbo -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo</artifactId>
+		</dependency>
+		<!-- zookeeper -->
+		<dependency>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
+		</dependency>
+		<!--mysql -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		<!-- ٫ٲѼ -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-common-core</artifactId>
+			<version>${common-core.version}</version>
+		</dependency>
+		<!-- ٤ߟ`Ѽ -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-common-util</artifactId>
+			<version>${common-util.version}</version>
+		</dependency>
+		<!-- ٫ٲƤ׃ -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-common-config</artifactId>
+			<version>${common-config.version}</version>
+		</dependency>
+		<!-- ʌƷޓࠚ -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-product</artifactId>
+			<version>${facade-product.version}</version>
+		</dependency>
+		<!-- ܡԱޓࠚ -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-member</artifactId>
+			<version>${facade-member.version}</version>
+		</dependency>
+		<!-- ȨОޓࠚ -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-permission</artifactId>
+			<version>${facade-permission.version}</version>
+		</dependency>
+		<!-- orderޓࠚ -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-order</artifactId>
+			<version>${facade-order.version}</version>
+		</dependency>
+		<!-- payޓࠚ -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-pay</artifactId>
+			<version>${facade-pay.version}</version>
+		</dependency>
+		<!--˂ŕƤ׃-->
+		<dependency>
+			<groupId>com.lorne.tx</groupId>
+			<artifactId>dubbo-transaction</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.lorne.tx</groupId>
+			<artifactId>lorne-tx-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-configuration</groupId>
+			<artifactId>commons-configuration</artifactId>
+			<version>1.8</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>4.3.6</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.28</version>
+		</dependency>
+
+		<!-- <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15</artifactId>
+            <version>1.46</version>
+        </dependency> -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.54</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.json/json -->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20160810</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk15on</artifactId>
+			<version>1.57</version>
+		</dependency>
+
+
+
+		<!-- <dependency>
+            <groupId>com.bouncrycastle</groupId>
+            <artifactId>bcprov-jdk15on-152</artifactId>
+            <version>1.0.0</version>
+         </dependency>   -->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.alqsoft </groupId>
+			<artifactId>alqframework</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+	</dependencies>
+
+	<!--<build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>-->
+	<build>
+		<plugins>
+			<!-- springbootղjarѼ -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${compiler.version}</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/java</directory>
+				<includes>
+					<include>**/*.*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+			</resource>
+		</resources>
+	</build>
+
+</project>

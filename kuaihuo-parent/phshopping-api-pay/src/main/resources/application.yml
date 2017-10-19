@@ -1,0 +1,38 @@
+#数据库配置
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML5
+  #redis配置
+  redis:
+    host: 127.0.0.1
+    port: 36379
+    timeout: 60000
+    pool:
+      max-active: 8
+      max-wait: -1
+      max-idle: 10
+      min-idle: 0
+
+logging:
+  level:
+    org.apache.zookeeper: off
+    com.alibaba: off
+
+#端口配置    
+server:
+  port: 8080
+  session:
+    timeout: 30
+  tomcat:
+    basedir: /tmp
+    accesslog:
+      enabled: true
+      directory: /logs/puhui-tomcat/api-pay
+      pattern: common
+      prefix: phshopping-
+      suffix: .log
+    uri-encoding: UTF-8
+
+

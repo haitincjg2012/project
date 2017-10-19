@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.SubOrderMdyHisMapper">
+
+	<!-- 批量新增订单状态修改历史 -->
+	<insert id="insertList">
+		INSERT INTO ph_sub_order_mdy_his(
+			subOrderId,
+			status,
+			dealStatus,
+			createId,
+			createTime,
+			description,
+			operateType
+		)
+		VALUES
+			<foreach collection="list" item="item"  separator="," >
+				(
+					#{item.subOrderId},
+					#{item.status},
+					#{item.dealStatus},
+					#{item.createId},
+					#{item.createTime},
+					#{item.description},
+					#{item.operateType}
+				)
+			</foreach>
+	</insert>
+
+</mapper>

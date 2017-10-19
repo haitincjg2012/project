@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MemberDrawcashRecordMapper">
+
+
+	<!-- 查询会员当天提现积分总和 -->
+	<select id="getSumScoreThisDay" resultType="java.lang.Long">
+		SELECT
+		IFNULL(SUM(score + handingCharge), 0)
+		FROM
+		ph_member_drawcash_record
+		WHERE
+		memberId = #{memberId}
+		AND auditState != 2 AND auditState != 3
+		AND (status != 2 OR status is NULL)
+		<if test="transCode == 1066">
+			AND transCode = 2003
+		</if>
+		<if test="transCode == 1067">
+			AND transCode = 1067
+		</if>
+		<if test="transCode == 2004">
+			AND transCode = 2004
+		</if>
+		AND createTime &gt;= #{currentDate}
+		AND createTime &lt; DATE_ADD(#{currentDate},INTERVAL 1 DAY)
+
+		<!--  SELECT IFNULL(SUM(score + handingCharge), 0)
+          FROM ph_score_cost_trade WHERE memberId = #{memberId}
+          AND createTime &gt;= #{currentDate}
+          AND createTime &lt; DATE_ADD(#{currentDate},INTERVAL 1 DAY)-->
+	</select>
+
+	<!-- 查询会员当天提现积分总和 -->
+	<select id="getScore" resultType="com.ph.shopping.facade.score.entity.PhScoreTotalTrade">
+
+		SELECT shareMemberScore,shareMerchantScore,id,memberId,storeManagerScore
+		 FROM ph_member_score WHERE memberId = #{memberId} FOR UPDATE
+	</select>
+
+	<!-- 根据id获取会员详情 -->
+	<select id="getMemberInfo" resultType="com.ph.shopping.facade.member.vo.MemberInfoByCashVO">
+		SELECT
+		pm.id,
+		pm.memberName,
+		pm.certification,
+		pm.idCardNo,
+		pm.telPhone AS phone,
+		pca.certificatesName AS realName,
+		a.bankCardNo AS bankCard,
+		ptp.payPwd,
+		a.bankName
+		FROM
+		ph_member pm
+		LEFT JOIN ph_certificates_auth pca ON pm.certificatesAuthId = pca.id
+		LEFT JOIN(
+		SELECT
+		pbci.bankCardNo,
+		pbcb.userId,
+		bcd.bankName
+		FROM
+		ph_member_bank_card_info pbci
+		LEFT JOIN ph_member_bank_card_bind pbcb ON pbcb.bankCardInfoId = pbci.id
+		LEFT JOIN ph_bank_codename_data bcd ON pbci.bankCodenameDataId = bcd.id
+		WHERE
+		pbcb.bindStatus = 1
+		)a ON pm.id = a.userId
+		LEFT JOIN ph_member_score pms ON pm.id = pms.memberId
+		LEFT JOIN ph_traders_password ptp ON pm.id = ptp.userId
+		AND customerType = 1
+		WHERE
+		pm.id = #{memberId}
+		AND pm.`status` = 2
+	</select>
+
+
+	<insert id="insertCostTrade">
+		insert into ph_score_cost_trade (memberId, transCode,
+		score, setId,createTime, updateTime,orderNo,handingCharge
+		)
+		values
+		(#{memberId,jdbcType=BIGINT}, #{transCode,jdbcType=INTEGER},
+		#{score,jdbcType=DECIMAL},
+		#{setId,jdbcType=BIGINT},
+		SYSDATE(),SYSDATE(),#{orderNo,jdbcType=VARCHAR},#{handingCharge}
+		)
+	</insert>
+
+	<update id="updateMemberScore">
+		update ph_member_score
+		<set>
+			<if test="cashCode == 2003">
+				shareMemberScore = shareMemberScore + #{enableScore},
+			</if>
+			<if test="cashCode == 2002 ">
+				shareMerchantScore = shareMerchantScore + #{enableScore},
+			</if>
+			<if test="cashCode == 2004 ">
+				storeManagerScore = storeManagerScore + #{enableScore},
+			</if>
+			<if test="1==1">
+				updateTime = sysdate(),
+			</if>
+		</set>
+		where memberId= #{memberId}
+	</update>
+
+
+	<!-- 记入总流水 -->
+	<insert id="insertMemberTrade"
+			parameterType="com.ph.shopping.facade.score.entity.PhScoreTotalTrade">
+		<selectKey resultType="java.lang.Long" keyProperty="id">
+			SELECT
+			LAST_INSERT_ID() as id
+		</selectKey>
+		insert into ph_score_total_trade (memberId, transCode,
+		score, createTime, updateTime, orderNo, handingCharge,totelScore)
+		values
+		(#{memberId,jdbcType=BIGINT},
+		#{transCode,jdbcType=INTEGER},
+		#{score,jdbcType=DECIMAL},
+		SYSDATE(),SYSDATE(),#{orderNo,jdbcType=VARCHAR},#{handingCharge},#{totelScore}
+		)
+	</insert>
+
+	<update id="updateCashStatus" parameterType="com.ph.shopping.facade.member.entity.MemberDrawcashRecord">
+		UPDATE ph_member_drawcash_record SET `status` = #{status},
+		tradeState = #{tradeState},
+		updateTime = now() WHERE memberId = #{memberId} and orderNo=#{orderNo}
+	</update>
+
+	<insert id="addIncomeScore" parameterType="com.ph.shopping.facade.member.entity.MemberDrawcashRecord">
+		INSERT INTO ph_score_income_trade
+		(memberId,transCode,createTime,updateTime,score,setId,orderNo,handingCharge)
+		VALUES (#{memberId},#{transCode},NOW(),NOW(),#{score},#{setId},#{orderNo},0)
+	</insert>
+
+	<select id="getOrderCountByOrderNum" parameterType="String">
+		SELECT
+		COUNT(id)
+		FROM ph_member_drawcash_record
+		WHERE orderNo = #{orderNum2}
+	</select>
+
+	<!--<select id="getOrderCountByOrderNum" parameterType="String" resultType="long">
+		SELECT id FROM ph_member_drawcash_record WHERE orderNo = #{orderNo}
+	</select>-->
+
+	<insert id="addMemberIncomeTrade" parameterType="com.ph.shopping.facade.member.entity.MemberDrawcashRecord">
+		INSERT INTO ph_score_income_trade
+		  (memberId,transCode,createTime,updateTime,score,orderNo,handingCharge)
+		  VALUES (#{memberId},#{transCode},NOW(),NOW(),#{score},#{orderNo},0)
+	</insert>
+</mapper>

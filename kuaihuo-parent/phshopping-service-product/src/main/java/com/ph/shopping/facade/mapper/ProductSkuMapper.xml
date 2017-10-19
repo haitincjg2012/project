@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.ProductSkuMapper" >
+  	  <resultMap id="BaseResultMap" type="com.ph.shopping.facade.product.vo.ProductSkuVO" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="productId" property="productId" jdbcType="BIGINT" />
+    <result column="skuName" property="skuName" jdbcType="VARCHAR" />
+    <result column="referencePrice" property="referencePrice" jdbcType="DECIMAL" />
+    <result column="retailPrice" property="retailPrice" jdbcType="DECIMAL" />
+    <result column="purchasePrice" property="purchasePrice" jdbcType="DECIMAL" />
+    <result column="settlementPrice" property="settlementPrice" jdbcType="DECIMAL" />
+    <result column="municipalBatchQuantity" property="municipalBatchQuantity" jdbcType="INTEGER" />
+    <result column="sellerbAtchQuantity" property="sellerbAtchQuantity" jdbcType="INTEGER" />
+    <result column="saleQuantity" property="saleQuantity" jdbcType="INTEGER" />
+    <result column="numberOfPackages" property="numberOfPackages" jdbcType="INTEGER" />
+    <result column="freight" property="freight" jdbcType="DECIMAL" />
+    <result column="skuCount" property="skuCount" jdbcType="INTEGER" />
+    <result column="specificationValIds" property="specificationValIds" jdbcType="VARCHAR" />
+    <result column="createrId" property="createrId" jdbcType="BIGINT" />
+    <result column="createTime" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  	
+  	
+  <sql id="Base_Column_List" >
+    id, productId, skuName, referencePrice, purchasePrice, settlementPrice, 
+    municipalBatchQuantity, sellerbAtchQuantity, saleQuantity, numberOfPackages, freight, 
+    skuCount, specificationValIds, createrId, createTime
+  </sql>
+  <!--查询最小零售价  -->
+  <sql id="Base_MinColumn_List" >
+   	MIN(retailPrice) as retailPrice
+   </sql>
+     <!--零售价  -->
+    <sql id="Base_TheColumn_List" >
+  	 retailPrice
+   </sql>
+  
+  <sql id="whereSqlDateil">
+		<trim prefix="where" prefixOverrides="and">
+	  <if test="id != null and skuName !=''" >
+	       and id=#{id}
+	    </if>
+      <if test="productId != null and skuName !=''">
+       and productId=#{productId}
+      </if>
+      <if test="skuName != null and skuName !=''">
+       and skuName=#{skuName}
+      </if>
+      <if test="referencePrice != null" >
+      and  referencePrice=#{referencePrice}
+      </if>
+      <if test="retailPrice != null" >
+      and  retailPrice=#{retailPrice}
+      </if>
+      <if test="purchasePrice != null" >
+        purchasePrice=#{purchasePrice}
+      </if>
+      <if test="settlementPrice != null" >
+     and   settlementPrice=#{settlementPrice}
+      </if>
+      <if test="municipalBatchQuantity != null" >
+      and  municipalBatchQuantity=#{municipalBatchQuantity}
+      </if>
+      <if test="sellerbAtchQuantity != null" >
+      and  sellerbAtchQuantity=#{sellerbAtchQuantity}
+      </if>
+      <if test="saleQuantity != null" >
+        and saleQuantity=#{saleQuantity}
+      </if>
+      <if test="numberOfPackages != null" >
+      and  numberOfPackages=#{numberOfPackages}
+      </if>
+      <if test="freight != null" >
+      and  freight=#{freight}
+      </if>
+      <if test="skuCount != null" >
+       and skuCount=#{skuCount}
+      </if>
+      <if test="specificationValIds != null and skuName !=''">
+      and   specificationValIds=#{specificationValIds}
+      </if>
+      <if test="createrId != null and skuName !=''">
+     and   createrId=#{createrId}
+      </if>
+      <if test="createTime != null and skuName !=''">
+      and   createTime=#{createTime}
+      </if>
+  	</trim>
+</sql>
+  
+  <select id="selectSkuMinRetailPrice" resultMap="BaseResultMap" parameterType="com.ph.shopping.facade.product.dto.ProductSkuDTO" >
+    select 
+    <include refid="Base_Column_List" />,
+    <include refid="Base_MinColumn_List" />
+    from ph_product_sku
+   <include refid="whereSqlDateil" />
+  </select>
+</mapper>

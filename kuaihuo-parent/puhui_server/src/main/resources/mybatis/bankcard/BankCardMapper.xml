@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.mybatis.dao.bankcard.MyBankCardDao">
+	
+
+	<select id="getBankCardByIndustryAssociationId" resultType="Map" parameterType="map">
+		SELECT b.id AS id, b.bank AS bank,b.bank_no AS bankNo,b.`name` AS `name`,b.card AS card 
+		FROM alq_bank_card AS b WHERE b.status=1 AND b.industry_association_id=#{industryAssociationId}
+	</select>
+	
+	
+	
+	<!-- <select id="getBankCardCount"  parameterType="Long"  resultType="Int">
+		SELECT count(*)   FROM alq_bank_card  
+		WHERE  DATE_FORMAT(created_time,"%Y-%m")=DATE_FORMAT(now(),"%Y-%m") 
+			   AND industry_association_id=#{industryAssociationId}  
+			   AND status=0
+	</select> -->
+	
+	<select id="getBankCardCountByIndustryAssociationId"  parameterType="Long"  resultType="Int">
+		SELECT count(*)   FROM alq_bank_card  
+		WHERE  DATE_FORMAT(created_time,"%Y-%m")=DATE_FORMAT(now(),"%Y-%m") 
+			   AND industry_association_id=#{industryAssociationId}  
+			   AND status=0
+	</select>
+	
+	<select id="getIndustryAssociationBankCardMsg" resultType="Map" parameterType="map">
+		SELECT b.id,b.bank,b.bank_no AS bankNo,b.`name`,b.card,i.left_deposit_money AS leftDepositMoney 
+		FROM alq_bank_card AS b,alq_industry_association AS i 
+		WHERE b.industry_association_id=i.id AND b.`status`=1 AND i.id=#{industryAssociationId}
+	</select>
+	
+	
+</mapper>

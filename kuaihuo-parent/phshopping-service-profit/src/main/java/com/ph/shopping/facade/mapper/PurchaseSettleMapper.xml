@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IPurchaseSettleMapper">
+	<!-- 供应链结算list 用了case when 3 次 -->
+	<select id="getPurchaseSettleList" parameterType="com.ph.shopping.facade.profit.dto.PurchaseSettleDTO" resultType="com.ph.shopping.facade.profit.vo.PurchaseSettleVO">
+		SELECT
+			p.id,
+			p.orderNo,
+			p.createTime orderTime,
+			p.doneTime receiptTime,
+			p.settleTime,
+			p.totalCost orderMoney,
+			CASE p.purchaseType
+		WHEN 0 THEN
+			(p.settleMoney + p.freight)
+		ELSE
+			p.totalCost
+		END settleMoney,
+		 p.payment payType,
+		 pp.telphone purchaserTel,
+		 CASE p.purchaseType
+		WHEN 0 THEN
+			(
+				SELECT
+					p1.merchantName
+				FROM
+					ph_merchant p1
+				WHERE
+					p1.userId = p.purchaserId
+			)
+		ELSE
+			(
+				SELECT
+					p2.agentName
+				FROM
+					ph_agent p2
+				WHERE
+					p2.userId = p.purchaserId
+			)
+		END purchaserName,
+		 ppp.telphone senderTel,
+		 CASE p.purchaseType
+		WHEN 0 THEN
+			(
+				SELECT
+					p3.agentName
+				FROM
+					ph_agent p3
+				WHERE
+					p3.userId = p.senderId
+			)
+		ELSE
+			(
+				SELECT
+					p4.supplierName
+				FROM
+					ph_supplier p4
+				WHERE
+					p4.userId = p.senderId
+			)
+		END senderName,
+		 p.isSettle
+		FROM
+			ph_purchase_sub_order p
+		LEFT JOIN ph_permission_common_user pp ON p.purchaserId = pp.id
+		LEFT JOIN ph_permission_common_user ppp ON p.senderId = ppp.id
+		WHERE p.`status` =3
+		
+			<if test="orderNo !=null and orderNo !='' ">
+				AND p.orderNo = #{orderNo}
+			</if>	
+			<if test="startDate !=null and startDate !='' ">
+				AND  date_format(p.createTime, '%Y-%m-%d')  &gt;=  #{startDate}
+			</if>
+			<if test="endDate !=null and endDate !='' ">
+				AND  date_format(p.createTime, '%Y-%m-%d')  &lt;=  #{endDate}  
+			</if>
+			
+			<if test="purchaserTel !=null and purchaserTel !='' ">
+				AND pp.telphone = #{purchaserTel}
+			</if>	
+			<if test="senderTel !=null and senderTel !='' ">
+				AND ppp.telphone  =  #{senderTel} 
+			</if>
+			
+			<if test="isSettle !=null  and isSettle != -1 ">
+				AND p.isSettle  =  #{isSettle} 
+			</if>
+			<if test="payType !=null  and payType != -1  ">
+				AND p.payment  =  #{payType} 
+			</if>
+			ORDER BY p.id DESC		
+	</select>
+	<!-- 得到需要结算的供应链订单 -->
+	<select id="getPurchaseSettleOrder" resultType="com.ph.shopping.facade.profit.vo.PurchaseSettleOrderVO"> 
+		SELECT
+			p.id,
+			CASE p.purchaseType
+		WHEN 0 THEN
+			(p.settleMoney + p.freight)
+		ELSE
+			p.totalCost
+		END settleMoney,
+		 p.senderId,
+		 p.orderNo,
+		 p.purchaseType
+		FROM
+			ph_purchase_sub_order p
+		WHERE
+			p.`status` = 3
+		AND p.isSettle = 0
+		AND date_add(p.doneTime, INTERVAL 7 DAY)  &lt; NOW() 
+	</select>
+	<!-- 批量更改线下订单结算表中结算状态为结算 -->
+	<update id="updatePurchaseOrderIsSettleBatch" parameterType="java.util.List">
+		UPDATE ph_purchase_sub_order SET isSettle = 1 ,updateTime = now(),updaterId = 0 , settleTime = now() WHERE id IN
+			<foreach collection="list" item="item" index="index" open="("
+				separator="," close=")">
+				#{item.id}
+			</foreach>
+	</update>
+</mapper>

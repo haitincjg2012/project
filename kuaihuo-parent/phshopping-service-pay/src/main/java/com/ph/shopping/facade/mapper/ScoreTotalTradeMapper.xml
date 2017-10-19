@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.ph.shopping.facade.mapper.ScoreTotalTradeMapper">
+
+    <!--会员提现记录新增收入记录-->
+    <insert id="addScoreTotalTrade" parameterType="com.ph.shopping.facade.pay.entity.ScoreTotalTrade"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into ph_score_total_trade(memberId,transCode,score,orderNo,fee,updateTime,createTime)
+        values(#{memberId},#{transCode},#{score},#{orderNo},#{fee},#{updateTime},#{createTime})
+    </insert>
+</mapper>

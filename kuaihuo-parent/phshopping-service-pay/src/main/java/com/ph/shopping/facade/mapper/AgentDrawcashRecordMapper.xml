@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.ph.shopping.facade.mapper.AgentDrawcashRecordMapper">
+  
+  <!--代理商提现记录新增-->
+  <insert id="addAgentDrawcashRecord" parameterType="com.ph.shopping.facade.pay.entity.AgentDrawcashRecord"
+          useGeneratedKeys="true" keyProperty="id">
+      	insert into ph_agent_drawcash_record(agentId,score,handingCharge,status,expectedDate,createDate,drawcashNo,bankName,auditState,drawcashIp,receiver,bankNo)
+      	values(#{agentId},#{score},#{handingCharge},#{status},#{expectedDate},#{createDate},#{drawcashNo},#{bankName},#{auditState},#{drawcashIp},#{receiver},#{bankNo})
+  </insert>
+  
+</mapper>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.BtnMapper">
+
+    <sql id="baseSelect">
+		SELECT
+        b.id,
+        b.btnName,
+        b.btnUrl,
+        b.btnCode
+	</sql>
+
+    <!-- 获取所有按钮 -->
+    <select id="getAllBtn" resultType="com.ph.shopping.facade.permission.vo.BtnVO">
+        <include refid="baseSelect"/>
+        FROM
+        ph_permission_btn b
+    </select>
+
+    <!-- 根据菜单id和角色id获取按钮 -->
+    <select id="getBtnListByMenuIdsAndRoleId" resultType="com.ph.shopping.facade.permission.vo.BtnVO">
+        SELECT
+        DISTINCT b.id,
+        b.btnName,
+        b.btnUrl,
+        b.btnCode
+        FROM
+        ph_permission_menu_btn mb
+        INNER JOIN
+        ph_permission_btn b
+        ON
+        mb.btnId=b.id
+        WHERE
+        mb.menuId IN
+        <foreach item="item" index="index" collection="menuIds" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and mb.roleId=#{roleId}
+    </select>
+
+
+    <!-- 获取所有基础按钮 -->
+    <select id="getAllBaseBtnByMenuId" resultType="com.ph.shopping.facade.permission.vo.BtnVO">
+        <include refid="baseSelect"/>
+        FROM
+        ph_permission_menu m
+        INNER JOIN
+        ph_permission_menu_btn_base mb
+        ON m.id = mb.menuId
+        INNER JOIN
+        ph_permission_btn b
+        ON mb.btnId = b.id
+        WHERE
+        m.id = #{menuId}
+    </select>
+</mapper>

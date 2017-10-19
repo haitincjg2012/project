@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.MerchantTypeMapper">
+    <resultMap id="baseResultMap" type="com.ph.shopping.facade.system.vo.MerchantTypeVO">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="merchantTypeName" property="merchantTypeName" jdbcType="VARCHAR"/>
+        <result column="parentId" property="parentId" jdbcType="BIGINT"/>
+        <result column="createrId" property="createrId" jdbcType="BIGINT"/>
+        <result column="createTime" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="updaterId" property="updaterId" jdbcType="BIGINT"/>
+        <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="sort" property="sort" jdbcType="BIGINT"/>
+        <result column="isDelete" property="isDelete" jdbcType="TINYINT"/>
+        <result column="merchanTypeLevel" property="merchanTypeLevel" jdbcType="TINYINT"/>
+        <result column="desc" property="desc" jdbcType="VARCHAR"/>
+        <result column="merchantCount" property="merchantCount" jdbcType="BIGINT"/>
+        <result column="icon" property="icon" jdbcType="VARCHAR"/>
+    </resultMap>
+    <resultMap id="extendMerchantCount" extends="baseResultMap" type="com.ph.shopping.facade.system.vo.MerchantTypeVO">
+        <result column="merchantCount" property="merchantCount" jdbcType="INTEGER"/>
+    </resultMap>
+    <resultMap id="hunterTypeVO" type="com.ph.shopping.facade.system.vo.MerchantTypeVO">
+        <id column="pid" property="id"/>
+        <result column="name" property="merchantTypeName"/>
+        <collection property="children" ofType="com.ph.shopping.facade.system.vo.MerchantTypeVO" javaType="ArrayList">
+            <id column="sid" property="id"/>
+            <result column="sname" property="merchantTypeName"/>
+            <result column="parentId" property="parentId"/>
+        </collection>
+    </resultMap>
+    <!-- 商户类型 -->
+    <sql id="base_column_list">
+        mtype.id, mtype.merchantTypeName, mtype.parentId, mtype.createrId, mtype.createTime, mtype.updaterId, mtype.updateTime, mtype.sort,
+        mtype.isDelete, mtype.merchanTypeLevel, mtype.icon, mtype.desc
+    </sql>
+    <!-- 类型列表查询 -->
+    <select id="getMerchantTypeList" resultMap="extendMerchantCount" parameterType="com.ph.shopping.facade.system.dto.MerchantTypeDTO">
+        SELECT
+        id,merchantTypeName,parentId,createrId,createTime,updaterId,updateTime,sort,isDelete,merchanTypeLevel,icon,`DESC`,SUM(merchantCount) merchantCount
+        FROM
+        ( SELECT
+        <include refid="base_column_list"/>
+        ,count(pmmt1.merchantId) merchantCount
+        FROM
+        ph_merchant_type mtype
+        LEFT JOIN (
+        SELECT
+        pmmt.secondMerchantTypeId,
+        pmmt.merchantId
+        FROM
+        ph_merchant pm1
+        LEFT JOIN ph_merchant_merchant_type pmmt ON pm1.id = pmmt.merchantId
+        AND pm1.isDelete = 0
+        ) pmmt1 ON pmmt1.secondMerchantTypeId = mtype.id
+        GROUP BY
+        mtype.id
+        UNION All
+        SELECT
+        <include refid="base_column_list"/>
+        ,count(pmmt2.merchantId) merchantCount
+        FROM
+        ph_merchant_type mtype
+        LEFT JOIN (
+        SELECT
+        pmmt.merchantId,
+        pmmt.firstMerchantTypeId
+        FROM
+        ph_merchant pm1
+        LEFT JOIN ph_merchant_merchant_type pmmt ON pm1.id = pmmt.merchantId
+        AND pm1.isDelete = 0
+        GROUP BY
+        pmmt.merchantId,pmmt.firstMerchantTypeId
+        ) pmmt2 ON pmmt2.firstMerchantTypeId = mtype.id
+        GROUP BY
+        mtype.id
+        ) mtype
+        <include refid="where_clause"/>
+        GROUP BY
+        mtype.id
+    </select>
+    <!-- 类型列表查询  hunter-->
+    <select id="getHunterTypeList" resultMap="hunterTypeVO" parameterType="com.ph.shopping.facade.system.dto.MerchantTypeDTO">
+        select
+            a1.id pid , a1.name, a2.id id, a2.name sname ,a2.parent_id parentId
+        from
+            alq_industry_type a1 left join alq_industry_type a2
+        on a2.parent_id = a1.id
+        where
+        <if test="parentId == 0">
+            a1.parent_id is NULL
+        </if>
+    </select>
+
+
+    <!-- 查询条件 -->
+    <sql id="where_clause">
+        <trim prefix="where" prefixOverrides="and">
+            <if test="id != null">
+                and mtype.id = #{id}
+            </if>
+            <if test="merchantTypeName != null and merchantTypeName !='' ">
+                and mtype.merchantTypeName like CONCAT('%',TRIM(#{merchantTypeName}),'%')
+            </if>
+            <if test="parentId != null  ">
+                and mtype.parentId = #{parentId}
+            </if>
+            <if test="isDelete != null  ">
+                and mtype.isDelete = #{isDelete}
+            </if>
+        </trim>
+    </sql>
+
+    <!-- 类型树列表查询 -->
+    <select id="getMerchantTypeByChildList" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.system.dto.MerchantTypeDTO">
+        SELECT
+        <include refid="base_column_list"/>
+        FROM ph_merchant_type mtype
+        LEFT JOIN ph_merchant_type parent ON mtype.parentId = parent.id
+        <include refid="where_clause"/>
+    </select>
+</mapper>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>供链结算</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--日期  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/datepicker/css/bootstrap-datepicker.css}">
+</head>
+<body>
+<div class="MainContent">
+      <!--面包屑-->
+    <div class="current">当前位置：<a href="#">账户结算</a>&nbsp;&gt;&nbsp;<span>供链结算</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+           <h2>供链结算</h2>
+            <div class="ph_snbBtn">
+            <shiro:hasPermission name="supplyChainExport">
+            <input name="" type="button" th:onclick="'exportExcel();'" value="导出">
+            </shiro:hasPermission>
+            </div>
+        </div>
+        <!--end 标题-->
+          <!--筛选条件-->
+          <shiro:hasPermission name="supplyChainQuery">
+        <div class="ph_screen">
+            <table class="ph_tableBox">
+                <tr>
+                    <th>订单时间：</th>
+                    <td colspan="3">
+                        <p class="dayBox"><input class="start_rise date start"  id="startDate" type="text" >&nbsp;-&nbsp;<input class="start_rise date end"  id="endDate" type="text" ></p>
+                    </td>
+                    <th>订单号：</th>
+                    <td colspan="3"><input name="orderNo" id="orderNo" type="text"></td> 
+                </tr>
+                <tr>
+	                <th>采购商账号：</th>
+	                    <td colspan="3"><input name="purchaserTel" id="purchaserTel" type="text"></td> 
+	                 <th>供应商账号：</th>
+	                    <td colspan="3"><input name="senderTel" id="senderTel" type="text"></td> 
+	            </tr>
+                <tr>
+                     <th>结算状态：</th>
+                    <td colspan="2">
+                        <select class="selectpicker" data-live-search="true" id="isSettle" name="isSettle">
+                            <option value="-1">请选择</option>
+                            <option value="0">未结算</option>
+                            <option value="1">已结算</option>
+                        </select>
+                    </td>
+	                <th>支付方式：</th>    
+	                    <td colspan="2">
+	                        <select class="selectpicker" data-live-search="true" id="payType" name="payType">
+	                            <option value="-1">请选择</option>
+	                            <option value="0">余额支付</option>
+	                            <option value="1">第三方支付</option>
+	                        </select>
+	                    </td>
+	                        
+                    <td colspan="2">
+                        <input name="" type="button" th:onclick="'query();'" value="查询"><input name="" th:onclick="'reset();'" type="button" value="重置">
+                    </td>
+                </tr>
+            </table>
+        </div>
+        </shiro:hasPermission>
+        <!--商品列表-->
+        <div class="ph_wareBox ph_tabScroll">
+            <table class="ph_wareList" id="table">
+            </table>
+        </div>
+        <!--end 商品列表-->
+        <!--分页-->
+        <!--end 分页-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<!--遮罩层-->
+<div class="maskBox"></div>
+<!--end 遮罩层-->
+<!--导出start-->
+<div hidden>
+    <form action="/web/purchaseSettle/getPurchaseSettleEXCEL"  id="orderExport" method="get">
+        <input type="hidden" name="startDate" value="" id="e_startDate"/>
+        <input type="hidden" name="endDate" value="" id="e_endDate"/>
+        <input type="hidden" name="senderTel" value="" id="e_senderTel"/>
+        <input type="hidden" name="purchaserTel" value="" id="e_purchaserTel"/>
+        <input type="hidden" name="orderNo" value="" id="e_orderNo"/>
+        <input type="hidden" name="isSettle" value="" id="e_isSettle"/>
+        <input type="hidden" name="payType" value="" id="e_payType"/>
+    </form>
+</div>
+<!--导出end-->
+
+
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!--分页-->
+<script type="text/javascript"   th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+
+<!--日期控件-->
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/bootstrap-datepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.timepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.datepair.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/datepicker.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    var  tb;
+    $(function() {
+        var Popupe = new PopupBase();
+        Popupe.show('.Js_deliver', '.maskBox,.deliverBox');
+        Popupe.show('.Js_refund', '.maskBox,.Js_refundBox');
+        Popupe.show('.Js_btn', '.maskBox,.DeterBox');
+        Popupe.show('.Js_refunddeta', '.maskBox,.Js_refundDetaBox');
+        Popupe.showHide('.subQuemit','.refundBox','.SucBox');
+        Popupe.hide('.close', '.maskBox,.DeterBox,.SucBox,.deliverBox,.Js_refundBox,.Js_refundDetaBox');
+
+        //分页
+        tb=$("#table").DataTable({
+            "bServerSide": true,
+            "sPaginationType": "full_numbers",
+            "bJQueryUI": true,
+            "sDom": '<"">t<"F"ip>',
+            "sAjaxSource": "/web/purchaseSettle/getPurchaseSettleList", //ajax调用接口
+            "aoColumnDefs": [{sDefaultContent: '',aTargets: [ '_all' ]}],
+            "aoColumns": [
+            	{ "sWidth":"50px","sTitle" : "序号","mData": "id","sClass":"sClass" },
+            	{ "sWidth":"250px","sTitle" : "订单号","mData": "orderNo","sClass":"sClass" },
+            	{ "sWidth":"150px","sTitle" : "订单时间","mData": "orderTime","sClass":"sClass" },
+            	{ "sWidth":"150px","sTitle" : "收货时间","mData": "receiptTime","sClass":"sClass" },
+            	{ "sWidth":"150px","sTitle" : "结算时间","mData": "settleTime","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "订单金额","mData": "orderMoney1","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "结算金额","mData": "settleMoney1","sClass":"sClass" },
+                
+                { "sWidth":"120px","sTitle" : "支付方式","mData": "payType","sClass":"sClass","mRender": function (data, type, full) {
+                    var text;
+                    if (full.payType == '0') {
+                        text = "<font color='black'>余额支付</font>";
+                    } else if (full.payType == '1') {
+                        text = "<font color='black'>三方支付</font>"
+                    }
+                    return text;
+                }
+                },
+                
+                { "sWidth":"120px","sTitle" : "采购商账号","mData": "purchaserTel","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "采购商企业名称","mData": "purchaserName","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "供应商账号","mData": "senderTel","sClass":"sClass" },
+                { "sWidth":"120px","sTitle" : "供应商企业名称","mData": "senderName","sClass":"sClass" },
+                
+                { "sWidth":"120px","sTitle" : "结算状态","mData": "isSettle","sClass":"sClass" , "mRender": function (data, type, full) {
+                    var text;
+                    if (full.isSettle == '0') {
+                        text = "<font color='black'>未结算</font>";
+                    } else if (full.isSettle == '1') {
+                        text = "<font color='black'>已结算</font>"
+                    }
+                    return text;
+                }
+                },
+            ],
+            "oLanguage" : {
+                "sProcessing" : "数据加载中······",
+                "sLengthMenu" : "显示 _MENU_ 条记录",
+                "sZeroRecords" : "没有您要搜索的内容！",
+                "sEmptyTable" : "列表中无数据存在！",
+                "sInfo" : "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+                "sInfoEmpty" : "显示 0 到 0 条记录",
+                "sInfoFiltered" : "数据列表中共  _MAX_ 条记录",
+                "oPaginate" : {
+                    "sFirst" : "首页",
+                    "sPrevious" : "上一页",
+                    "sNext" : "下一页",
+                    "sLast" : "末页"
+                }
+            },
+            "fnServerData" : function ( sSource, aoData, fnCallback, oSettings ) {
+                oSettings.jqXHR = $.ajax( {
+                    "dataType" 	: 'json',
+                    "type" 		: "GET",
+                    "async"     : 'false',
+                    "url" 		: sSource,
+                    "data" 		: {
+                        'pageNum': (aoData[3].value/aoData[4].value)+1,
+                        'pageSize' :  aoData[4].value,
+                        'startDate'  :  $("#startDate").val(),
+                        'endDate' : $("#endDate").val(),
+                        'orderNo'  :  $("#orderNo").val(),
+                        'purchaserTel' : $("#purchaserTel").val(),
+                        'senderTel' : $('#senderTel').val(),
+                        'isSettle' : $('#isSettle').val(),
+                        'payType' : $('#payType').val(),
+                    },
+                    "success"	: fnCallback
+                } );
+            },
+            "fnDrawCallback" : function(){
+            	var api = this.api();
+          	　　var startIndex= api.context[0]._iDisplayStart;//获取到本页开始的条数
+          	　　api.column(0).nodes().each(function(cell, i) {
+          	　　　　cell.innerHTML = startIndex + i + 1;
+          	　　});
+            }
+        });
+    });
+
+    //条件查询重新加载数据
+    function query() {
+        tb.draw();
+    };
+
+    /**
+     * 分润记录导出
+     */
+    function exportExcel() {
+        $('#e_startDate').val($('#startDate').val());
+        $('#e_endDate').val($('#endDate').val());
+        $('#e_senderTel').val($('#senderTel').val());
+        $('#e_purchaserTel').val($('#purchaserTel').val());
+        $('#e_orderNo').val($('#orderNo').val());
+        $('#e_isSettle').val($('#isSettle').val());
+        $('#e_payType').val($('#payType').val());
+        $('#orderExport').submit();
+    }
+    
+    /**
+     * 查询条件清除
+     */
+    function reset() {
+        $('#startDate').val("");
+        $('#endDate').val("");
+        $('#orderNo').val("");
+        $('#senderTel').val("");
+        $('#purchaserTel').val(""); 
+        $("#isSettle option:first").prop("selected", 'selected'); 
+        $("#payType option:first").prop("selected", 'selected'); 
+        $('.selectpicker').selectpicker('refresh');
+    }
+</script>
+</body>
+</html>

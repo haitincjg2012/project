@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.comment.OrderCommentDao">
+
+	<resultMap id="OrderCommentMap" type="com.alqsoft.entity.ordercomment.OrderComment">
+        <id column="id" property="id" />
+        <association  property="member" autoMapping="true" foreignColumn="id"  column="member_id" javaType="com.alqsoft.entity.member.Member" select="selectMemberById" />
+        <association  property="hunter" autoMapping="true" foreignColumn="id" column="hunter_id" javaType="com.alqsoft.entity.hunter.Hunter"  select="selectHunterById" />
+	</resultMap>
+	<select id="selectHunterById" resultType="com.alqsoft.entity.hunter.Hunter" parameterType="Long">
+		SELECT * FROM alq_hunter WHERE id=#{hunter_id}
+	</select>
+    <select id="selectMemberById" resultType="com.alqsoft.entity.member.Member" parameterType="Long">
+		SELECT * FROM alq_member WHERE id=#{member_id}
+	</select>
+
+	<sql id="where_commentForParentList_sql">
+	        <if test="type == 1">  
+	          	and oc.`start_num`=5
+	        </if>
+	        <if test="type == 2">  
+	        	<![CDATA[ and oc.`start_num`>=3 and oc.`start_num`<=4 ]]>
+	        </if>
+	        <if test="type == 3">  
+	          	<![CDATA[and oc.`start_num`>=0 and oc.`start_num`<=2]]> 
+	        </if>  
+	</sql>
+	
+	
+	<!-- 查询评论列表中父级评论列表 -->
+	<select id="findOderCommentForParentList" resultType="map" parameterType="map">
+		SELECT p.pcommentid,p.pmemberid,p.isone,p.pstart,p.pcontent,p.pcreatedtime,p.preplynum,p.pfabulous,p.`nickname` AS pnickname,att.`address` AS paddress FROM (
+			SELECT 
+				oc.`id` AS pcommentid,								<!-- 父级游客这条评论的id -->	
+				oc.`member_id` AS pmemberid,						<!-- 评论人的id -->
+				IFNULL(oc.`is_one`,0) AS isone,						<!-- 是否已回复该评论0或null未回复，1已回复 -->
+				IFNULL(oc.`start_num`,0) pstart,					<!-- 父级游客评论的星 -->
+				oc.`content` AS pcontent,							<!-- 父级游客评论的内容 -->
+				oc.`created_time` AS pcreatedtime,					<!-- 父级游客评论的时间 -->
+				IFNULL(oc.`reply_num`,0) AS preplynum,				<!-- 父级游客下回复的数量 -->
+				IFNULL(oc.`fabulous_num`,0) AS pfabulous,			<!--父级游客所关联的批发商id  -->
+				IFNULL(m.`nickname`,'匿名用户') as nickname,
+				m.`logo_attachment_id` AS attid
+ 			FROM 
+ 				alq_order_comment oc,alq_member m WHERE oc.`product_id`=#{productid} AND oc.`member_id`=m.`id` AND oc.`parent_id` IS NULL AND (oc.`is_delete` =0 OR oc.`is_delete` IS NULL)
+ 			<include refid="where_commentForParentList_sql"></include>
+				ORDER BY oc.`created_time` DESC LIMIT  #{startIndex},#{endIndex}
+		) p  LEFT JOIN alq_attachment att ON p.attid=att.`id` ORDER BY p.pcreatedtime DESC
+	</select>
+	
+	<!-- 批发商评论父级列表数量 -->
+	<select id="getOrderCommentListForParentCount" resultType="int" parameterType="java.lang.Long">
+		select count(*) FROM alq_order_comment oc where oc.`product_id`=#{productid} and oc.`parent_id` IS NULL AND (oc.`is_delete` =0 OR oc.`is_delete` IS NULL)
+	</select>
+	
+	<!-- 父级评论下的子游客评论 -->
+	<select id="findSonOrderCommentForByParentIdList" resultType="map" parameterType="java.lang.Long" >
+		SELECT 
+			son.`member_id`,
+			IFNULL((SELECT h.`nickname` FROM alq_hunter h WHERE h.`id`=m.hunter_id),'匿名用户') AS nickname,
+			IFNULL(m.`nickname`,'匿名用户') as membername,
+			son.`content`,
+			son.`created_time` 
+		FROM alq_order_comment son,alq_member m WHERE m.`id`=son.`member_id` and son.`parent_id`=#{parentId}
+		ORDER BY son.`created_time` DESC
+	</select>
+	
+	<!-- 查询用户对这条评论的点赞状态 -->
+	<select id="getOrderCommentParentForMemberFabulousStatus" resultType="map" parameterType="map">
+		SELECT ocf.`id`,ocf.`type` FROM alq_order_comment_fabulous  ocf WHERE ocf.`order_comment_id`=#{commentid} AND ocf.`member_id`=#{memberid}
+	
+	</select>
+	
+	<select id="getOrderCommentById" resultType="com.alqsoft.entity.ordercomment.OrderComment" parameterType="java.lang.Long">
+		select * from alq_order_comment oc where oc.id=#{commentid}
+	</select>
+	
+	<!-- 根据订单id查询此订单的评价详情 -->
+	<select id="getOrderCommentByOrderId" resultMap="OrderCommentMap" parameterType="java.lang.Long">
+		SELECT * FROM alq_order_comment oc WHERE oc.`order_id`=#{orderid} and oc.`parent_id` IS NULL AND (oc.`is_delete` =0 OR oc.`is_delete` IS NULL)
+	</select>
+
+	<!--通过订单号获取订单号 byOrderNo 的评论详情-->
+	<select id="getOrderCommentDetailByOrderNo" resultMap="OrderCommentMap" parameterType="java.lang.String">
+		SELECT * FROM alq_order_comment oc WHERE oc.`order_num`=#{orderNo} and oc.`parent_id` IS NULL AND (oc.`is_delete` =0 OR oc.`is_delete` IS NULL)
+	</select>
+	
+	
+	<sql id="where_hunterordercommentForParentList_sql">
+	        <if test="type == 1">  
+	          	and oc.`start_num`=5
+	        </if>
+	        <if test="type == 2">  
+	        	<![CDATA[ and oc.`start_num`>=3 and oc.`start_num`<=4 ]]>
+	        </if>
+	        <if test="type == 3">  
+	          	<![CDATA[and oc.`start_num`>=0 and oc.`start_num`<=2]]> 
+	        </if>  
+	</sql>
+	<!-- 查询属于该批发商下订单的评价列表 -->
+	<select id="findHunterOrderCommentList" resultType="map" parameterType="map">
+		SELECT p.pcommentid,p.pmemberid,p.isone,p.pstart,p.pcontent,p.pcreatedtime,p.preplynum,p.pfabulous,p.`nickname` AS pnickname,att.`address` AS paddress FROM (
+			SELECT 
+				oc.`id` AS pcommentid,									
+				oc.`member_id` AS pmemberid,					
+				IFNULL(oc.`is_one`,0) AS isone,								
+				IFNULL(oc.`start_num`,0) pstart,					
+				oc.`content` AS pcontent,							
+				oc.`created_time` AS pcreatedtime,					
+				IFNULL(oc.`reply_num`,0) AS preplynum,				
+				IFNULL(oc.`fabulous_num`,0) AS pfabulous,			
+				IFNULL(m.`nickname`,'匿名用户') as nickname,
+				m.`logo_attachment_id` AS attid
+ 			FROM 
+ 				alq_order_comment oc,alq_member m WHERE oc.`hunter_id`=#{hunterid} AND  oc.`member_id`=m.`id` AND oc.`parent_id` IS NULL AND (oc.`is_delete` =0 OR oc.`is_delete` IS NULL)
+ 			<include refid="where_hunterordercommentForParentList_sql"></include>
+				ORDER BY oc.`created_time` DESC LIMIT  #{startIndex},#{endIndex}
+		) p  LEFT JOIN alq_attachment att ON p.attid=att.`id` ORDER BY p.pcreatedtime DESC
+	
+	</select>
+
+
+	<select id="getordercommentByOrderAndMember" resultType="java.lang.String" >
+       SELECT oc.content FROM alq_order_comment oc WHERE oc.order_id=#{oid} and oc.parent_id IS NULL
+	</select>
+
+	<!--通过批发商的id获取头像和昵称-->
+	<select id="getHunterHeadImageAndNickName" resultType="map" parameterType="long">
+		select DISTINCT h.id,h.nickname,tt.address from alq_hunter h LEFT JOIN alq_attachment tt on h.logo_attachment_id=tt.id where h.id =#{id}
+	</select>
+</mapper>

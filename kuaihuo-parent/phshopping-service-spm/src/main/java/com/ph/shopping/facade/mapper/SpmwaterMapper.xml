@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.SpmwaterMapper" >
+  <!-- <resultMap id="BaseResultMap" type="com.ph.shopping.facade.spm.entity.Spmwater" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="operatId" property="operatId" jdbcType="BIGINT" />
+    <result column="operatTime" property="operatTime" jdbcType="TIMESTAMP" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="agentType" property="agentType" jdbcType="TINYINT" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.ph.shopping.facade.spm.entity.PhSpmwater" extends="BaseResultMap" >
+    <result column="operatDetail" property="operatDetail" jdbcType="LONGVARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+  </sql>
+  <sql id="Base_Column_List" >
+    id, operat
+Id, operatTime, type, agentType
+  </sql>
+  <sql id="Blob_Column_List" >
+    operatDetail
+  </sql>
+  <select id="selectByExampleWithBLOBs" resultMap="ResultMapWithBLOBs" parameterType="com.ph.shopping.facade.spm.entity.PhSpmwaterExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from ph_spmwater
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select> -->
+</mapper>

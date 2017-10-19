@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.memberconnect.MemberConnectDao">
+	<!-- 会员Map -->
+	<resultMap type="memberConnect" id="memberConnectMap">
+		<result property="id" column="id" />
+		<result property="thirdAccount" column="third_account" />
+		<result property="thirdType" column="third_type" />
+		<result property="isBind" column="is_bind" />
+		<result property="memberId" column="member_id" />
+	</resultMap>
+	
+	<sql id="Base_sql">
+	id,third_account,third_type,is_bind,member_id
+	</sql>
+	<select id="getMemberConnByAccount" resultMap="memberConnectMap" parameterType="map">
+		SELECT
+		<include refid="Base_sql" />
+		FROM alq_member_connect WHERE third_account=#{thirdAccount} and third_type=#{thirdType}
+	</select>
+	 
+</mapper>

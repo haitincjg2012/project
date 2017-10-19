@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.huntershow.HunterShowDao">
+				
+
+	<select id="getHunterShowList" resultType="java.util.Map" parameterType="Long" >
+		SELECT 
+		mm.im_id AS im_id,<!-- 腾讯注册的唯一标识 -->
+		(IFNULL(h.good_comment_num_order,0)+IFNULL(h.comment_num_order,0)+IFNULL(h.bad_comment_num_order,0)) AS allnum,<!-- 评论2000条 -->
+		h.id,<!-- 批发商id -->
+		ba.address AS background_address,<!-- 批发商背景图 -->
+		att.address,<!-- 批发商LOGO -->
+		IFNULL(h.`level`,0) as level,<!-- 批发商等级 -->
+		IFNULL(h.star,0) as star,<!-- 批发商星级 -->
+		IFNULL(h.`good_comment_num_order`,0) AS good_comment_num_order,		<!-- 批发商好评 -->
+		(select COUNT(1) from alq_collection_hunter where hunter_id=h.id and type =0) AS foucs_num,        <!-- 关注、收藏数量 -->
+		h.nickname,<!-- 批发商昵称 -->
+		h.`province_name` as provincename,<!-- 批发商省 -->
+		h.`city_name` as cityname,		<!-- 批发商城市-->
+		h.`county_name` as countyname,	<!-- 批发商县 -->
+		h.major,<!-- 批发商专业 -->
+		h.county_name AS sourcing_address,<!-- 猎货范围只显示县-->
+		h.service,<!-- 批发商服务一句话介绍 -->
+		IFNULL(h.num,0) as num,<!-- 多少人找他 -->
+		h.service_digest,<!-- 服务内容新增的字段新增接口 -->
+		h.position_level,<!-- 等级 -->
+		CONCAT(h.province_name,h.city_name,IFNULL(h.county_name,''),IFNULL(h.town_name,''),h.detail) AS product_address,<!-- 商品驻地详细地址全显示-->
+		service.detail AS sourcing_service<!-- 货源服务alq_hunter_service -->
+		FROM `alq_hunter` h 
+		LEFT JOIN alq_attachment att ON att.id=h.logo_attachment_id
+		LEFT JOIN alq_hunter_service service on h.id=service.hunter_id
+		LEFT JOIN alq_member mm ON mm.hunter_id=h.id
+		LEFT JOIN alq_attachment ba ON ba.id = h.background_attachment_id
+		WHERE h.id=#{id}
+	</select>
+	<!-- 显示最新的一条批发商法则 -->
+	<select id="getRoleList" resultType="Map" parameterType="Long">
+	<!-- SQL语句后期可能需要更改 -->
+		<!-- SELECT     
+		rule.id,rule.content,
+		(select GROUP_CONCAT(attachment.address) from  
+		alq_hunter_rule_attachment attachment 
+		where rule.id=attachment.hunter_rule_id  ) as imglist
+		FROM 
+		`alq_hunter_rule` rule
+		where rule.hunter_id = #{id} 
+		AND (is_deleted = 0 OR is_deleted is null)
+		order by created_time DESC LIMIT 0,1 -->
+		SELECT r.* from(
+			SELECT
+			rulee.*,
+			GROUP_CONCAT(attachment.address order by attachment.created_time DESC separator ',') as imglist
+	 		FROM
+			(
+				select 	
+				rule.id,
+				DATE_FORMAT(rule.created_time,"%Y-%m-%d %H:%i:%s") as created_time,
+				rule.content
+				from 
+				`alq_hunter_rule` rule 
+				where(rule.is_deleted = 0 OR rule.is_deleted is null) 
+				and rule.hunter_id=#{id} ) rulee
+		LEFT JOIN alq_hunter_rule_attachment attachment on rulee.id=attachment.hunter_rule_id 
+		GROUP BY rulee.id) r ORDER BY r.created_time  DESC LIMIT 1
+	</select>
+	
+	<!-- 批发商店铺的图片展示 -->
+	<select id="getImgList" resultType="java.util.Map" parameterType="Long" >
+		SELECT 
+			s.id AS hunter_store_attachment_id,<!-- 批发商店铺的id -->
+			s.address,<!-- 批发商店铺的address -->
+			s.content<!-- 批发商店铺的content -->
+		FROM alq_hunter_store_attachment s WHERE s.`hunter_id`=#{id} 
+		AND s.`is_delete`=0 ORDER BY s.`created_time` DESC
+	</select>
+	<select id="getImgList3" resultType="java.util.Map" parameterType="Long" >
+		SELECT 
+			s.id AS hunter_store_attachment_id,<!-- 批发商店铺的id -->
+			s.address,<!-- 批发商店铺的address -->
+			s.content<!-- 批发商店铺的content -->
+		FROM alq_hunter_store_attachment s WHERE s.`hunter_id`=#{id} 
+		AND s.`is_delete`=0 ORDER BY s.`created_time` DESC
+		LIMIT 3
+	</select>
+	<!-- 商品展示（以商品发布的时间顺序排序 ，默认显示4个，下拉加载全部商品） -->
+	<select id="getproductList" resultType="java.util.Map" parameterType="Long" >
+		SELECT 
+			p.imageurl as address,         
+			ps.`id` AS psid,   				
+			p.`id` AS pid,					
+			p.`name`,						
+			ROUND(ps.`sale_price`/100,2) AS price,
+			p.`sale_num` AS salenum	
+			FROM alq_product_specification ps, alq_product p 
+			WHERE  p.`hunter_id`=#{id}
+			and ps.`product_id`=p.`id` AND p.`status`=1  GROUP BY p.`id` 
+			ORDER BY p.created_time DESC
+		 	LIMIT 0,4
+	</select>
+	
+	<select id="getcollectionType" resultType="Integer" parameterType="map" >
+		SELECT 
+		c.type
+	    FROM `alq_collection_hunter` c 
+	    WHERE hunter_id=#{id} AND member_id=#{member_id}
+	</select>
+
+</mapper>

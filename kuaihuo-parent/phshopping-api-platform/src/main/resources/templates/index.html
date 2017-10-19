@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台系统</title>
+    <link th:href="@{/static/images/favicon.ico}" rel="icon" type="image/x-icon"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/css/common/models.css}">
+
+</head>
+<body>
+<!--首页-->
+<div class="MainBox">
+
+    <input id="userId" type="hidden" th:value="${userId}">
+
+    <!--头部-->
+    <div class="mainTop">
+        <shiro:hasRole name="1">
+            <div class="logo left">【快火】平台业务管理系统</div>
+        </shiro:hasRole>
+        <shiro:hasRole name="2">
+            <div class="logo left">【快后】供应商业务管理系统</div>
+        </shiro:hasRole>
+        <shiro:hasAnyRoles name="3,4,5">
+            <div class="logo left">【快火】代理商业务管理系统</div>
+        </shiro:hasAnyRoles>
+        <shiro:hasRole name="6">
+            <div class="logo left">【快火】商户业务管理系统</div>
+        </shiro:hasRole>
+        <div class="userBox right">
+            <span>欢迎您，<span th:text="${userName}"></span></span>
+            <shiro:hasRole name="1"><a class="ph_modify" href="javascript:void(0);">修改密码</a></shiro:hasRole>
+            <a href="/logout">退出</a>
+        </div>
+    </div>
+    <!--end 头部-->
+    <!--左边导航-->
+    <div class="leftNav">
+        <ul class="navBox" id="accordion"></ul>
+    </div>
+    <!--end 左边导航-->
+    <!--主体内容-->
+    <div class="mainContentBox">
+        <iframe id="main_frame" width="100%" height="100%" frameborder="0" onload="" name="main_frame" src="welcome"
+                style="overflow:hidden; position:absolute;"></iframe>
+    </div>
+    <!--end 主体内容-->
+</div>
+<!--end 首页-->
+<!--遮罩层-->
+<div class="maskBox"></div>
+<!--end 遮罩层-->
+<!--修改密码弹窗-->
+<div class="PopupBox" id="ph_modifyBox">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <form class="form-inline" id="updatePswForm">
+                <table class="ph_tableBox">
+                    <tr>
+                        <th><span class="require">*</span>旧密码：</th>
+                        <td><input id="password"
+                                   class="validate[required,minSize[6],maxSize[16]]"
+                                   name="password" type="password"></td>
+                    </tr>
+                    <tr>
+                        <th><span class="require">*</span>新密码：</th>
+                        <td><input id="newPassword"
+                                   class="validate[required,minSize[6],maxSize[16]]"
+                                   name="newPassword" type="password"></td>
+                    </tr>
+                    <tr>
+                        <th><span class="require">*</span>确认新密码：</th>
+                        <td><input id="confirmPassword"
+                                   class="validate[required,equals[newPassword],minSize[6],maxSize[16]]"
+                                   name="confirmPassword" type="password"></td>
+                    </tr>
+
+                </table>
+            </form>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 修改密码弹窗-->
+<!-- <script type="text/javascript" src="js/jquery-1.11.1.min.js"></script> -->
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    $(function() {
+        var Popupe = new PopupBase();
+        Popupe.show('.ph_modify', '.maskBox,.ph_modifyBox');
+        Popupe.hide('.close', '.maskBox,.ph_modifyBox');
+
+        var userId = $("#userId").val();
+        $.ajax({
+            async: false,
+            url: "/web/permission/menu/list",
+            data: {userId: userId},
+            type: "GET",
+            cache:false,
+            dataType: "json",
+            success: function (data) {
+                console.log(data.data);
+                if (data.data) {
+                    MenuTree(data.data);
+                } else {
+                    layer.alert("当前用户无菜单权限", {
+                        icon: 2,
+                        title: '失败',
+                        closeBtn: 0,
+                        btnAlign: 'c'
+                    });
+                }
+            },
+            error: function (data) {
+                layer.alert("菜单加载异常", {
+                    icon: 2,
+                    title: '失败',
+                    closeBtn: 0,
+                    btnAlign: 'c'
+                });
+            }
+        });
+    });
+
+    //加载树型菜单
+    function MenuTree(data) {
+        var menuTree = '';
+
+        //父级
+        for (var i = 0; i < data.length; i++) {
+            var lis = '';
+            //子级
+            if (data[i].child) {
+                for (var j = 0; j < data[i].child.length; j++) {
+                    lis += '<li><a target="main_frame" href="' + data[i].child[j].menuUrl + '">' + data[i].child[j].menuName + '</a></li>';
+                }
+            }
+            menuTree += '<li>'
+                + '<div class="link"><i class="' + data[i].icon + '"></i>' + data[i].menuName + '<i class="navIconRig"></i></div>'
+                + '<ul class="submenu">' + lis + '</ul>'
+                + '</li>';
+        }
+        $("#accordion").append(menuTree);
+    }
+
+    $(function () {
+
+        //验证初始化
+        $('#updatePswForm').validationEngine({
+            promptPosition: 'bottomLeft'
+            , autoPositionUpdate: false
+            , addPromptClass: 'formError-text'
+            , autoHidePrompt: true
+            , autoHideDelay: 3000
+            , fadeDuration: 0.3
+        });
+
+        $('.userBox').on('click', '.ph_modify', function () {
+            layer.open({
+                type: 1,
+                title: '修改登录密码',
+                closeBtn: 0,
+                area: ['442px', '280px'],
+                btn: ['确认', '取消'],
+                btnAlign: 'c',
+                content: $('#ph_modifyBox'),
+                btn1: function () {
+                    var flag = $("#updatePswForm").validationEngine("validate");
+                    if (!flag) {
+                        return false;
+                    }
+                    $.ajax({
+                        async: false,
+                        url: "/web/permission/user/updatePsw",
+                        data: $('#updatePswForm').serialize(),
+                        type: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            if (data.code == '200') {
+                                window.location.href = '/logout';
+                            } else {
+                                $('#password').val('');
+                                $('#newPassword').val('');
+                                $('#confirmPassword').val('');
+                                layer.alert(data.message, {
+                                    icon: 2,
+                                    title: '失败',
+                                    closeBtn: 0,
+                                    btnAlign: 'c'
+                                });
+                            }
+                        },
+                        error: function (data) {
+                            layer.alert("修改密码错误", {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    });
+                },
+            });
+        });
+    });
+
+</script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.RoleMenuMapper">
+
+  <!--刪除角色对应的菜单-->
+    <delete id="deleteRoleMenuByRoleId">
+        DELETE FROM ph_permission_role_menu WHERE roleId = #{roleId}
+  </delete>
+
+  <!--批量新增角色对应的菜单-->
+  <insert id="insertRoleMenu">
+      INSERT INTO ph_permission_role_menu (roleId,menuId,createrId,createTime) VALUES
+      <foreach collection="menuIds" item="menuId" separator=",">
+          (#{roleId},#{menuId},#{createrId},now())
+    </foreach>
+  </insert>
+
+    <!--通过角色id查询角色所选择对应的菜单-->
+    <select id="selectRoleMenuByRoleId" resultType="long">
+        select menuId from ph_permission_role_menu where roleId = #{roleId};
+  </select>
+</mapper>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.SystemParameterMapper">
+
+    <!--分页查询系统日志-->
+   <select id="selectSystemParameterList" resultType="com.ph.shopping.facade.system.vo.SystemParameterVO">
+    SELECT
+        id,
+        parameterName,
+        parameterValue,
+        remark,
+        isUpdate
+    FROM
+        ph_system_parameter
+    ORDER BY createTime DESC
+   </select>
+    
+    <!--条件查询系统参数-->
+    <select id="selectSystemParameterBySelective" resultType="com.ph.shopping.facade.system.vo.SystemParameterVO"
+        parameterType="com.ph.shopping.facade.system.entity.SystemParameter">
+    SELECT
+        id,
+        parameterName,
+        parameterValue,
+        remark
+    FROM
+      ph_system_parameter
+    <where>
+        <if test="id != null">
+            id = #{id}
+        </if>
+        <if test="parameterName != null and parameterName != ''">
+            parameterName = #{parameterName}
+        </if>
+        <if test="remark != null and remark != ''">
+            remark = #{remark}
+        </if>
+        <if test="parameterValue != null and parameterValue != ''">
+            parameterValue = #{parameterValue}
+        </if>
+    </where>
+    </select>
+
+    <!--通过id查询系统参数-->
+    <select id="selectSystemParameterByIds" resultType="com.ph.shopping.facade.system.vo.SystemParameterVO">
+     SELECT
+        id,
+        parameterName,
+        parameterValue,
+        remark
+    FROM
+      ph_system_parameter
+    WHERE id IN <foreach collection="ids" open="(" separator="," close=")" item="item">
+        #{item}
+    </foreach>
+
+    </select>
+
+
+</mapper>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+<meta charset="UTF-8">
+<title>银行卡</title>
+<link th:href="@{/static/css/common/models.css}" type="text/css"
+	rel="stylesheet" />
+</head>
+<body>
+	<div class="MainContent">
+		<!--面包屑-->
+		<div class="current">
+			当前位置：<a href="#">帐户管理</a>&nbsp;&gt;&nbsp;<span>银行卡</span>
+		</div>
+		<!--end 面包屑-->
+		<!--主体内容-->
+		<div class="MainCont">
+			<!--标题-->
+			<div class="ph_subTit no_border">
+				<h2>银行卡</h2>
+			</div>
+			<!--end 标题-->
+			<!--银行卡-->
+			<div class="ph_methodBox ph_setUp">
+				<form id="bankForm">
+					<p class="ph_methPass" style="display: none;">
+						<input id="roleCode" name="roleCode" type="text" th:value="${roleCode}">
+						<input id="bankCodenameDataId" name="bankCodenameDataId" type="text" hidden="hidden">
+					</p>
+					<p class="ph_methPass" style="display: none;">
+						<input id="id" name="id" type="text" th:value="${bindCardInfo.id}">
+					</p>
+					<p class="ph_methPass">
+						<label for=""><span class="require">*</span>账户名：</label> <input
+							id="ownerName" name="ownerName" type="text"
+							th:value="${bindCardInfo.ownerName}">
+					</p>
+					<p class="ph_methPass">
+						<label for=""><span class="require"></span>手机号：</label> <input
+							id="telPhone" name="telPhone" type="text" th:value="${telPhone}"
+							disabled="disabled">
+					</p>
+					<p class="ph_methPass">
+						<label for=""><span class="require">*</span>身份证号：</label> <input
+							id="idCardNo" name="idCardNo" type="text"
+							th:value="${bindCardInfo.idCardNo}">
+					</p>
+					<p class="ph_methPass">
+						<label for=""><span class="require">*</span>银行卡号：</label> <input
+							id="cardNo" name="cardNo" type="text" onblur="findBankName()"
+							th:value="${bindCardInfo.cardNo}">
+					</p>
+					<p class="ph_methPass">
+						<label for="">所属银行：</label> <input id="bankName" name="bankName" type="text" disabled="disabled" th:value="${bindCardInfo.bankName}">
+					</p>
+					<p class="ph_methPass">
+						<label for=""> <span class="require">*</span>验证码：
+						</label> <input id="verificationCode" name="verificationCode" type="text">
+						<span class="provingImg">
+						<input class="provingTxt ph_noBor" id="smsId" type="button" value="获取验证码" onclick="getSmsCode()">
+						</span>
+					</p>
+				</form>
+			</div>
+			<!--end 银行卡-->
+			<!--返回按钮-->
+			<div class="PopupBtn btnLeft">
+				<shiro:hasPermission name="bindCard">
+					<input class="submit" id="saveCard" name="saveCard" type="button"
+						value="绑定" onclick="saveOrEditCard(1)">
+				</shiro:hasPermission>
+				<shiro:hasPermission name="unbindCard">
+					<input class="submit" id="disCard" name="disCard" type="button"
+						value="解绑" onclick="unbind()">
+				</shiro:hasPermission>
+			</div>
+			<!--end 返回按钮-->
+		</div>
+		<!--end 主体内容-->
+	</div>
+
+	<script type="text/javascript"
+		th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+	<!--弹窗-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/layer/layer.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/util.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/readTime.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/account/account_bank.js}"></script>
+
+</body>
+</html>

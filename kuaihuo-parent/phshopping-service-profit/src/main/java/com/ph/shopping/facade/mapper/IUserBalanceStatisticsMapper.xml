@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IUserBalanceStatisticsMapper">
+    <select id="getSupplyChainBalancesStatistics" resultType="com.ph.shopping.facade.profit.vo.SupplyChainBalanceVO">
+        SELECT
+        pubs.userId userId,
+        pubs.telphone,
+        CASE pubs.userType
+        WHEN '2' then '供链角色-供应商'
+        WHEN '3' then '供链角色-市级代理'
+        WHEN '4' then '供链角色-县级代理'
+        WHEN '5' then '供链角色-社区代理'
+        WHEN '6' then '供链角色-商户' END
+        enterpriseType,
+        pub.score score1,
+        pub.status,
+        pubs.oncharge oncharge1,
+        pubs.drawcash drawcash1,
+        pubs.unlineServiceCost serviceCost1,
+        pubs.unlineSettle unlineSettle1,
+        pubs.unlineManageProfit unlineManageProfit1,
+        pubs.onlineSettle onlineSettle1,
+        pubs.onlineManageProfit onlineManageProfit1,
+        pubs.onlineChainProfit onlineChainProfit1,
+        pubs.supplyChainSettle supplyChainSettle1,
+        pubs.supplyChainBalancePay supplyChainBalancePay1,
+        pubs.hunterManageProfit hunterManageProfit1,
+        pubs.hunterChainProfit hunterChainProfit1,
+        pubs.supplyChainRefund supplyChainRefund1
+        FROM
+        ph_user_balance pub ,
+        ph_user_balance_statistics pubs
+        WHERE
+        pub.userId = pubs.userId
+        <if test="telPhone != null and telPhone != ''">
+            AND pubs.telPhone = #{telPhone}
+        </if>
+        <if test="enterpriseType != null">
+            AND pubs.userType = #{enterpriseType}
+        </if>
+        <if test="status != null">
+            AND pub.status = #{status}
+        </if>
+        <if test="createTime != null">
+            AND pubs.createTime &gt;= #{createTime}
+        </if>
+    </select>
+
+    <!-- 根据编码和用户id来统计相关数据 -->
+    <select id="getStatistics" resultType="java.lang.Long">
+        SELECT
+        IFNULL(SUM(p.score), 0)  score
+        FROM
+        ph_user_balance_trade p
+        WHERE
+        p.userId = #{userId}
+        AND p.transCode = #{transCode}
+    </select>
+</mapper>

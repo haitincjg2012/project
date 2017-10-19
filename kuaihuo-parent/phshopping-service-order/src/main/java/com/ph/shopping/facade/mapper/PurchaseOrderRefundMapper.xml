@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.PurchaseOrderRefundMapper">
+
+	<!--根据供应链子订单id查询子订单对应的商品信息-->
+	<select id="selectApplicationByOrderId" parameterType="long"
+			resultType="cm.ph.shopping.facade.order.entity.PurchaseOrderRefundAppli">
+		SELECT
+			id,
+			subOrderId,
+			appliReason,
+			appliStatus,
+			telPhone,
+			rejectedReason
+		FROM
+			ph_purchase_order_refund_appli
+		WHERE
+			subOrderId = #{orderId}
+		ORDER BY createTime DESC
+	</select>
+
+	<!--根据订单id删除退款详情-->
+	<delete id="deleteRefundByOrderId" parameterType="long">
+		DELETE FROM ph_purchase_order_refund_appli WHERE subOrderId = #{orderId} AND appliStatus = 1
+	</delete>
+
+</mapper>

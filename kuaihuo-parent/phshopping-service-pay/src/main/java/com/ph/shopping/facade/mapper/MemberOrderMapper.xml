@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MemberOrderMapper">
+<resultMap id="BaseResultMap" type="cm.ph.shopping.facade.order.entity.PhOrderOnline">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+
+  </resultMap>
+    
+  <!-- 根据会员订单号查询订单信息 -->
+  <select id="getMemberOrderByOrderNum" resultType="cm.ph.shopping.facade.order.entity.PhOrderOnline">
+  		SELECT 
+  			  *
+  		  FROM
+  		  	  ph_order_online
+  		 WHERE
+  		 	  orderNo=#{orderNum}
+  </select>
+</mapper>

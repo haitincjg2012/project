@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台系统</title>
+    <head th:include="header::header"></head>
+    <!-- bootstrap-select  css文件 -->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <link rel="stylesheet" th:href="@{/static/js/plugins/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/validat/css/validationEngine.jquery.css}">
+    <style type="text/css">
+        .layui-upload-button {
+            position: relative;
+            display: inline-block;
+            vertical-align: middle;
+            min-width: 60px;
+            height: 32px;
+            line-height: 32px;
+            border: 1px solid #DFDFDF;
+            border-radius: 2px;
+            overflow: hidden;
+            background-color: #fff;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="MainContent">
+    <div class="current">当前位置：<a href="#" alt="">会员卡管理 &gt;</a><a href="/web/memberCard/memberCardListPage" alt="">会员卡列表
+        &gt;</a><span>导入会员卡</span></div>
+    <div class="MainCont ">
+        <div class="mainFrom" style="margin-top: 80px;">
+            <form id="addForm">
+                <!--<div class="upCard">-->
+                <!--<span class="fileBox"><em>浏览</em>未选择文件<input type="file" value="浏览" name=""></span>-->
+                <!--<span class="loginErr"></span>-->
+                <!--</div>-->
+                <table>
+                    <tr>
+                        <td>
+                            <label for="card_outerCode">选择文件：</label>
+                        </td>
+                        <td>
+                            <input size="15" style="font-size: 14px;height: 28px;line-height: 28px" id="file_url"
+                                   onchange="autoSize()" disabled/>
+                        </td>
+                        <td colspan="2">
+                            <input type="file" name="file" id="excelImport">
+                        </td>
+                    </tr>
+                </table>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<script th:src="@{/static/js/plugins/layui/layui.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<!--属性输入框的增加和删除-->
+<script type="text/javascript" th:src="@{/static/js/common/attrbox.js}"></script>
+
+<script type="text/javascript">
+
+    var upload;
+    var layer;
+    $(function () {
+
+        layui.use(['layer', 'upload'], function () {
+            layer = layui.layer;
+            upload = layui.upload;
+            var url = '/web/memberCard/importMemberCard';
+            var index;
+            upload({
+                url: url,
+                elem: '#excelImport',
+                ext: 'xls|xlsx',
+                title: '导入会员卡excel',
+                type: 'file',
+                before: function () {
+                    $('#file_url').val($('#excelImport').val());
+                    autoSize();
+                    index = layer.msg('导入中...', {time: 0});
+                },
+                success: function (data) { //上传成功后的回调
+                    if (data.code == 200) {
+                        layer.close(index);
+                        layer.alert("成功导入：" + data.data.successNum + "条，失败 ：" + data.data.errorNum);
+                    } else {
+                        layer.msg(data.message);
+                    }
+                }
+            });
+        });
+    })
+
+    function autoSize() {
+        var input_size = $("#file_url").val().length;
+        $("#file_url").attr('size', input_size);
+    }
+</script>
+
+</body>
+</html>

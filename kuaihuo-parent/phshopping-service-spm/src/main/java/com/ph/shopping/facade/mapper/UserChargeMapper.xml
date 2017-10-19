@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.ph.shopping.facade.mapper.UserChargeMapper">
+  	<select id="getUserBalance" resultType="com.ph.shopping.facade.spm.vo.BalanceVO" parameterType="java.lang.Long">
+  		select score score1 from ph_user_balance where userId = #{userId}
+  	</select>
+  	
+  	<update id="updateUserChargeByOrderNo">
+  		UPDATE ph_user_charge_record r
+		SET r.chargeType = #{chargeType}, 
+			r.chargeStatus=#{chargeStatus}, 
+			r.updaterId=0, 
+			r.updateTime=NOW(),
+			r.responseCode = #{responseCode}
+		WHERE
+			r.orderNo = #{orderNo}
+  	</update>
+  	
+  	  	<!-- 查询充值状态是否成功 -->
+  	<select id="selectUserChargeRecordChargeStatus" resultType="java.lang.Integer">
+  		select r.chargeStatus  from  ph_user_charge_record r where  r.orderNo = #{orderNo}  for update
+  	</select>
+  	
+  	  <!-- 更新用户余额 -->
+  <update id="updateUserBalance">
+  		update ph_user_balance b set b.score = b.score + #{score},b.updateTime=now() where b.userId=#{userId}
+  </update>
+  
+  	
+  	<select id="countUserChargeTrade" resultType="java.lang.Integer">
+  		SELECT COUNT(0) FROM ph_user_balance_trade WHERE orderNo=#{orderNo}
+  	</select>
+  	
+  	<select id="getUserChargeTemp" resultType="com.ph.shopping.facade.spm.vo.UserChargeVO">
+  		SELECT userId,score,userType FROM ph_user_charge_record WHERE orderNo=#{orderNo}
+  	</select>
+  	
+  	<select id="getMd5Str" resultType="com.ph.shopping.facade.spm.vo.CheckPayVO">
+  		SELECT md5Str,score FROM ph_user_charge_record WHERE orderNo=#{orderNo}
+  	</select>
+</mapper>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台系统</title>
+    <head th:include="header::header"></head>
+    <!-- bootstrap-select  css文件 -->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--图片点击放大 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/viewer/css/viewer.min.css}">
+</head>
+<body>
+<div class="MainContent">
+    <div class="current">当前位置：<a href="javascript:void(0);" alt="">商品分类 &gt;</a><a href="javascript:void(0);" alt="">分类列表 &gt;</a><span>添加分类</span></div>
+    <div class="MainCont ">
+        <form action="" method="post">
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">分类名称:</span>
+                </label>
+                <input type="text" class="left validate[required, maxSize[100]]" placeholder="" name="classifyName"/>
+                <!-- 上级分类id 默认0 由js动态赋值 -->
+                <input type="hidden" class="left" placeholder="" id="parentId" name="parentId" value="0"/>
+                <input type="hidden" class="left" placeholder="" id="classifyLevel" name="classifyLevel" value="1"/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">分类级别:</span>
+                </label>
+                <input type="radio" class="Category-1" name="Category" placeholder="" value="一级分类" />一级分类
+                <input type="radio" class="Category-2" name="Category" placeholder="" value="二级分类"/>二级分类
+                <input type="radio" class="Category-3" name="Category" placeholder="" value="三级分类"/>三级分类
+            </div>
+            <div class="mainFrom Category-parent">
+                <label class="left">
+                    <span class="">上级分类:</span>
+                </label>
+                <select class="selectUp selectpicker" data-live-search="true" id="first"
+                        onchange="getClass(this.options[this.selectedIndex].value,'second');">
+                    <!--<option value="">请选择</option>-->
+                    <option th:each="list:${productClassifyList}" th:value="${list.id}"
+                            th:text="${list.classifyName}"></option>
+                </select>
+                <select class="selectUp selectpicker level3" data-live-search="true" id="second"></select>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">分类排序:</span>
+                </label>
+                <input type="text" class="left validate[required,custom[integer],min[1],max[2147483647]]" name="sort"/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="">图标:</span>
+                </label>
+                <div class="content-box">
+                    <div class="img-box addIndustry">
+                        <div class="img-box full">
+                            <section class=" img-section">
+                                <div class="z_photo upimg-div">
+                                    <section class="z_file left">
+                                        <img src="/static/images/add.png" class="add-img">
+                                        <input type="file" name="file" id="file" class="file" value=""
+                                               accept="image/jpg,image/jpeg,image/png,image/bmp" multiple/>
+                                    </section>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="">分类描述:</span>
+                </label>
+                <textarea id="container" name="description" style="margin-left:15px;width: 800px;height: 160px;border: 1px solid #eee;"></textarea>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="">是否启用:</span>
+                </label>
+                <input type="radio" name="status" placeholder="启用" value="1" checked="checked"/>启用
+                <input type="radio" name="status" placeholder="不启用" value="0"/>不启用
+            </div>
+            <input type="hidden" id="levleHidden" value=""/>
+        </form>
+        <div class="PopupBtn btnLeft" style="margin-bottom: 20px;margin-left: 40px">
+            <shiro:hasPermission name="classifyAdd">
+            <input class="submit addCategories_save " name="" type="button" value="保存">
+            </shiro:hasPermission>
+            <input class="cancel addCategories_cancel" name="" type="button" value="取消">
+
+        </div>
+        <!--商品规格组结束-->
+        <!--规格展示表格-->
+
+    </div>
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<!--图片上传插件-->
+<script type="text/javascript" th:src="@{/static/js/common/imgUp.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<!--属性输入框的增加和删除-->
+<script type="text/javascript" th:src="@{/static/js/common/attrbox.js}"></script>
+<!--图片点击放大-->
+<script type="text/javascript" th:src="@{/static/js/plugins/viewer/viewer-jquery.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript"  th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    $(function() {
+        $("#first").trigger("change");
+        //验证初始化
+        $('form').validationEngine({
+            validationEventTrigger: 'keyup blur'//触发验证的事件，支持事件可参考 jQuery 的事件说明。
+            ,scroll: true//	屏幕自动滚动到第一个验证不通过的位置。
+            ,focusFirstField: true//验证未通过时，是否给第一个不通过的控件获取焦点。
+            ,validateNonVisibleFields: false//是否验证不可见的元素（如 type="hidden" 的输入框，或多个输入控件在选项卡切换中）
+            ,promptPosition:'bottomLeft:20 0'
+            ,addPromptClass:'formError-text'
+        });
+
+        //保存
+        $(".addCategories_save").click(function(){
+            var flag = $("form").validationEngine("validate");
+            if(!flag){
+                return false;
+            }
+            //处理父级id
+            if($('input.Category-1').is(":checked")){
+                $("#parentId").val(0);//父级id
+                $("#classifyLevel").val(1);//分类级别
+            }
+            if($('input.Category-2').is(":checked")){
+                $("#parentId").val($('#first').val());
+                $("#classifyLevel").val(2);
+            }
+            if($('input.Category-3').is(":checked")){
+                $("#parentId").val($('#second').val());
+                $("#classifyLevel").val(3);
+            }
+
+            $.ajax({
+                async       : false,
+                type 		: "POST",
+                url		    : "/web/product/productClassify/addClassify",
+                data 		: $("form").serialize(),
+                success 	: function(data) {
+                    if(data.success ==true){
+                        layer.confirm('新增商品分类成功',{
+                            title: "成功",
+                            icon: 1,
+                            btnAlign: 'c',
+                            closeBtn : 0,
+                            btn: ['继续添加', '返回'],
+                            btn1: function(index){
+                                goOn();//继续添加
+                                layer.close(index);
+                            },
+                            btn2: function(){
+                                window.location.href="/web/product/productClassify/toClassifyList";
+                            }
+                        });
+                    } else {
+                        layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                    }
+                }
+            });
+
+        });
+
+        //取消
+        $(".addCategories_cancel").click(function(){
+            window.location.href="/web/product/productClassify/toClassifyList";
+        });
+
+        //页面清空操作
+        var ckk='';//保存分类级别勾选项
+        var s1='';//保存二级分类上级
+        var s2='';//保存三级分类上级
+        ckk=$('input[name="Category"]:checked').attr('class');
+        $('input[name="Category"]').click(function () {
+            ckk=$('input[name="Category"]:checked').attr('class');
+
+        })
+        $('select.selectUp').change(function () {
+            s1=$('span.filter-option').eq(0).text();
+            s2=$('span.filter-option').eq(1).text();
+        })
+        //继续添加
+       function goOn() {
+//           var pid = $("#parentId").val();
+//           var level = $("#classifyLevel").val();
+//            $('form')[0].reset();
+//            $('.up-section').remove();
+//            $('input.'+ckk+'').prop('checked',true);
+//            $('input[name="enable"]').eq(0).prop('checked',true);
+//           var pid = $("#parentId").val(pid);
+//           var level = $("#classifyLevel").val(level);
+
+           window.location.reload();
+        }
+
+        var value=$('#file').attr('value');
+        $("#file" + value).takungaeImgup({
+            formData: {
+                'module': 'classify',
+                'name':'url',
+                'filesname':'urlfile'
+            },
+            url: '/web/attachment/upload',
+            maxImage:1,
+            success: function(data) {
+            },
+            error: function(err) {
+                layer.alert(err,{icon: 2,btnAlign: 'c', closeBtn : 0});
+            }
+        });
+        $('.zoom-img').viewer({
+            url: 'src',
+            navbar: false,
+            keyboard: true,
+            title: true
+        });
+
+    });
+
+    //分类联动方法
+    function getClass(id,level){
+        $("#levleHidden").val("");
+        $("#levleHidden").val(level);
+        if(level=="second"){
+            document.getElementById("second").options.length=0;
+            $("#second").prepend("<option value=''>全部</option>");
+            $('.selectpicker').selectpicker('refresh');
+        }
+        if(id!=""){
+            $.ajax({url:'/web/product/productClassify/selectClass?id='+id,dataType:"json",type:"post",success:savecallbackOne,error:function(data){
+                alert("与服务器连接中断");
+            }});
+        }
+    }
+    function savecallbackOne(data){
+        var levle=$("#levleHidden").val();
+        if(levle=="second"){
+            $("#three").find("option").remove();
+            $('.selectpicker').selectpicker('refresh');
+
+        }
+        $("#"+levle).find("option").remove();
+        for(var i=0; i<data.data.length;i++){
+            $("#"+levle).append("<option value='"+data.data[i].id+"'>"+data.data[i].classifyName+"</option>");
+        }
+        $('.selectpicker').selectpicker('refresh');
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.hunterservicerule.HunterServiceRuleDao">
+
+	
+	<!--批发商服务法则列表 内容 -->
+	<select id="getRuleContentList" resultType="Map" parameterType="map">
+		SELECT r.id, r.content,r.hunter_id  FROM `alq_hunter_rule` r   where    r.id=#{id}  and   (is_deleted =0 or is_deleted is null)
+	</select>
+	<!--批发商服务法则列表 图片集合-->
+	<select id="getRuleImgList" resultType="Map" parameterType="map">
+		SELECT aa.address,aa.id FROM `alq_hunter_rule_attachment` aa  where hunter_rule_id=#{id}
+	</select>
+	
+	
+</mapper>

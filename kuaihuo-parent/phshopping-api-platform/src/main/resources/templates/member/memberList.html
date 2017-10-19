@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"  xmlns:th="http://www.thymeleaf.org" 
+		xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>会员列表</title> 
+    <head th:include="header::header"></head>
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--日期  css文件-->
+    <link rel="stylesheet" th:href="@{/static/js/datepicker/css/bootstrap-datepicker.css}">
+    <!--弹窗 css文件-->
+    <link rel="stylesheet" th:href="@{/static/js/plugins/layer/layer.css}">
+    <!--图片点击放大  css文件-->
+    <link rel="stylesheet" th:href="@{/static/js/plugins/viewer/css/viewer.min.css}">
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">会员管理</a>&nbsp;&gt;&nbsp;<span>会员列表</span></div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+            <h2>会员列表</h2>
+            <div class="ph_snbBtn"><shiro:hasPermission name="memberAdd"><input id="addMemberBtn" name="" type="button" onclick="openAddMember()" class="Js_addLinkman" value="添加会员"></shiro:hasPermission></div>
+        </div>
+        <!--end 标题-->
+        <!--筛选条件-->
+        <shiro:hasPermission name="memberQuery">
+        <div class="ph_screen">
+            <table class="ph_tableBox">
+                <tr>
+                    <th>会员账号：</th>
+                    <td><input id="telPhone" name="telPhone" type="text"></td>
+                    <th>会员姓名：</th>
+                    <td><input id="memberName" name="memberName" type="text"></td>
+                    <th>注册时间：</th>
+                    <td colspan="2">
+                        <p class="dayBox"><input class="start_rise date start" id="createStartTime" name="createStartTime" type="text" >&nbsp;-&nbsp;<input class="start_rise date end" id="createEndTime" name="createEndTime" type="text" ></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th>状态：</th>
+                    <td>
+                        <select id="status" class="selectpicker">
+                            <option value="">全部</option>
+		                    <option value="2">正常</option>
+		                    <option value="3">冻结</option>
+                        </select>
+                    </td>
+                    <th>实名认证：</th>
+                    <td>
+                        <select id="certification" class="selectpicker">
+                            <option value="">全部</option>
+		                    <option value="1">未认证</option>
+		                    <option value="2">已认证</option>
+		                    <!--<option value="3">待审核</option>-->
+                        </select>
+                    </td>
+                    <th>会员类型：</th>
+                    <td>
+                        <select id="isMarketing" name="isMarketing" class="selectpicker">
+                            <option value="">全部</option>
+		                    <option value="1">业务员</option>
+		                    <option value="2">会员</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input name="" type="button" onclick="query();" value="查询"><input name="" type="button" onclick="reset();" value="重置">
+                    </td>
+                </tr>
+            </table>
+        </div>
+        </shiro:hasPermission>
+        <!--end 筛选条件-->
+        <!--会员列表-->
+        <div class="ph_wareBox">
+            <table class="ph_wareList"id="memberDataTables">
+            </table>
+        </div>
+        <!--end 会员列表-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<!--添加联系人弹窗-->
+<div class="PopupBox" id="Js_addLinkman">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <form class="form-inline" id="add_member_verify">
+                <table class="ph_tableBox">
+                    <tr>
+                        <th><span class="require">*</span>登录手机：</th>
+                        <td><input class="left validate[required,custom[phone],maxSize[11]]" id="add_telPhone" name="add_telPhone" type="text"></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 添加联系人弹窗-->
+<!--升级推广师弹窗-->
+<div class="PopupBox" id="Js_divisionBox">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <form class="form-inline" >
+                <table class="ph_tableBox">
+                    <tr>
+                        <th>三方账号：</th>
+                        <td><input id="account" name="account" type="text"></td>
+                    </tr>
+                    <tr>
+                        <th><span class="require">*</span>推广师证件：</th>
+                        <td style="width:80%;">
+                        	<div id="business_img" class="image-control">
+			                    <input type="hidden" name="url" id="url"/>
+			                </div>
+			                <div style="text-align: left">
+			                    <input type="button" class="btn btn-success" onclick='$("#businessFile").click()' value="上传图片"/>
+			                </div>
+                    </tr>
+                </table>
+            </form>
+            	<!-- 图片上传Form  -->
+		    <form method="post" id="uploadForm1" enctype="multipart/form-data">
+		       <input style="width:0px;height:0px; border:none; float:left; margin-left:100px; margin-top:-30px;" type="file"
+		              id="businessFile" name="urlfile"
+		              onchange="doUpload('businessFile','uploadForm1','business_img','url')"/>
+		       <input style="width:0px;height:0px; border:none; float:left; margin-left:100px; margin-top:-30px;"
+		              name="type" value="1"/>
+		       <input style="width:0px;height:0px; border:none; float:left; margin-left:100px; margin-top:-30px;"
+		              name="module" value="supplier"/>
+		    </form>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 升级推广师弹窗-->
+<!-- 图片放大模态框 -->
+<div class="modal fade" id="imageModel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">图片</h4>
+            </div>
+            <div class="modal-body">
+            	<img id="viewImage" src="">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<!--end 图片放大模态框-->
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<!--分页-->
+<script type="text/javascript" th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<!--弹窗-->
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!--日期控件-->
+<script type="text/javascript" th:src="@{/static/js/datepicker/bootstrap-datepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/datepicker/jquery.timepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/datepicker/jquery.datepair.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/datepicker/datepicker.js}"></script>
+<!-- 图片点击放大 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/viewer/viewer-jquery.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/imgUp.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+	var tb;
+	var addMemberLayer;
+	var upgradePromotionLayer;
+    $(function() {
+       
+        //验证初始化
+        $('#add_member_verify').validationEngine({
+            validationEventTrigger: 'keyup blur'//触发验证的事件，支持事件可参考 jQuery 的事件说明。
+            ,scroll: true//	屏幕自动滚动到第一个验证不通过的位置。
+            ,focusFirstField: true//验证未通过时，是否给第一个不通过的控件获取焦点。
+            ,validateNonVisibleFields: false//是否验证不可见的元素（如 type="hidden" 的输入框，或多个输入控件在选项卡切换中）
+            ,promptPosition:'bottomLeft'//位置
+            ,addPromptClass:'formError-text'//提示纯文本样式
+            ,autoPositionUpdate:false
+        });
+        
+        //分页
+        tb = $('#memberDataTables').DataTable({
+            "lengthChange": false,
+            "ordering": false,
+            "searching": false,
+            "bServerSide": true,
+            "autoWidth": false,
+            "sPaginationType": "full_numbers",
+            "bJQueryUI": true,
+            "sDom": '<"">t<"F"ip>',
+            "sAjaxSource": "/web/member/list", //ajax调用接口
+            "aoColumnDefs": [{sDefaultContent: '',aTargets: [ '_all' ]}],
+            "aoColumns": [
+				  	{ "sTitle" : "ID","mData": "id" ,"class":"sClass"},
+				  	{ "sTitle" : "头像","mData": "headImage","class":"sClass" ,"mRender":function(data,type,full) {
+		                	if (full.headImage) {
+			                	return  '<img class="show-img zoom-img" src="' + full.headImage + '" alt="">';
+		                	}
+		                	return '';
+	                	} 
+				  	},
+	                { "sTitle" : "会员账号","mData": "telPhone","class":"sClass" },
+	                { "sTitle" : "注册时间","sWidth": "180px","mData": "createTime","class":"sClass" },
+	                { "sTitle" : "实名认证","mData": "certification","class":"sClass" ,"mRender":function(data, type, full){
+		                	var text;
+	                    	if(full.certification==1){
+	                    		text="<font color='#C7C7C7'>未认证</font>";
+	                    	}else if(full.certification==2){
+	                    		text="<font>已认证</font>";
+	                    	}else if(full.certification==3){
+	                    		text="<font color='#C7C7C7'>待审核</font>";
+	                    	}
+	                		return text;
+	    				}
+                	},
+	                { "sTitle" : "会员姓名","mData": "memberName","class":"sClass" },
+	                { "sTitle" : "身份证号","mData": "idCardNo","class":"sClass" },
+	                { "sTitle" : "会员类型","mData": "isMarketing","class":"sClass" ,"mRender":function(data, type, full){
+	                		var text;
+	                    	if(full.isMarketing==1){
+	                    		text="<font>业务员</font>";
+	                    	}else if(full.isMarketing==2){
+	                    		text="<font>会员</font>";
+	                    	}
+	                		return text;
+	    				}
+	                },
+	                { "sTitle" : "状态","mData": "status","class":"sClass" ,"mRender":function(data, type, full){
+	                		var text;
+	                    	if(full.status==2){
+	                    		text="<font>正常</font>";
+	                    	}else if(full.status==3){
+	                    		text="<font color='#C7C7C7'>冻结</font>";
+	                    	}
+	                		return text;
+						}
+	                },
+	                {
+	                    "sWidth": "110px",
+	                    "sTitle": "操作",
+	                    "mData": "id",
+	                    "sClass": "ph_tableShow",
+	                    "mRender": function (data, type, full) {
+	                    	  var text = '<div class="ph_operateBox"><input class="ph_operate" name="" type="button" value="操作选项">';
+	                    	  text = text + '<ul class="ph_operateList hide" role="menu">';
+							  if(full.status == 3){
+								  if ([[${session.memberRelievefrozen}]]) {
+								  		text += "<li><a class='Js_btn' href='javascript:relievefrozen("+full.id+");'>解冻</a></li>";
+								  }
+							  }else if(full.status == 2){
+								  if ([[${session.memberFrozen}]]) {
+								  		text += "<li><a class='Js_btn' href='javascript:frozen("+full.id+");'>冻结</a></li>";
+								  }
+							  }
+							  if(full.isMarketing == 2){
+								  if ([[${session.memberUpgradePromotion}]]) {
+								  		text += '<li class="divider"></li>';
+								  		text += "<li><a class='Js_division' href='javascript:openUpgradePromotion("+full.id+");'>升级为推广师</a></li>";
+								  }
+							  }
+							  text = text + '</ul></div>';
+							  if([[${session.memberRelievefrozen}]] && [[${session.memberFrozen}]] || [[${session.memberUpgradePromotion}]]){
+								  return text;
+							  }else{
+								  return "-";
+							  }
+						} 
+	                }
+             ],
+            "oLanguage" : {
+                "sProcessing" : "数据加载中······",
+                "sLengthMenu" : "显示 _MENU_ 条记录",
+                "sZeroRecords" : "没有您要搜索的内容！",
+                "sEmptyTable" : "列表中无数据存在！",
+                "sInfo" : "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+                "sInfoEmpty" : "显示 0 到 0 条记录",
+                "sInfoFiltered" : "数据列表中共  _MAX_ 条记录",
+                "oPaginate" : {
+                    "sFirst" : "首页",
+                    "sPrevious" : "上一页",
+                    "sNext" : "下一页",
+                    "sLast" : "末页"
+                }
+            },
+            "fnServerData" : function ( sSource, aoData, fnCallback, oSettings ) {
+                oSettings.jqXHR = $.ajax( {
+                    "dataType" 	: 'json',
+                    "type" 		: "GET",
+                    "async"     : 'false',
+                    "url" 		: sSource,
+                    "data" 		: {
+                        'pageNum': (aoData[3].value/aoData[4].value)+1,
+                        'pageSize' :  aoData[4].value,
+                        'telPhone'  :  $("#telPhone").val(),
+						'memberName' : $('#memberName').val(),
+						'status' : $('#status').val(),
+						'isMarketing' :$('#isMarketing').val(),
+						'certification' :$('#certification').val(),
+						'createStartTime' : $('#createStartTime').val(),
+						'createEndTime' : $('#createEndTime').val()
+                    },
+                    "success"	: fnCallback
+                } );
+            },
+            "fnInitComplete": function (oSettings, json) {
+                //点击图片放大初始化
+                $('.zoom-img').viewer({
+                    url: 'src',
+                    navbar: false,
+                    keyboard: true,
+                    title: true
+                });
+            },
+            "fnDrawCallback": function (){
+            	//点击图片放大初始化
+                $('.zoom-img').viewer({
+                    url: 'src',
+                    navbar: false,
+                    keyboard: true,
+                    title: true
+                });
+            }
+        });
+    });
+    
+    //条件查询重新加载数据
+    function query() {
+        tb.draw();
+    };
+	
+    //打开添加会员页面
+    function openAddMember(){
+    	addMemberLayer=layer.open({
+            type: 1,
+            title: '添加会员',
+            closeBtn : 0,
+            area: ['442px','180px'],
+            btn:['保存', '取消'],
+            content: $('#Js_addLinkman'),
+            btn1: function(index){
+            	addMember();
+    		}
+        });
+    }
+    
+    //添加会员数据提交
+    function addMember(){
+    	//表单验证
+    	var flag = $("form").validationEngine("validate");
+        if(!flag){
+            return false;
+        }
+		var telPhone = $('#add_telPhone').val();//手机号，这里id用add_telPhone是为了和查询条件区分
+		$.ajax({
+			type:'post', 
+			url:"/web/member/addMember",
+			data:{"telPhone":telPhone},
+			dataType:'json',
+			error:function(){
+				alert("服务端错误,请检查网络");
+			},
+			success:function(data){
+				if(data.code == "200"){
+					var successLayer = layer.alert(data.message, {
+                        icon: 1,
+                        title: '提示',
+                        closeBtn: 0,
+                        btnAlign: 'c',
+                        btn1: function () {
+         				   layer.closeAll();
+                        }
+                    });
+					tb.draw();
+				}else{
+					var failLayer = layer.alert(data.message, {
+                         icon: 2,
+                         title: '失败',
+                         closeBtn: 0,
+                         btnAlign: 'c',
+                         btn1: function () {
+         					layer.close(failLayer);
+                         }
+                     });
+				}
+			}
+		});
+    }
+    
+    //打开升级为推广师页面
+    function openUpgradePromotion(memberId){
+		//页面数据清空
+    	$("#business_img").css({
+			"background-image": "url('')",
+            "height": "0px",
+            "background-size": "0% 0%"
+        });
+        $("#url").val(null);
+        $('#account').val(null);
+        var shang = $("#sc");
+        if (shang) {
+            shang.remove();
+        }
+        //打开页面
+        upgradePromotionLayer = layer.open({
+            type: 1,
+            title: '升为推广师',
+            closeBtn : 0,
+            area: ['442px','350px'],
+            btn:['确定', '取消'],
+            content: $('#Js_divisionBox'),
+            btn1: function(index){
+            	upgradePromotion(memberId);//升级为推广师
+    		},
+            btn2: function(index){
+    		}
+        });
+    }
+    
+    //升级为推广师数据提交
+    function upgradePromotion(memberId){
+    	//------------验证照片有没有上传完整-----------
+		if($("#url").val()==""){
+         	alert("请上传推广师证件照片!");
+         	return;
+        }
+		var account = $('#account').val();//三方账号
+		var url  = $('#url').val();//图片url
+		$.ajax({
+			type:'post', 
+			url:"/web/member/memberUpgradePromotion",
+			data:{"account":account,"url":url,"memberId":memberId},
+			dataType:'json',
+			error:function(){
+				alert("服务端错误,请检查网络");
+			},
+			success:function(data){
+				if(data.code == "200"){
+					var successLayer = layer.alert(data.message, {
+                        icon: 1,
+                        title: '提示',
+                        closeBtn: 0,
+                        btnAlign: 'c',
+                        btn1: function () {
+         				   layer.closeAll();
+                        }
+                    });
+					tb.draw(false);
+				}else{
+					var failLayer = layer.alert(data.message, {
+                        icon: 2,
+                        title: '失败',
+                        closeBtn: 0,
+                        btnAlign: 'c',
+                        btn1: function () {
+                        	layer.close(failLayer);
+                        }
+                    });
+				}
+			}
+		});
+    }
+    
+	//冻结会员
+   function frozen(id){
+	   layer.confirm('是否冻结该会员？', {
+		   icon: 3,
+		   btn: ['是','否'] //按钮
+		 }, function(){
+			 var url = "/web/member/frozenMember";
+			   $.post(url,{"id":id},function(data){
+				   if(data.code == "200"){
+					   layer.msg("冻结会员成功");
+					   tb.draw(false);
+				   }else{
+					   layer.msg("冻结会员失败");
+				   }
+		     });
+	   });
+   }
+	
+	//解除冻结
+   function relievefrozen(id){
+	   layer.confirm('是否为该会员解除冻结？', {
+		   btn: ['是','否'] //按钮
+		 }, function(){
+			 var url = "/web/member/relievefrozenMember";
+			 $.post(url,{"id":id},function(data){
+				   if(data.code == "200"){
+					   layer.msg("解冻会员成功");
+					   tb.draw(false);
+				   }else{
+					   layer.msg("解冻会员失败");
+				   }
+		     });
+	   });
+   }
+	
+	//图片上传
+   function doUpload(id, form, img, url) {
+       var shang = $("#sc");
+       if (shang) {
+           shang.remove();
+       }
+       var file = $("#" + id).val();
+       if (checkImgType(file)) {
+           $("#" + img).append(" <div style='text-align: center;color: white;background-color: silver;opacity:0.5' id='sc'> 上传中...</div>");
+           var formData = new FormData($("#" + form)[0]);
+
+           $.ajax({
+               url: '/web/attachment/upload', /*这是处理文件上传的servlet*/
+               type: 'POST',
+               data: formData,
+               async: true,
+               contentType: false,
+               processData: false,
+               dataType: "json",
+               success: function (d) {
+                   if (d.success) {
+                       $("#" + url).val(d.data);
+                       $("#" + img).css({
+                           "background-image": "url('" + d.data + "')",
+                           "height": "100px",
+                           "background-repeat":"no-repeat",
+                           "background-size": "85% 100%"
+                       });
+                       $("#" + img).css({"height": "120px"});
+                       $("#" + id).val(null);
+                       $("#sc").remove();
+                   } else {
+                       alert(d.message);
+                   }
+               },
+               error: function (d) {
+                   alert("失败");
+                   $("#sc").css({
+                       "background-color": "red",
+                   });
+                   $("#sc").html("上传失败");
+               }
+           });
+       }
+   }
+
+    //判断图片类型 true-符合要求,false-不符合
+    function checkImgType(file) {
+        if (file == null || file == "") {
+            return false;
+        }
+        if (file.lastIndexOf('.') == -1) {    //如果不存在"."
+            alert("路径不正确!");
+            return false;
+        }
+        var AllImgExt = ".jpg|.jpeg|.gif|.bmp|.png|";
+        var extName = file.substring(file.lastIndexOf(".")).toLowerCase();//（把路径中的所有字母全部转换为小写）
+        if (AllImgExt.indexOf(extName + "|") == -1) {
+            ErrMsg = "该文件类型不允许上传。请上传 " + AllImgExt + " 类型的文件，当前文件类型为" + extName;
+            alert(ErrMsg);
+            return false;
+        }
+        return true;
+    }
+	
+    //重置查询条件
+    function reset(){
+    	$('#telPhone').val('');
+		$('#memberName').val('');
+    	$('#createStartTime').val('');
+		$('#createEndTime').val('');
+	    $("#status").selectpicker('val', "");
+    	$('#isMarketing').selectpicker('val', "");
+    	$('#certification').selectpicker('val', "");
+    }
+</script>
+</body>
+</html>

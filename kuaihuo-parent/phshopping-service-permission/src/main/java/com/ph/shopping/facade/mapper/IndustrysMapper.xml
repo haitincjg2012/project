@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IndustrysMapper">
+    <sql id="indusryBaseId">
+             id as id,
+           DATE_FORMAT(created_time,'%Y-%m-%d %H:%i')   as createdTime,
+             name as name,
+             sortnum as sortnum,
+             is_top as isTop,
+            DATE_FORMAT(top_date,'%Y-%m-%d %H:%i')  as topDate
+
+    </sql>
+    <!--行业分类获取首页数据-->
+    <select id="getIndustryDataList" resultType="com.ph.shopping.facade.member.vo.IndustryVO">
+               SELECT      <include refid="indusryBaseId"></include>
+        from alq_industry_type where is_delete !=1 and parent_id is null order by top_date,created_time desc
+    </select>
+
+    <!--添加图片地址到attachment表-->
+    <insert id="addPicture" >
+       insert into alq_attachment(address,name,created_time,update_time) values(#{address},#{name},NOW(),NOW());
+
+    </insert>
+
+    <!--查询attachment-->
+    <select id="selectPicture" resultType="com.ph.shopping.facade.member.entity.Attachment">
+
+     select * from alq_attachment where address=#{address} and name=#{name}
+    </select>
+
+    <!--保存行业分类-->
+    <insert id="addIndustry">
+      <!--insert into alq_industry_type (attachment_id,created_time,update_time,is_delete,name) value (#{id},NOW(),NOW(),0,#{name})-->
+        insert into alq_industry_type (attachment_id,created_time,update_time,is_delete,name,is_top,top_date)
+        value (#{id},NOW(),NOW(),0,#{name},#{isTop},NOW())
+    </insert>
+
+    <!--删除选中行-->
+    <select id="deleteIndustry">
+
+        update alq_industry_type  set is_delete =1 where id =#{id}
+    </select>
+
+    <!--编辑行业分类-->
+    <select id="editIndustry">
+         update alq_industry_type  set name=#{name},is_top=#{isTop},top_date=NOW() where id =#{id}
+
+
+    </select>
+
+    <!--查询一级分类-->
+    <select id="findFirstIndustry" resultType="map">
+       select id,name from alq_industry_type where parent_id is null and is_delete !=1;
+    </select>
+
+    <select id="addSecondIndstry" >
+        insert alq_industry_type (created_time,update_time,name,is_delete,parent_id)
+        value(NOW(),NOW(),#{name},"0",#{id});
+    </select>
+</mapper>

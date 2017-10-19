@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://code.alibabatech.com/schema/dubbo
+       http://code.alibabatech.com/schema/dubbo/dubbo.xsd"
+	default-lazy-init="true">
+
+	<!-- 生成远程服务代理，可以和本地bean一样使用demoService 不需要webservice注解，只需要正常的服务类即可 -->
+	<dubbo:reference id="rpcZhiFuService"
+		interface="com.alqsoft.rpc.mobile.RpcZhiFuService"  check="false" cache="false" />
+
+</beans>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>app会员分享</title>
+	<link rel="stylesheet" th:href="@{/css/models.css}">
+</head>
+<body>
+	<div class="MainContent">
+		<div class="MainCont MainWelError">
+			<div class="ph_errorBox">
+				<p class="errorTxt">很抱歉，您访问的页面不存在！</p>
+				<p class="errorImg"><img th:src="@{/images/404.png}" alt="" width="100%"></p>
+				<!-- <div class="PopupBtn">
+					<input name="" type="button" onclick="jumpIndex()" value="返回首页">
+					<input name="" type="button" onclick="backTop()" value="返回上一页">
+				</div> -->
+			</div>
+		</div>
+	</div>
+</body>
+<script th:inline="javascript">
+	// 跳转到首页
+	function jumpIndex(){
+		window.location.href="/";
+	}
+	// 跳转到上一页
+	function backTop(){
+		window.history.back(-1); 
+	}
+</script>
+</html>

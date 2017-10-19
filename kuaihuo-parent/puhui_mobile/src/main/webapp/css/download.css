@@ -1,0 +1,76 @@
+.download{
+	width: 36.0rem;
+	height: 64.0rem;
+}
+.download img{
+	width: 36.0rem;
+}
+.download{
+    position: relative;
+}
+.download a{
+    display: inline-block;
+    width: 13.6rem;
+    height: 4.2rem;
+    position: absolute;
+    border-radius: 20px;
+}
+.android{
+    top: 16.6rem;
+    left: 3.49rem;
+}
+.ios{
+    top:16.6rem;
+    right:3.46rem;
+}
+#test {
+    width: 36.0rem;
+	height: 64.0rem;
+    background-color:#000;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:2;
+    opacity:0.3;
+    /*兼容IE8及以下版本浏览器*/
+    filter: alpha(opacity=30);
+    display:none;
+}
+#dialog{
+    background-color:#fff;
+    border:1px solid #C6C6C6;
+    height: 8.1rem;
+    left:50%;
+    margin:-200px 0 0 -260px;
+    padding:1px;
+    position:fixed !important; /* 浮动对话框 */
+    position:absolute;
+    top:60%;
+    width: 19rem;
+    z-index:5;
+    border-radius:5px;
+    display:none;
+}
+.message_1{
+    width: 19rem;
+    height: 8.1rem;
+}
+.message_1 p{
+    font-size: 2.0rem;
+    padding: 1.5rem 2rem;
+}
+.btn_33{
+  text-align: center;
+}
+.queding_1{
+    font-size: 1.0rem;
+    display: inline-block;
+    border: 1px solid #FF9933;
+    width: 3.5rem;
+    height: 1.8rem;
+    line-height: 1.8rem;
+    text-align: center;
+    border-radius: 5px;
+    color: #fff;
+    background-color: #FF9933;
+}

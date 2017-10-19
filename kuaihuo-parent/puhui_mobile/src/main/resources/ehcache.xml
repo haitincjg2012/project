@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="ehcache.xsd" updateCheck="true"
+	monitoring="autodetect" dynamicConfig="true">
+	<diskStore path="java.io.tmpdir" />
+	<defaultCache maxElementsInMemory="10000" overflowToDisk="true"
+		eternal="false" memoryStoreEvictionPolicy="LRU" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="600" timeToIdleSeconds="900"
+		timeToLiveSeconds="3600" diskPersistent="false" />
+
+	<!--timeToIdleSeconds：就是访问这个cache中元素的最大间隔时间。如果超过这个时间没有访问这个cache中的某个元素，那么这个元素将被从cache中清除； 
+		timeToLiveSeconds：这是cache中元素的生存时间。意思是从cache中的某个元素从创建到消亡的时间，从创建开始计时，当超过这个时间，这个元素将被从cache中清除。这两个参数根据需要进行配置 -->
+	<cache name="SimplePageCachingFilter" maxElementsInMemory="10000"
+		overflowToDisk="true" eternal="false" memoryStoreEvictionPolicy="LRU"
+		maxElementsOnDisk="10000000" diskExpiryThreadIntervalSeconds="600"
+		timeToIdleSeconds="900" timeToLiveSeconds="3600" diskPersistent="false" />
+</ehcache>

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.ShopCartMapper">
+	<resultMap id="BaseResultMap" type="cm.ph.shopping.facade.order.entity.ShopCart">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="create_user" property="createUser" jdbcType="VARCHAR" />
+		<result column="created_ip" property="createdIp" jdbcType="VARCHAR" />
+		<result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="buy_num" property="buyNum" jdbcType="BIGINT" />
+		<result column="member_id" property="memberId" jdbcType="BIGINT" />
+		<result column="product_specification_id" property="productSpecificationId"
+			jdbcType="BIGINT" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, create_user, created_ip, created_time, update_time,
+		buy_num,
+		member_id, product_specification_id
+	</sql>
+
+	<!--VO -->
+	<resultMap id="BaseVoResult" type="cm.ph.shopping.facade.order.vo.ShopCartVO">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="buyNum" property="buyNum" jdbcType="BIGINT" />
+		<result column="type" property="type" jdbcType="TINYINT" />
+		<result column="price" property="price" jdbcType="BIGINT" />
+		<result column="hopetime" property="hopetime" jdbcType="DATE" />
+		<result column="memberId" property="memberId" jdbcType="BIGINT" />
+		<result column="merchantId" property="merchantId" jdbcType="BIGINT" />
+		<result column="count" property="count" jdbcType="BIGINT" />
+		<result column="dishId" property="dishId" jdbcType="BIGINT" />
+		<result column="isDelete" property="isDelete" jdbcType="BIGINT" />
+		<result column="merchantName" property="merchantName" jdbcType="VARCHAR" />
+	</resultMap>
+
+
+
+	<!--查询列表 -->
+	<select id="getShopCart" resultMap="BaseVoResult" parameterType="java.util.Map">
+		SELECT
+		cart.id,IFNULL(cart.buyNum,0)
+		buyNum,cart.memberId,hunter.merchantName,p.id productId,p.dishName,
+		hunter.id hunterId,
+		p.money price,ifnull(p.dCount,0)
+		count,p.type,p.isDelete,
+		cart.hopeTime hopetime
+		FROM ph_shop_cart cart
+		,ph_member m ,
+		ph_dish p ,
+		ph_merchant hunter
+		WHERE cart.memberId=m.id
+		AND cart.merchantId=hunter.userId AND cart.dishId=p.id
+		<!-- AND hunter.id=p.merchantId -->
+		and m.id=#{memberid}
+		and hunter.userId =
+		#{merchantid}
+		AND p.id=#{dishid}
+	</select>
+	<!--查询列表 快火二期-->
+	<select id="getShopCart2" resultMap="BaseVoResult" parameterType="java.util.Map">
+		SELECT
+		cart.id,IFNULL(cart.buyNum,0)
+		buyNum,cart.memberId,hunter.merchantName,p.id productId,p.dishName,
+		hunter.id hunterId,
+		p.money price,ifnull(p.dCount,0)
+		count,p.type,p.isDelete,
+		cart.hopeTime hopetime
+		FROM ph_shop_cart cart
+		,ph_member m ,
+		ph_dish p ,
+		ph_merchant hunter
+		WHERE cart.memberId=m.id
+		AND cart.merchantId=hunter.userId AND cart.dishId=p.id
+		<!-- AND hunter.id=p.merchantId -->
+		and m.id=#{memberid}
+		and hunter.userId =
+		#{merchantid}
+		AND p.id=#{dishid}
+		AND cart.orderId=#{orderid}
+	</select>
+	<!-- 查询购物车列表 -->
+	<select id="getShopCartList" resultMap="BaseVoResult"
+		parameterType="java.util.Map">
+		SELECT
+		cart.id,IFNULL(cart.buyNum,0)
+		buyNum,cart.memberId,hunter.merchantName,p.id productId,p.dishName,
+		hunter.id hunterId,
+		p.money price,ifnull(p.dCount,0)
+		count,p.type,p.isDelete,
+		cart.hopeTime hopetime
+		FROM ph_shop_cart cart
+		,ph_member m ,
+		ph_dish p ,
+		ph_merchant hunter
+		WHERE cart.memberId=m.id
+		AND cart.merchantId=hunter.userId AND cart.dishId=p.id
+		and m.id=#{memberid}
+		and hunter.userId =#{merchantid}
+		and ifnull(p.isDelete,0)=0
+	</select>
+	<!-- 获取购物车中商品的类型 -->
+	<select id="getShopcarType" resultType="Integer" parameterType="java.util.Map">
+	
+	SELECT cart.type FROM ph_shop_cart cart WHERE  cart.memberId=#{memberid} AND cart.merchantId=#{merchantid}
+	</select>
+	
+	<!--获取用户所有店铺信息 -->
+	<!-- <select id="getShopCartListByMemberId" resultMap="BaseVoResult" parameterType="java.lang.Long"> 
+		SELECT DISTINCT hunter.nickname,hunter.id hunterId FROM alq_shop_cart cart 
+		, alq_product_specification ps ,alq_product p , alq_hunter hunter WHERE cart.product_specification_id=ps.id 
+		AND ps.product_id=p.id and p.status = 1 and ifnull(hunter.state,1)=1 AND 
+		hunter.id=p.hunter_id AND cart.member_id =#{uid,jdbcType=BIGINT} </select> -->
+
+	<!--获取购物车信息 -->
+	<!-- <select id="getShopCart" resultMap="BaseVoResult" parameterType="java.util.Map" 
+		> SELECT cart.id,cart.buyNum ,cart.memberId ,cart.dishId,pd.type FROM alq_shop_cart 
+		cart INNER JOIN ph_dish pd ON cart.dishId=pd.id WHERE cart.memberId=#{memberid} 
+		AND cart.dishId= #{dishid} </select> -->
+
+	<!--获取购物车信息 -->
+	<select id="getShopCartById" resultMap="BaseVoResult"
+		parameterType="java.util.Map">
+		<!-- SELECT id,buyNum,memberId,dishId FROM alq_shop_cart WHERE member_id 
+			= #{uid,jdbcType=BIGINT} AND id = #{cid,jdbcType=BIGINT} -->
+		SELECT cart.id,cart.buyNum,cart.memberId
+		,dishId,pd.isDelete,pd.dCount,cart.merchantId
+		FROM ph_shop_cart cart
+		INNER JOIN ph_dish pd on dishId=pd.id
+		WHERE cart.memberId =
+		#{uid,jdbcType=BIGINT} AND cart.dishId =
+		#{cid,jdbcType=BIGINT}
+        AND cart.orderId=#{orderId}
+	</select>
+
+	<select id="getShopCartCountByMemberId" parameterType="java.lang.Long"
+		resultType="java.lang.Long">
+		SELECT count(1) FROM ph_shop_cart ct WHERE ct.member_id=
+		#{mid,jdbcType=BIGINT}
+	</select>
+
+	<!-- private Long dishId;// 商品 private Long memberId;// 会员 private Long 
+		merchantId;// 商户 private Long type;// 类型 0、菜品 1、包间 private Date createdTime;// 
+		private Date updateTime;// private Date hopesDate;// 预计到达时间 private String 
+		imgAddress; private String merchantName; private String merchantImg; // 商户门店照片 
+		private Long buyNum;//购买数量 -->
+	<insert id="insertShopToCar" parameterType="cm.ph.shopping.facade.order.dto.ShopCartDTO">
+
+		INSERT INTO
+		ph_shop_cart
+		(id,dishId,memberId,buyNum,merchantId,type,created_time,update_time,hopeTime,orderId
+		)
+		VALUES(
+		#{id},#{dishId},#{memberId},#{buyNum},#{merchantId},#{type},#{createdTime},#{updateTime},#{hopesDate},#{orderId}
+		)
+
+	</insert>
+
+	<update id="updateShopCart" parameterType="cm.ph.shopping.facade.order.dto.ShopCartDTO">
+		UPDATE ph_shop_cart
+		<set>
+			<if test="dishId!=null">
+				dishId = #{dishId},
+			</if>
+			<if test="memberId!=null">
+				memberId = #{memberId},
+			</if>
+			<if test="buyNum!=null">
+				buyNum = #{buyNum},
+			</if>
+			<if test="merchantId!=null">
+				merchantId =#{merchantId},
+			</if>
+			<if test="type!=null">
+				type = #{type},
+			</if>
+			<if test="updateTime!=null">
+				update_time = #{updateTime},
+			</if>
+			<if test="hopesDate!=null">
+				hopeTime =#{hopesDate}
+			</if>
+
+		</set>
+
+		WHERE id = #{id}
+
+	</update>
+</mapper>

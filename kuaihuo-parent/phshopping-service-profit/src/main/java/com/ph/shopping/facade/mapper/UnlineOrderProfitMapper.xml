@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IUnlineOrderProfitMapper">
+	<select id="unLineOrderProfitList" parameterType="com.ph.shopping.facade.profit.dto.UnLineOrderProfitDTO" resultType="com.ph.shopping.facade.profit.vo.UnLineOrderProfitVO">
+		SELECT
+		p.id,
+		o.orderNo ,    <!--订单号-->
+		p.orderMoney,
+		p.chargeFee,
+		p.phChargeFee,
+		p.ystChargeFee,
+		(SELECT pp.telphone FROM  ph_permission_common_user pp WHERE pp.id = p.cityAgentId ) cityAgentName,
+		(SELECT pp.telphone FROM  ph_permission_common_user pp WHERE pp.id = p.countyAgentId ) countyAgentName,
+		(SELECT pp.telphone FROM  ph_permission_common_user pp WHERE pp.id = p.townAgentId) townAgentName,
+		(SELECT ppp.telPhone FROM ph_member ppp where ppp.id = p.cityPromoterId)  cityPromoterName,
+		(SELECT ppp.telPhone FROM ph_member ppp where ppp.id = p.countyPromoterId) countyPromoterName,
+		(SELECT ppp.telPhone FROM ph_member ppp where ppp.id = p.townPromoterId) townPromoterName,
+		(SELECT ppp.telPhone FROM ph_member ppp where ppp.id = p.merchantPromoterId) merchantPromoterName,
+		p.cityAgentProfit,
+		p.countyAgentProfit,
+		p.townAgentProfit,
+		p.cityPromoterProfit,
+		p.countyPromoterProfit,
+		p.townPromoterProfit,
+		p.merchantPromoterProfit,
+		p.khChargefee,                                      <!--快火分润-->
+		IFNULL(p.storeManagerProfit,0) storeManagerProfit,  <!--店面经理的分润-->
+		IFNULL(p.memberPromoterProfit,0) memberPromoterProfit ,<!--会员推荐分润-->
+		p.chargeProfitTotal,
+		p.chargeProfitRemain,
+		p.cityAgentId,
+		p.cityPromoterId,
+		p.countyAgentId,
+		p.countyPromoterId,
+		p.townAgentId,
+		p.townPromoterId,
+		p.merchantPromoterId,
+		<!--DATE_FORMAT(p.orderTime,'%Y-%m-%d %H:%i:%s') orderTime, -->  <!--订单时间-->
+		<!--DATE_FORMAT(p.createTime,'%Y-%m-%d %H:%i:%s') createTime --> <!--分润时间-->
+		DATE_FORMAT(o.createTime,'%Y-%m-%d %H:%i:%s') orderTime,    <!--订单时间-->
+		DATE_FORMAT(o.profitTime,'%Y-%m-%d %H:%i:%s') createTime    <!--分润时间-->
+		FROM
+		ph_profit_unline_order p LEFT JOIN ph_member_order_unline as o ON  o.orderNo=p.orderNo
+		WHERE
+		1 = 1
+		<if test="orderNo !=null and orderNo !='' ">
+			AND o.orderNo = #{orderNo}
+		</if>
+		<if test="startOrderTime !=null and startOrderTime !='' ">
+			AND  date_format(p.orderTime, '%Y-%m-%d')   &gt;=  #{startOrderTime}
+		</if>
+		<if test="stopOrderTime !=null and stopOrderTime !='' ">
+			AND  date_format(p.orderTime, '%Y-%m-%d')  &lt;=  #{stopOrderTime}
+		</if>
+		<if test="startProfitTime !=null and startProfitTime !='' ">
+			AND  date_format(p.createTime, '%Y-%m-%d')   &gt;= #{startProfitTime}
+		</if>
+		<if test="stopProfitTime !=null and stopProfitTime !='' ">
+			AND  date_format(p.createTime, '%Y-%m-%d')  &lt;=   #{stopProfitTime}
+		</if>
+		ORDER BY p.id DESC
+	</select>
+	<!-- 取线下订单过来分润 -->
+	<select id="getUnLineOrderList" resultType="com.ph.shopping.facade.profit.vo.UnLineOrderVO">
+		SELECT
+		p.id,
+		p.createTime orderTime,
+		p.orderNo,
+		p.orderMoney payMoney,
+		p.merchantId,
+		p.merchantName,
+		p1.positionId merchantPositionId,
+		p1.businessProfitRatio,
+		p1.promoterId merchantPromoterId,
+		p2.memberName merchantPromoterName,
+		p.isProfit
+		FROM
+		ph_member_order_unline p
+		LEFT JOIN ph_merchant p1 ON p.merchantId = p1.userId
+		LEFT JOIN ph_member p2 ON p1.promoterId = p2.id
+		WHERE
+		p.isProfit !=1
+		AND p. STATUS = 2
+	</select>
+	<!-- 批量入分润记录表 -->
+	<insert id="insertUnlineOrderProfitBatch" parameterType="java.util.List">
+		INSERT INTO ph_profit_unline_order (
+		orderNo,
+		orderMoney,
+		chargeFee,
+		phChargeFee,
+		ystChargeFee,
+		khChargeFee,
+		cityAgentName,
+		countyAgentName,
+		townAgentName,
+		cityPromoterName,
+		countyPromoterName,
+		townPromoterName,
+		merchantPromoterName,
+		memberPromoterName,
+		cityAgentProfit,
+		countyAgentProfit,
+		townAgentProfit,
+		cityPromoterProfit,
+		countyPromoterProfit,
+		townPromoterProfit,
+		merchantPromoterProfit,
+		memberPromoterProfit,
+		chargeProfitTotal,
+		chargeProfitRemain,
+		createTime,
+		cityAgentId,
+		cityPromoterId,
+		countyAgentId,
+		countyPromoterId,
+		townAgentId,
+		townPromoterId,
+		merchantPromoterId,
+		memberPromoterId,
+		orderTime,
+		storeManagerProfit,
+		storeManagerId
+		)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(
+			#{item.orderNo},
+			#{item.orderMoney},
+			#{item.chargeFee},
+			#{item.phChargeFee},
+			#{item.ystChargeFee},
+			#{item.khChargeFee},
+			#{item.cityAgentName},
+			#{item.countyAgentName},
+			#{item.townAgentName},
+			#{item.cityPromoterName},
+			#{item.countyPromoterName},
+			#{item.townPromoterName},
+			#{item.merchantPromoterName},
+			#{item.memberPromoterName},
+			#{item.cityAgentProfit},
+			#{item.countyAgentProfit},
+			#{item.townAgentProfit},
+			#{item.cityPromoterProfit},
+			#{item.countyPromoterProfit},
+			#{item.townPromoterProfit},
+			#{item.merchantPromoterProfit},
+			#{item.memberPromoterProfit},
+			#{item.chargeProfitTotal},
+			#{item.chargeProfitRemain},
+			now(),
+			#{item.cityAgentId},
+			#{item.cityPromoterId},
+			#{item.countyAgentId},
+			#{item.countyPromoterId},
+			#{item.townAgentId},
+			#{item.townPromoterId},
+			#{item.merchantPromoterId},
+			#{item.memberPromoterId},
+			#{item.orderTime},
+			#{item.storeManagerProfit},
+			#{item.storeManagerId}
+			)
+		</foreach>
+	</insert>
+	<!-- 改线下订单成已经分润 -->
+	<update id="updateUnlineOrderBonus" parameterType="java.util.List">
+		UPDATE ph_member_order_unline SET isProfit = 1 ,updateTime = now(),updaterId = 0 , profitTime = now() WHERE id IN
+		<foreach collection="list" item="item" index="index" open="("
+				 separator="," close=")">
+			#{item.id}
+		</foreach>
+	</update>
+
+	<!-- 批量更改线下子订单表中的分润状态为会员分润 -->
+	<update id="updateIsProfitToMemberProfit" parameterType="java.util.List">
+		UPDATE ph_member_order_unline SET isProfit = 2 ,updateTime = now(),updaterId = 0 , profitTime = now() WHERE id IN
+		<foreach collection="list" item="item" index="index" open="("
+				 separator="," close=")">
+			#{item.id}
+		</foreach>
+	</update>
+
+	<!-- 批量更改会员积分表中的会员分润积分为0 -->
+	<update id="updateMemberProfitScoreToZero" parameterType="java.util.List">
+		UPDATE ph_member_score SET memberProfitScore = 0 ,updateTime = now(),updaterId = 0 WHERE
+		memberProfitScore !=0
+		AND memberId IN
+		<foreach collection="list" item="item" index="index" open="("
+				 separator="," close=")">
+			#{item.merchantPromoterId}
+		</foreach>
+	</update>
+
+	<!-- 更新会员可用积分 ph_member_score -->
+	<update id="updateMemberScore" parameterType="com.ph.shopping.facade.profit.vo.MemberScoreVO">
+		UPDATE ph_member_score p
+		SET p.enableScore = IFNULL(p.enableScore,0) + #{score},
+		 updateTime = NOW(),
+		 updaterId = 0
+		WHERE
+			p.memberId = #{memberId}
+	</update>
+	<update id="updateMemberScoreByTransCode1" parameterType="com.ph.shopping.facade.profit.vo.MemberScoreVO">
+		UPDATE ph_member_score p
+		SET p.shareMerchantScore = IFNULL(p.shareMerchantScore,0) + #{score},
+			p.totleShareMerchantScore = IFNULL(p.totleShareMerchantScore,0) + #{score},
+		 updateTime = NOW(),
+		 updaterId = 0
+		WHERE
+			p.memberId = #{memberId}
+	</update>
+	<update id="updateMemberScoreByTransCode2" parameterType="com.ph.shopping.facade.profit.vo.MemberScoreVO">
+		UPDATE ph_member_score p
+		SET p.shareMemberScore = IFNULL(p.shareMemberScore,0) + #{score},
+			p.totleShareMemberScore = IFNULL(p.totleShareMemberScore,0) + #{score},
+		 updateTime = NOW(),
+		 updaterId = 0
+		WHERE
+		p.memberId = #{memberId}
+	</update>
+	<update id="updateMemberScoreByTransCode3" parameterType="com.ph.shopping.facade.profit.vo.MemberScoreVO">
+		UPDATE ph_member_score p
+		SET p.storeManagerScore = IFNULL(p.storeManagerScore,0) + #{score},
+			p.totalStoreManagerScore = IFNULL(p.totalStoreManagerScore,0) + #{score},
+		 updateTime = NOW(),
+		 updaterId = 0
+		WHERE
+		p.memberId = #{memberId}
+	</update>
+	<!-- 更新会员分润积分 ph_member_score -->
+	<update id="updateMemberProfitScore" parameterType="com.ph.shopping.facade.profit.vo.MemberScoreVO">
+		UPDATE ph_member_score p
+		SET p.memberProfitScore = IFNULL(p.memberProfitScore,0) + #{score},
+		updateTime = NOW(),
+		updaterId = 0
+		WHERE
+		p.memberId = #{memberId}
+	</update>
+	<!-- 更新会员推广商户奖励积分 ph_member_score -->
+	<update id="updateMerchantRewardScore" parameterType="com.ph.shopping.facade.profit.vo.MemberScoreVO">
+		UPDATE ph_member_score p
+		SET p.merchantRewardScore = IFNULL(p.merchantRewardScore,0) + #{score},
+		updateTime = NOW(),
+		updaterId = 0
+		WHERE
+		p.memberId = #{memberId}
+	</update>
+	<!-- 入积分流水总表 -->
+	<insert id="insertMemberScoreTotal" parameterType="com.ph.shopping.facade.profit.vo.MemberScoreVO" >
+		<selectKey resultType="java.lang.Long" keyProperty="id">
+			SELECT LAST_INSERT_ID() as id
+		</selectKey>
+		INSERT INTO ph_score_total_trade (
+		memberId,
+		transCode,
+		createTime,
+		updateTime,
+		score,
+		orderNo,
+		handingCharge,
+		totelScore
+		)
+		VALUES
+		(
+		#{memberId},
+		#{transCode},
+		now(),
+		now(),
+		#{score},
+		#{orderNo},
+		0,
+		#{totelScore}
+		)
+	</insert>
+
+	<!-- 入积分进账表 -->
+	<insert id="insertMemberScoreIncome" parameterType="com.ph.shopping.facade.profit.vo.MemberScoreVO">
+		INSERT INTO ph_score_income_trade (
+		memberId,
+		transCode,
+		createTime,
+		updateTime,
+		score,
+		setId,
+		orderNo,
+		handingCharge
+		)
+		VALUES
+		(
+		#{memberId},
+		#{transCode},
+		now(),
+		now(),
+		#{score},
+		#{id},
+		#{orderNo},
+		0
+		)
+	</insert>
+	<!-- 入推广师分润记录表 -->
+	<insert id="insertPromoterProfitRecord" parameterType="com.ph.shopping.facade.profit.entity.PromoterProfitRecord" >
+		INSERT INTO ph_profit_promoter_record(
+		orderNo,
+		orderMoney,
+		proProfit,
+		profitDate,
+		enterpriseType,
+		enterpriseName,
+		promoterId,
+		userId,
+		createDate
+		,deliveryDate
+		)
+		VALUES
+		<foreach collection="list" item="records" index="index" separator="," >
+			(
+			#{records.orderNo},
+			#{records.orderMoney}, #{records.proProfit},
+			NOW(), #{records.enterpriseType},
+			#{records.enterpriseName}, #{records.promoterId},
+			#{records.userId},
+			NOW()
+			,#{records.deliveryDate}
+			)
+		</foreach>
+	</insert>
+	<!-- 批量入会员分润记录表 -->
+	<insert id="insertMemberProfitRecord" parameterType="com.ph.shopping.facade.profit.entity.PromoterProfitRecord" >
+		INSERT INTO ph_profit_member_record(
+		orderNo,
+		orderMoney,
+		proProfit,
+		profitDate,
+		enterpriseType,
+		enterpriseName,
+		promoterId,
+		userId,
+		createDate
+		,deliveryDate
+		)
+		VALUES
+		<foreach collection="list" item="records" index="index" separator="," >
+			(
+			#{records.orderNo},
+			#{records.orderMoney}, #{records.proProfit},
+			NOW(), #{records.enterpriseType},
+			#{records.enterpriseName}, #{records.promoterId},
+			#{records.userId},
+			NOW()
+			,#{records.deliveryDate}
+			)
+		</foreach>
+	</insert>
+	<!-- 入用户分润记录表 -->
+	<insert id="insertUserProfitRecord" parameterType="com.ph.shopping.facade.profit.entity.SupplyProfitTotal" >
+		INSERT INTO ph_profit_user_record(
+		userId,
+		userType,
+		userName,
+		profited,
+		createTime
+		)
+		VALUES
+		<foreach collection="list" item="records" index="index" separator="," >
+			(
+			#{records.userId},
+			#{records.userType}, #{records.userName},#{records.profited},
+			NOW()
+			)
+		</foreach>
+	</insert>
+
+	<select id="getOrderByOrderNo" resultType="com.ph.shopping.facade.profit.vo.UnLineOrderVO" parameterType="string">
+		SELECT
+		p.id,
+		p.createTime orderTime,
+		p.orderNo,
+		p.orderMoney payMoney,
+		p.merchantId,
+		p.merchantName,
+		p1.positionId merchantPositionId,
+		p1.businessProfitRatio,
+		p1.promoterId merchantPromoterId,
+		p3.promoterId memberPromoterId,
+		p3.id memberId,
+		p2.memberName merchantPromoterName,
+		p.isProfit
+		FROM
+		ph_member_order_unline p
+		LEFT JOIN ph_merchant p1 ON p.merchantId = p1.userId
+		LEFT JOIN ph_member p2 ON p1.promoterId = p2.id
+		LEFT JOIN ph_member p3 ON p.memberId = p3.id
+		WHERE
+		p.orderNo=#{orderNo};
+	</select>
+
+	<select id="getRecordByOrder" resultType="map">
+		select
+		p.id,
+		p.orderMoney,
+		p.orderNo,
+		m.tokenToMobile AS token
+		from
+		ph_member_order_unline as p,
+		ph_member as m
+		where
+		p.memberId=m.id
+		and	p.status=2
+		and p.isBackScore=0
+		and ISNULL(p.type)
+		<![CDATA[and payTime<=DATE_SUB(NOW(),INTERVAL 24 HOUR)]]>
+		UNION ALL
+		select
+		p.id,
+		p.orderMoney,
+		p.orderNo,
+		m.tokenToMobile AS token
+		from
+		ph_member_order_unline as p,
+		ph_member as m
+		where
+		p.memberId=m.id
+		and	p.status=2
+		and p.isBackScore=0
+		and p.type=0
+	</select>
+
+	<update id="updateOrderBackScore" parameterType="long">
+  		update ph_member_order_unline set isBackScore=1,  type=0 where id=#{id}
+  	</update>
+
+  	<update id="updateOrderIsProfitById" parameterType="long">
+  		update ph_member_order_unline set isProfit=1,  profitTime=NOW() where id=#{id}
+  	</update>
+
+  	<select id="getMemberScoreById" resultType="map" parameterType="long">
+  		SELECT * FROM ph_member_score WHERE memberId=#{id}
+  	</select>
+
+	<select id="getStoreManagerByUserId" resultType="map" parameterType="long">
+  		SELECT * FROM ph_store_manager_record WHERE userId=#{id} AND status=0 AND certification=1
+  	</select>
+
+	<select id="getMemberByStoreManager" resultType="map" parameterType="string">
+  		SELECT * FROM ph_member WHERE telPhone=#{telPhone} AND  isStoreManager=1
+  	</select>
+
+	<select id="getAgentByCityId" resultType="com.ph.shopping.facade.spm.entity.Agent" parameterType="long">
+  		SELECT * FROM ph_agent WHERE cityId=#{id} AND agentLevelId=1 AND isFormSystem=0
+  	</select>
+
+	<select id="getAgentByCountyId" resultType="com.ph.shopping.facade.spm.entity.Agent" parameterType="long">
+  		SELECT * FROM ph_agent WHERE countyId=#{id} AND agentLevelId=2 AND isFormSystem=0
+  	</select>
+</mapper>

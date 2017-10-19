@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.alqsoft.dao.collectionhunter.CollectionHunterDao" >
+  <resultMap id="BaseResultMap" type="com.alqsoft.vo.CollectionHunterVO" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+   <!-- <result column="create_user" property="createUser" jdbcType="VARCHAR" />
+    <result column="created_ip" property="createdIp" jdbcType="VARCHAR" />
+    <result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />-->
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="member_id" property="memberId" jdbcType="BIGINT" />
+    <result column="hunter_id" property="hunterId" jdbcType="BIGINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    id,  type, member_id,hunter_id
+  </sql>
+
+  <select id="getCollectionHunter" resultMap="BaseResultMap" >
+    select 
+    <include refid="Base_Column_List" />
+
+    from alq_collection_hunter
+    where member_id = #{mid,jdbcType=BIGINT} and hunter_id = #{hid,jdbcType=BIGINT}
+  </select>
+
+  <select id="getCollectionHunterList" parameterType="java.util.Map" resultType="java.util.Map">
+
+    SELECT ch.id,h.nickname,h.num,h.star,
+    h.service,h.id hunterId,h.county_name detail,
+    IFNULL(h.level,0) level,
+   (SELECT m.address FROM alq_attachment m WHERE m.id=h.logo_attachment_id)address ,
+   h.good_comment_num_order goodCommentNum , h.province_id pid,h.city_id cid,
+    h.city_name cname,h.province_name pname, h.major title,
+    (SELECT m.im_id FROM alq_member m WHERE m.hunter_id=ch.hunter_id) imid,
+    (SELECT  hsv.detail FROM alq_hunter_service hsv WHERE hsv.hunter_id= h.id)detail
+     FROM  alq_collection_hunter ch ,alq_hunter h
+     WHERE ch.hunter_id = h.id AND ch.type= 0 and ifnull(h.state,1)=1
+    AND ch.member_id = #{uid,jdbcType=BIGINT}
+    LIMIT  #{page} , #{rows}
+
+
+  </select>
+
+</mapper>

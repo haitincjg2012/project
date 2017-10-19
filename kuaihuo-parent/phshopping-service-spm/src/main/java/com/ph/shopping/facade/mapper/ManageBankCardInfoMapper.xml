@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.ManageBankCardInfoMapper">
+	<select id="getManagerBankCardInfo" resultType="com.ph.shopping.facade.spm.vo.ManageBankCardInfoVO">
+		SELECT
+			i.id,
+			i.bankName,
+			i.ownerName,
+			i.idCardNo,
+			i.cardNo,
+			i.telPhone,
+			i.userId
+		FROM
+			ph_user_bank_card_info i,
+			ph_user_bank_card_bind b
+		WHERE
+			i.id = b.bankCardInfoId
+			and b.bindStatus = 1
+			<trim>
+				<if test="userId != null and userId != ''">
+					and i.userId =#{userId}
+				</if>
+			</trim>
+	</select>
+	
+	<select id="getRealAndIdCardNo" resultType="com.ph.shopping.facade.spm.vo.RealAndIdCardNoVO">
+		SELECT
+			i.ownerName,
+			i.idCardNo,
+			i.id bankCardInfoId
+		FROM
+			ph_user_bank_card_info i
+		WHERE i.userId =#{userId}
+	</select>
+	
+	<select id="getBankInfo" resultType="com.ph.shopping.facade.spm.vo.BankVO">
+		SELECT
+			i.ownerName,
+			i.cardNo,
+			i.bankName
+		FROM
+			ph_user_bank_card_info i,
+			ph_user_bank_card_bind b
+		WHERE
+			i.id = b.bankCardInfoId
+			and b.bindStatus = 1
+			and i.userId = #{userId}
+	</select>
+	
+	<select id="validateAuth" resultType="java.lang.Integer">
+		SELECT COUNT(0) FROM ph_user_bank_card_info WHERE userId=#{userId}
+	</select>
+	
+	<select id="countBindBank" resultType="java.lang.Integer">
+		SELECT COUNT(0) FROM ph_user_bank_card_bind WHERE userId=#{userId}
+	</select>
+	
+	<update id="updateBankInfo">
+		UPDATE ph_user_bank_card_info SET bankName=#{bankName} WHERE userId=#{userId} and cardNo=#{cardNo}		
+	</update>
+	
+</mapper>

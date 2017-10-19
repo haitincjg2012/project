@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.hunterindustrytype.HunterIndustryTypeDao">
+	<!--根据分类获取批发商信息-->
+	<select id="findHunterByiIndustryId" resultType="Map" parameterType="Map">
+		  SELECT h.id,a.address, h.nickname,h.level,h.num,h.major,(dnDistance (
+					#{longitude},
+					#{latitude},
+					h.longitude,
+					h.latitude
+				) * 1
+			) AS distance<!-- 距离批发商的距离 -->
+  		  FROM `alq_hunter_industry_type` AS hit
+  		  LEFT JOIN `alq_hunter`  AS h ON hit.hunter_id=h.id
+  		  LEFT JOIN `alq_attachment` AS a ON h.logo_attachment_id=a.id
+ 		  WHERE  hit.one_level_industry_type_id=#{fistTypeId} AND hit.industry_type_id=#{secondTypeId}
+		  and ifnull(h.state,1)=1
+ 		  GROUP BY h.id
+  		  ORDER BY distance,h.created_time DESC LIMIT #{startIndex},#{endIndex}
+	</select>
+
+	<!--获取一级分类下的所有批发商信息-->
+	<select id="findAllHunterByiIndustryId" resultType="Map" parameterType="Map">
+		  SELECT h.id,a.address, h.nickname,h.level,h.num,h.major,(dnDistance (
+					#{longitude},
+					#{latitude},
+					h.longitude,
+					h.latitude
+				) * 1
+			) AS distance<!-- 距离批发商的距离 -->
+  		  FROM `alq_hunter_industry_type` AS hit
+  		  LEFT JOIN `alq_hunter`  AS h ON hit.hunter_id=h.id
+  		  LEFT JOIN `alq_attachment` AS a ON h.logo_attachment_id=a.id
+ 		  WHERE hit.one_level_industry_type_id=#{fistTypeId}
+		  and ifnull(h.state,1)=1
+ 		  GROUP BY h.id
+  		  ORDER BY distance,h.created_time DESC LIMIT #{startIndex},#{endIndex}
+	</select>
+	<!--根据批发商id获取二级分类标签-->
+	<select id="findhHunterLabel" resultType="Map" parameterType="Long">
+		  SELECT ait.id AS secondTypeId,ait.`name` AS secondName FROM alq_hunter_industry_type AS hit
+		  LEFT JOIN alq_industry_type AS ait ON ait.id=hit.industry_type_id
+		  WHERE hunter_id=#{hunterId}
+		  ORDER BY ait.created_time DESC
+	</select>
+	<select id="findAllHunter" resultType="Map" parameterType="Map">
+		  SELECT h.id,a.address, h.nickname,h.level,h.num,h.major,(dnDistance (
+					#{longitude},
+					#{latitude},
+					h.longitude,
+					h.latitude
+				) * 1
+			) AS distance<!-- 距离批发商的距离 -->
+  		  FROM `alq_hunter`  AS h
+  		  LEFT JOIN `alq_attachment` AS a ON h.logo_attachment_id=a.id
+		  WHERE IFNULL(h.state,1)=1
+  		  ORDER BY distance,h.created_time DESC LIMIT #{startIndex},#{endIndex}
+	</select>
+</mapper>

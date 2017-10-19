@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+    <meta charset="UTF-8">
+    <title>系统日志</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--日期  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/datepicker/css/bootstrap-datepicker.css}">
+
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">系统管理</a>&nbsp;&gt;&nbsp;<span>系统日志</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+            <h2>系统日志</h2>
+        </div>
+        <!--end 标题-->
+        <!--筛选条件-->
+        <form id="queryForm">
+        <div class="ph_screen">
+            <shiro:hasPermission name="systemLogQuery">
+                <table class="ph_tableBox">
+                    <tr>
+                        <th>操作人：</th>
+                        <td><input name="operator" id="operator" type="text"></td>
+                        <th>操作账号：</th>
+                        <td><input name="operateAccount" id="operateAccount" type="text"></td>
+                        <th>操作功能：</th>
+                        <td>
+                            <!--<input name="operateType" id="operateType" type="text"></td>-->
+                            <select class="selectpicker" data-live-search="true" name="operateType" id="operateType">
+                                <option value="">全部</option>
+                                <option value="1">新增</option>
+                                <option value="2">删除</option>
+                                <option value="3">修改</option>
+                                <option value="4">查询</option>
+                                <option value="5">导入/出</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>操作时间：</th>
+                        <td colspan="2">
+                            <p class="dayBox">
+                                <input class="start_rise date start" name="starTime" id="starTime" type="text">&nbsp;-&nbsp;
+                                <input class="start_rise date end" name="endTime" id="endTime" type="text">
+                            </p>
+                        </td>
+                        <td colspan="3">
+                            <input name="" th:onclick="'query();'" type="button" value="查询">
+                            <input name="" th:onclick="'resetForm();'" type="button" value="重置">
+                        </td>
+                    </tr>
+                </table>
+            </shiro:hasPermission>
+        </div>
+        </form>
+        <!--end 筛选条件-->
+        <!--商品列表-->
+        <div class="ph_wareBox">
+            <table class="ph_wareList" id="example">
+            </table>
+        </div>
+        <!--end 商品列表-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!--分页-->
+<script type="text/javascript" th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+<!--弹窗-->
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!--日期控件-->
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/bootstrap-datepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.timepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.datepair.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/datepicker.js}"></script>
+<script type="text/javascript">
+    var tb;
+    $(function() {
+        //分页
+        tb = $('#example').DataTable({
+            "lengthChange": false,
+            "ordering": false,
+            "searching": false,
+
+            "bServerSide": true,
+            "sPaginationType": "full_numbers",
+            "bJQueryUI": true,
+            "sDom": '<"">t<"F"ip>',
+            "sAjaxSource": "/web/systemLog/list", //ajax调用接口
+            "aoColumnDefs": [{sDefaultContent: '',aTargets: [ '_all' ]}],
+            "aoColumns": [
+                { "sTitle" : "ID", 	 "mData": "id" ,"class":"sClass"},
+                { "sTitle" : "操作人","mData": "operator" },
+                { "sTitle" : "操作账号","mData": "operateAccount" },
+                { "sTitle" : "操作功能","mData": "operateType","mRender":function(data,type,full){
+                    var text;
+                    if (full.operateType==1){
+                        text = "新增";
+                    }else if (full.operateType==2){
+                        text = "删除";
+                    }else if (full.operateType==3){
+                        text = "修改";
+                    }else if (full.operateType==4){
+                        text = "查询";
+                    }else if (full.operateType==5){
+                        text = "导入/出";
+                    }
+                    return text;
+                }},
+                { "sTitle" : "操作内容","mData": "operateContent" },
+                { "sTitle" : "操作时间","mData": "createTime" }
+            ],
+            "oLanguage" : {
+                "sProcessing" : "数据加载中······",
+                "sLengthMenu" : "显示 _MENU_ 条记录",
+                "sZeroRecords" : "没有您要搜索的内容！",
+                "sEmptyTable" : "列表中无数据存在！",
+                "sInfo" : "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+                "sInfoEmpty" : "显示 0 到 0 条记录",
+                "sInfoFiltered" : "数据列表中共  _MAX_ 条记录",
+                "oPaginate" : {
+                    "sFirst" : "首页",
+                    "sPrevious" : "上一页",
+                    "sNext" : "下一页",
+                    "sLast" : "末页"
+                }
+            },
+            "fnServerData" : function ( sSource, aoData, fnCallback, oSettings ) {
+                oSettings.jqXHR = $.ajax( {
+                    "dataType" 	: 'json',
+                    "type" 		: "POST",
+                    "async"     : 'false',
+                    "url" 		: sSource,
+                    "data" 		: {
+                        'pageNum': (aoData[3].value/aoData[4].value)+1,
+                        'pageSize' :  aoData[4].value,
+                        'pageNum': (aoData[3].value/aoData[4].value)+1,
+                        'pageSize' :  aoData[4].value,
+                        'operator'  : $.trim($('#operator').val()),
+                        'operateAccount' : $.trim($('#operateAccount').val()),
+                        'starTime' : $.trim($('#starTime').val()),
+                        'endTime' : $.trim($('#endTime').val()),
+                        'operateType' : $.trim($('#operateType').val())
+
+                    },
+                    "success"	: fnCallback
+                } );
+            },
+            "fnDrawCallback" : function(){
+                var api = this.api();
+                var startIndex= api.context[0]._iDisplayStart;//获取到本页开始的条数
+                api.column(0).nodes().each(function(cell, i) {
+                    cell.innerHTML = startIndex + i + 1;
+                });
+            }
+        });
+    });
+    //条件查询重新加载数据
+    function query() {
+        tb.draw();
+    }
+    /**
+     * 重置内容
+     */
+    function resetForm() {
+        clearData("queryForm");
+    }
+    function clearData(id) {
+        $("#" + id)[0].reset();
+        var selected = $("#" + id).find("select");
+        if (selected.length > 0) {
+            for (var i = 0, length = selected.length; i< length; i++) {
+                selected.eq(i).selectpicker('val','');
+            }
+        }
+    }
+</script>
+</body>
+</html>

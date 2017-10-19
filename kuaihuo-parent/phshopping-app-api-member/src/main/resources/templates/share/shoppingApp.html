@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>
+    <title></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" id="href">
+    <link rel="stylesheet" th:href="@{/js/layer/layer.css}"/>
+
+</head>
+<body>
+<div class="topBox bg-1">
+    <img th:src="@{/images/top-bg-1.png}" alt="">
+    <span class="shopping">跟着商户一起赚—推广有分润</span>
+</div>
+<div class="mainBox">
+    <div class="btnGoup">
+        <!-- <input type="text" class="phoneInput recommender" disabled th:value="${member.showTelPhone}"/> -->
+        <input type="hidden" th:value="${member.telPhone}" id="telPhone"/>
+        <input type="hidden" th:value="${member.memberId}" id="memberId"/>
+        <input type="hidden" th:value="${member.type}" id="type"/>
+        <input type="hidden" th:value="${token}" id="token"/>
+        <input type="hidden" th:value="${url}" id="jumpurl"/>
+        <input type="hidden" th:value="${timestamp}" id="timestamp"/>
+        <input type="hidden" th:value="${sign}" id="sign"/>
+        <span style="font-size:20px">分享人 :</span><span style="font-size:20px" th:text="${member.showTelPhone}"></span>
+        <input type="text" class="phoneInput" placeholder="请输入手机号" id="toTelPhone" onblur="checkPhone()"/>
+        <p><input type="text" class="yzmInput" placeholder="验证码"><input class="provingTxt realNameCode" type="button"
+                                                                        value="获取验证码"></p>
+        <input type="button" class="downBtn" value="下载APP">
+        <!--  <a href="javascript:upload();">直接下载商户APP</a> -->
+    </div>
+</div>
+</body>
+<script type="text/javascript" th:src="@{/js/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/sizeFont.js}"></script>
+<script type="text/javascript" th:src="@{/js/layer/layer.js}"></script>
+<script type="text/javascript">
+    $(function () {
+        //获取短信验证码
+        var validCode = true;
+        $(".realNameCode").click(function () {
+            var time = 60;
+            var code = $(this);
+            if (validCode) {
+                validCode = false;
+                code.prop("disabled", true);
+                var toTelPhone = $('#toTelPhone').val();
+                if (!toTelPhone) {
+                    layer.msg("请输入手机号");
+                    code.prop("disabled", false);
+                    validCode = true;
+                    return;
+                }
+                $.ajax({
+                    url: "/api/sms/sendsharecode/" + toTelPhone,
+                    data: {
+                        "timestamp": $('#timestamp').val(),
+                        "client_type": "A",
+                        "sign": $('#sign').val()
+                    },
+                    type: "get",
+                    dataType: "json",
+                    error: function () {
+                        layer.msg("服务器繁忙，请稍后再试");
+                        code.prop("disabled", false);
+                        validCode = true;
+                    },
+                    success: function (data) {
+                        if (data.code == '200') {
+                            var t = setInterval(function () {
+                                time--;
+                                code.val(time + "秒");
+                                if (time == 0) {
+                                    clearInterval(t);
+                                    code.prop("disabled", false);
+                                    code.val("重新获取");
+                                    validCode = true;
+                                }
+                            }, 1000)
+                        } else {
+                            if (!(/^1[34578]\d{11}$/.test(toTelPhone))) {
+                                if ($(".valiError").length == 0) {
+                                    var valiError = $("<p class='valiError'>手机号码有误，请重新填写</p>");
+                                    $("#phoneNumBox").append(valiError);
+                                    layer.msg("手机号码格式有误，请重新填写");
+                                    return;
+                                }
+                                return false;
+                            }
+
+                            layer.msg(data.message);
+                            code.prop("disabled", false);
+                            validCode = true;
+                        }
+                    }
+                });
+            }
+        });
+        $('.downBtn').click(function () {
+            var toTelPhone = $('#toTelPhone').val().trim();
+            if (!toTelPhone) {
+                layer.msg("请输入手机号");
+                return;
+            }
+            var yzmInput = $('.yzmInput').val().trim();
+            if (!yzmInput) {
+                layer.msg("验证码不能为空");
+                return;
+            }
+            var jsonObj = {
+                "telPhone": $('#telPhone').val(),
+                "userId": $('#memberId').val(),
+                "toTelPhone": toTelPhone,
+                "smsCode": yzmInput,
+                "type": $('#type').val(),
+                "password": "",
+                "token": $('#token').val()
+            };
+            $.ajax({
+                url: "/api/share/memberShare",
+                type: "post",
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify(jsonObj),
+                error: function () {
+                    layer.msg("服务器繁忙，请稍后再试");
+                },
+                success: function (data) {
+                    if (data.code == '200') {
+                        var url = $('#jumpurl').val();
+                        if (url.trim().length < 1) {
+                            layer.msg("下载地址错误");
+                            return;
+                        }
+                        window.location.href = url;
+                    } else {
+                        layer.alert(data.message);
+                    }
+                }
+            });
+        })
+        /* $('input').on('click',function () {
+         var top=$(this).offset().top;
+         console.log(top);
+         $(window).scrollTop(top);
+
+         }) */
+    });
+    function upload() {
+        var url = $('#jumpurl').val();
+        if (url.trim().length < 1) {
+            layer.msg("下载地址错误");
+            return;
+        }
+        window.location.href = url;
+    }
+    function checkPhone(){
+        var phone = $('#toTelPhone').val()
+        if(!(/^1[3|4|5|8][0-9]\d{8,11}$/.test(phone))){
+            alert("手机号格式错误");
+            return ;
+        }
+    }
+</script>
+</html>

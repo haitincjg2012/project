@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>跳转易联支付</title>
+    <script type="text/javascript" language="JavaScript">
+        setTimeout("paysubmit.submit();",1000);
+    </script>
+</head>
+<body>
+<form name="paysubmit" id="paysubmit" th:action="${urlReaction}" method="post">
+    <input type="hidden" id="request_text" name="request_text" th:value="${requestText}"/>
+</form>
+</body>
+</html>

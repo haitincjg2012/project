@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IMemberScoreMapper">
+	<select id="getMemberScoreDetailedList"  resultType="com.ph.shopping.facade.profit.entity.MemberScoreDetailed">
+		SELECT
+			m.id memberId,
+			m.telPhone,
+			m.isMarketing,
+			m.memberName,
+			s.standbyScore,
+			s.enableScore,
+			s.drawcashScore
+		FROM
+			ph_member m,
+			ph_member_score s
+		WHERE
+			m.id = s.memberId	
+	</select>
+	<!-- 更改会员积分表状态冻结 解冻 -->
+	<update id="updateMemberScoreStatus">
+		UPDATE ph_member_score p
+		SET p.STATUS = #{status}
+		WHERE
+			p.memberId = #{memberId}
+	</update>
+	<!-- 统计会员的积分相关参数-->
+	<select id="getMemberScoreTotalParameter" resultType="com.ph.shopping.facade.profit.vo.MemberScoreDetailedVO">
+		select 
+				IFNULL(-SUM((case when transCode IN (1000, 1009) then score end)), 0) payTotalScore,
+				IFNULL(SUM((case when transCode IN (1051,1055,1058) then score end)), 0) profitScore,
+				IFNULL(-SUM((case when transCode = 1005 then score end)), 0) returnScore,
+				IFNULL(SUM((case when transCode = 1018 then score end)), 0) returnScoreOnline
+			from ph_score_total_trade  p  WHERE  p.memberId =#{memberId}
+	</select>
+	<!-- 批量入会员积分统计记录表 -->
+	<insert id="insertMemberScoteTotalBatch" parameterType="java.util.List">
+		INSERT INTO ph_member_score_total (
+			memberId,
+			telPhone,
+			memberName,
+			isMarketing,
+			standbyScore,
+			enableScore,
+			drawcashScore,
+			payTotalScore,
+			profitScore,
+			balanceDifference,
+			returnScoreOnline,
+			returnScore,
+			createTime
+			)
+		VALUES
+	    <foreach collection="list" item="item" index="index" separator=",">
+	        (
+	        #{item.memberId},
+	        #{item.telPhone},
+	        #{item.memberName},
+	        #{item.isMarketing},
+	        #{item.standbyScore},
+	        #{item.enableScore},
+	        #{item.drawcashScore},
+	        #{item.payTotalScore},
+	        #{item.profitScore},
+	        #{item.balanceDifference},
+	        #{item.returnScoreOnline},
+	        #{item.returnScore},
+	       	now()
+	        )
+	    </foreach>
+	</insert>
+	<!-- 会员余额页面用 -->
+	<select id="getMemberScoreDetailedVOList" parameterType="com.ph.shopping.facade.profit.dto.MemberScoreDetailedDTO" resultType="com.ph.shopping.facade.profit.vo.MemberScoreDetailedVO">
+		SELECT
+			p.memberId,
+			p.telPhone,
+			p.memberName,
+			p.isMarketing,
+			p.standbyScore,
+			pp.enableScore,
+			p.drawcashScore,
+			p.payTotalScore,
+			p.profitScore,
+			p.balanceDifference,
+			p.returnScoreOnline,
+			p.returnScore,
+			pp.STATUS
+		FROM
+			ph_member_score_total p,
+			ph_member_score pp
+		WHERE
+			p.memberId = pp.memberId
+			and
+			p.createTime  &gt; #{date}
+		<if test="telPhone != null and telPhone != ''">
+			and p.telPhone = #{telPhone}
+		</if>
+		<if test="isMarketing != null">
+			and p.isMarketing = #{isMarketing}
+		</if>
+		<if test="status != null">
+			and pp.status = #{status}
+		</if>
+	</select>
+</mapper>

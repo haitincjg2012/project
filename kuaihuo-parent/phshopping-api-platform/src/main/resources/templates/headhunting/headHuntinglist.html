@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"  xmlns:th="http://www.thymeleaf.org" 
+		xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>批发商列表</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--日期  css文件-->
+    <link rel="stylesheet" th:href="@{/static/js/datepicker/css/bootstrap-datepicker.css}">
+    <!--弹窗 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/layer/layer.css}">
+    <!--图片点击放大  css文件-->
+    <link rel="stylesheet" th:href="@{/static/js/plugins/viewer/css/viewer.min.css}">
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="javascript:void(0)">商户管理</a>&nbsp;&gt;&nbsp;<span>批发商列表</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+            <h2>批发商列表</h2>
+            <div class="ph_snbBtn">
+	            <input name="" type="button" onclick="showAddHeadHunting()" value="添加批发商">
+	            <input name="" type="button" value="导出" onclick="exportData()">
+            </div>
+        </div>
+        <!--end 标题-->
+        <!--筛选条件-->
+        <div class="ph_screen">
+            <table class="ph_tableBox">
+                <tr>
+                    <th>批发商账号：</th>
+                    <td><input name="" type="text" id="telPhone"></td>
+                    <td colspan="3">
+                        <input name="" type="button" value="查询" onclick="query()">
+                        <input name="" type="button" value="重置" onclick="reset()">
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <!--end 筛选条件-->
+        <!--商品列表-->
+        <div class="ph_wareBox">
+            <table class="ph_wareList"id="example">
+            </table>
+        </div>
+        <!--end 商品列表-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<!--添加推广师弹窗-->
+<div class="PopupBox" id="Js_divisionBox">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <form class="form-inline" id="add_verify">
+                <table class="ph_tableBox">
+                    <tr>
+                        <th><span class="require">*</span>批发商账号：</th>
+                        <td><input name="" type="text" maxlength="11" id="accountNumber" class="validate[required,custom[phone],maxSize[11]]"></td>
+                    </tr>
+                   <!--  <tr>
+                        <th><span class="require">*</span>推广师证件：</th>
+                        <td><div class="divisionImg"><img src="images/图层-4.png" alt=""></div></td>
+                    </tr> -->
+                </table>
+            </form>
+        </div>
+    </div>
+    <!--end 内容-->
+    <form class="form-inline" id="export_data" th:action="@{/web/headhunting/exportHeadhuntingData}">
+    	<input type="hidden" id="e_telphone" name="accountNumber"/>
+    </form>
+</div>
+<!--end 添加推广师弹窗-->
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<!--分页-->
+<script type="text/javascript" th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<!--弹窗-->
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!--图片点击放大-->
+<script type="text/javascript" th:src="@{/static/js/plugins/viewer/viewer-jquery.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/imgUp.js}"></script>
+<script type="text/javascript">
+	var tb;
+    $(function() {
+    	//验证初始化
+        $('#add_verify').validationEngine({
+            validationEventTrigger: 'keyup blur'//触发验证的事件，支持事件可参考 jQuery 的事件说明。
+            ,scroll: true//	屏幕自动滚动到第一个验证不通过的位置。
+            ,focusFirstField: true//验证未通过时，是否给第一个不通过的控件获取焦点。
+            ,validateNonVisibleFields: false//是否验证不可见的元素（如 type="hidden" 的输入框，或多个输入控件在选项卡切换中）
+            ,promptPosition:'bottomLeft'//位置
+            ,addPromptClass:'formError-text'//提示纯文本样式
+            ,autoPositionUpdate:false
+        });
+    	
+        //分页
+        tb = $('#example').DataTable({
+            "lengthChange": false,
+            "ordering": false,
+            "searching": false,
+            "bServerSide": true,
+            "autoWidth": false,
+            "sPaginationType": "full_numbers",
+            "bJQueryUI": true,
+            "sDom": '<"">t<"F"ip>',
+            "sAjaxSource": "/web/headhunting/getHeadhuntingList", //ajax调用接口
+            "aoColumnDefs": [{sDefaultContent: '',aTargets: [ '_all' ]}],
+            "aoColumns": [
+				  	{ "sTitle" : "序号","mData": "id" ,"class":"sClass"},
+				  	{ "sTitle" : "批发商头像","mData": "headImage","class":"sClass" ,"mRender":function(data,type,full) {
+		                	if (full.headImgUrl) {
+			                	return  '<img class="show-img zoom-img" src="' + full.headImgUrl + '" alt="">';
+		                	}
+		                	return '';
+	                	} 
+				  	},
+	                { "sTitle" : "批发商账号","mData": "accountNumber","class":"sClass" },
+	                { "sTitle" : "批发商昵称","sWidth": "180px","mData": "nickName","class":"sClass" },
+	                { "sTitle" : "所属工会","mData": "laborUnionName","class":"sClass" },
+	                { "sTitle" : "批发商标签","mData": "tags","class":"sClass" },
+	                { "sTitle" : "所属区域","mData": "detailAddress","class":"sClass" },
+	                {
+	                    "sWidth": "110px",
+	                    "sTitle": "操作",
+	                    "mData": "id",
+	                    "sClass": "ph_tableShow",
+	                    "mRender": function (data, type, full) {
+	                    	  var text = '<div class="ph_operateBox"><input class="ph_operate" name="" type="button" value="操作选项">';
+	                    	  text = text + '<ul class="ph_operateList hide" role="menu">';
+					  		  text += "<li><a class='Js_btn' href='javascript:showHeadHuntingDetail("+full.accountNumber+");'>批发商详情</a></li>";
+							  text = text + '</ul></div>';
+							  return text;
+						} 
+	                }
+             ],
+            "oLanguage" : {
+                "sProcessing" : "数据加载中······",
+                "sLengthMenu" : "显示 _MENU_ 条记录",
+                "sZeroRecords" : "没有您要搜索的内容！",
+                "sEmptyTable" : "列表中无数据存在！",
+                "sInfo" : "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+                "sInfoEmpty" : "显示 0 到 0 条记录",
+                "sInfoFiltered" : "数据列表中共  _MAX_ 条记录",
+                "oPaginate" : {
+                    "sFirst" : "首页",
+                    "sPrevious" : "上一页",
+                    "sNext" : "下一页",
+                    "sLast" : "末页"
+                }
+            },
+            "fnServerData" : function ( sSource, aoData, fnCallback, oSettings ) {
+            	console.log(aoData);
+                oSettings.jqXHR = $.ajax( {
+                    "dataType" 	: 'json',
+                    "type" 		: "GET",
+                    "async"     : 'false',
+                    "url" 		: sSource,
+                    "data" 		: {
+                        'pageNum': (aoData[3].value/aoData[4].value)+1,
+                        'pageSize' :  aoData[4].value,
+                        'accountNumber'  :  $("#telPhone").val()
+                    },
+                    "success"	: fnCallback
+                } );
+            },
+            "fnInitComplete": function (oSettings, json) {
+                //点击图片放大初始化
+                $('.zoom-img').viewer({
+                    url: 'src',
+                    navbar: false,
+                    keyboard: true,
+                    title: true
+                });
+            },
+            "fnDrawCallback": function (){
+            	//点击图片放大初始化
+                $('.zoom-img').viewer({
+                    url: 'src',
+                    navbar: false,
+                    keyboard: true,
+                    title: true
+                });
+                var api = this.api();
+                var startIndex= api.context[0]._iDisplayStart;//获取到本页开始的条数
+                api.column(0).nodes().each(function(cell, i) {
+                    cell.innerHTML = startIndex + i + 1;
+                });
+            }
+        });
+    });
+    //条件查询重新加载数据
+    function query() {
+        tb.draw();
+    };
+    // show 添加批发商页面
+    function showAddHeadHunting(){
+    	$('#accountNumber').val('');
+    	var index = layer.open({
+            type: 1,
+            title: '添加批发商',
+            closeBtn : 0,
+            area: ['400px','200px'],
+            btn:['确定', '取消'],
+            btnAlign: 'c',
+            yes:function(){
+            	var flag = $("form").validationEngine("validate");
+                if(!flag){
+                    return;
+                }
+            	$.ajax({
+            		url:"/web/headhunting/addHeadhunting",
+            		type:"post",
+            		dataType:"json",
+            		data:{
+            			"accountNumber":$('#accountNumber').val()
+            		},
+            		error:function(){
+            			layer.msg("服务器繁忙，请稍后再试");
+            		},
+            		success:function(data){
+            			if(data.code=='200'){
+            				layer.msg("添加成功");
+            				layer.close(index);
+            				query();
+            			}else{
+            				layer.msg(data.message);
+            			}
+            		}
+            	});
+            },
+            content: $('#Js_divisionBox')
+        });
+    }
+    // show 批发商详情页面
+    function showHeadHuntingDetail(telPhone){
+    	layer.open({
+            type: 2,
+            title: '批发商详情',
+            closeBtn : 0,
+            area: ['950px','650px'],
+            btn:['关闭'],
+            btnAlign: 'c',
+            shadeClose:true,
+            content: '/web/headhunting/toHeadhuntingDetailPage?accountNumber='+telPhone
+        });
+    }
+    // 导出数据
+    function exportData(){
+    	var telPhone = $('#telPhone').val().trim();
+    	$("#e_telphone").val(telPhone);
+    	$('#export_data').submit();
+    }
+    // 重置
+    function reset(){
+    	$("#telPhone").val('');
+    	query();
+    }
+</script>
+</body>
+</html>

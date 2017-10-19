@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.mybatis.dao.IAgentDao">
+	
+
+	<select id="getAgentByStatusAndId" resultType="map" parameterType="map">
+		SELECT 
+			*
+		FROM ph_agent
+		WHERE agentLevelId=#{type}
+		  AND status=1
+		  AND isDelete=0
+		  AND isFrozen=0
+		  AND isFormSystem=1
+		<if test="type==1">
+			AND cityId=#{id}
+		</if>
+		<if test="type==2">
+			AND countyId=#{id}
+		</if>
+		<if test="type==3">
+			AND townId=#{id}
+		</if>
+	</select>
+	
+	<insert id="insertUserBalanceTrade" parameterType="map">
+		INSERT INTO ph_user_balance_trade (
+			userId,
+			score,
+			orderNo,
+			transCode,
+			createTime,
+			userType
+		)
+		VALUES
+	    (
+	    	#{userId},
+	    	#{agentFen},
+	    	#{orderNo},
+	    	2005,
+	    	now(),
+	    	#{userType}
+	    )
+	</insert>
+	<update id="updateUserBalance" parameterType="map">
+         update ph_user_balance 
+               set 
+            score= score + ${agentFen},
+            updateTime = now()
+            where userId = ${userId}  
+	</update>
+	
+</mapper>

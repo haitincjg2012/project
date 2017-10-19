@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.AgentChargeRecordMapper">
+ <resultMap id="BaseResultMap" type="com.ph.shopping.facade.pay.entity.AgentChargeRecord">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+
+  </resultMap>
+  
+    <!-- 根据订单号查询订单信息 -->
+    <select id="getAgentChargeRecordByRecordNo" resultType="com.ph.shopping.facade.pay.entity.AgentChargeRecord">
+  		SELECT 
+  			  *
+  		  FROM
+  		  	  ph_agent_charge_record
+  		 WHERE
+  		 	  orderNum=#{orderNum}
+    </select>
+</mapper>

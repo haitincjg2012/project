@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.hunter.HunterDao">
+	
+	
+	
+	
+	<select id="getHunterById" resultType="Map" parameterType="Long">
+		SELECT h.`name` AS `name`,h.card AS card FROM alq_hunter AS h WHERE h.id=#{hunterId} 
+	</select>
+
+	<select id="getHunterCenterById" resultType="map" parameterType="java.lang.Long">
+		SELECT 
+			h.id,
+			h.`nickname`,
+			att.`address`,
+			IFNULL(h.`star`,0) as star, 
+			CASE h.`level`
+			WHEN 0 THEN '批发'
+			WHEN 1 THEN '批发'
+			WHEN 2 THEN '批发'
+			WHEN 3 THEN '批发'
+			ELSE '批发商'
+			END AS level
+		FROM 
+			alq_hunter h left join alq_attachment att on att.`id`=h.`logo_attachment_id`
+		WHERE 
+			h.`id`=#{hunterid} 
+	</select>
+	
+	<select id="getById" resultType="com.alqsoft.entity.hunter.Hunter" parameterType="Long">
+		SELECT * FROM alq_hunter AS h WHERE h.id=#{id}
+	</select>
+	
+	<select id="getHunterByTownId" resultType="map" parameterType="Long">
+		SELECT h.id,h.`name`,h.card  FROM alq_hunter AS h WHERE h.town_id=#{townId} 
+	</select>
+	
+	<select id="getHunterByNickname" resultType="map" parameterType="map">
+		SELECT *  FROM alq_hunter WHERE nickname=#{nickname} 
+	</select>
+	
+	
+	
+	<select id="getHuntersBySubject" parameterType="java.util.Map" resultType="java.util.Map">
+
+		SELECT
+		mm.im_id,<!-- 腾讯注册的唯一标识 -->
+		h.id,<!-- 批发商id -->
+		(SELECT m.address FROM alq_attachment m WHERE m.id=h.logo_attachment_id) address,<!-- 批发商LOGO -->
+		CASE  WHEN IFNULL(h.level,0)=0 THEN '批发商'
+		WHEN h.level=1 THEN '批发'
+		WHEN h.level=2 THEN '批发'
+		WHEN h.level=3 THEN '批发'   END  level,<!-- 批发商等级 -->
+		IFNULL(h.star,0) as star,<!-- 批发商星级 -->
+		IFNULL(h.good_comment_num_order,0) AS good_comment_num_order,		<!-- 批发商好评 -->
+		h.nickname,<!-- 批发商昵称 -->
+		h.province_name as provincename,<!-- 批发商省 -->
+		h.city_name as cityname,		<!-- 批发商城市-->
+		h.county_name as countyname,	<!-- 批发商县 -->
+		h.major,<!-- 批发商专业 -->
+		h.county_name AS sourcing_address,<!-- 猎货范围只显示县-->
+		h.service,<!-- 批发商服务一句话介绍 -->
+		IFNULL(h.num,0) as num<!-- 多少人找他 -->
+		FROM alq_hunter h,alq_member mm ,alq_subject sb
+		WHERE h.subject_id=sb.id and mm.hunter_id=h.id AND IFNULL(sb.is_del,0)=0 AND sb.id = #{sid,jdbcType=BIGINT}
+		LIMIT  #{page} , #{size}
+
+	</select>
+	
+	<!-- 根据行业类别查询批发商 -->
+	<select id="findHunterByIndustryTypeId" resultType="map" parameterType="map">
+	SELECT h.id,h.imid,h.nickname,h.service,h.level,h.goodordernum,h.star,h.num,h.major,h.countyname,h.provincename,h.cityname,att.address from (
+		SELECT 
+			h.`id`,							<!-- 批发商id -->
+			h.`nickname`,					<!-- 批发商昵称 -->
+			h.`province_name` as provincename,				<!-- 批发商省 -->
+			h.`city_name` as cityname,					<!-- 批发商城市-->
+			h.`county_name` as countyname,	<!-- 批发商县 -->
+			h.`service`,					<!-- 批发商服务 -->
+			IFNULL(h.`good_comment_num_order`,0) goodordernum,		<!-- 批发商好评 -->
+			IFNULL(h.`star`,0) AS star,		<!-- 批发商星 -->
+			IFNULL(h.`num`,0) AS num,		<!-- 多少人找他 -->
+			h.logo_attachment_id,
+			h.major AS major,
+			m.im_id AS imid,				<!-- 批发商专业 -->
+		CASE h.`level`						<!-- 批发商等级 -->
+		   WHEN 0 THEN '批发'
+		   WHEN 1 THEN '批发'
+		   WHEN 2 THEN '批发'
+		   WHEN 3 THEN '批发'
+		   ELSE '批发商'
+		   END AS level
+		FROM alq_hunter h,alq_member m  WHERE h.`industry_type_id` =#{industryid} AND h.id=m.hunter_id and ifnull(h.state,1)=1 ) h  LEFT JOIN alq_attachment att ON att.`id`=h.`logo_attachment_id`
+		LIMIT #{startIndex},#{endIndex}
+	</select>
+	
+	<select id="getBackgroundImageById" resultType="Map" parameterType="Long">
+		SELECT h.id AS hunterId,a.address AS imageAddress FROM alq_hunter AS h
+		LEFT JOIN alq_attachment AS a ON h.background_attachment_id=a.id
+		WHERE  h.id=#{hunterId} 
+	</select>
+	<select id="getPhoneByHunterId" resultType="String" parameterType="Long">
+	select phone  from alq_member where hunter_id=#{hunterId}
+	</select>
+	<!-- 判断该用户和该批发商是否关注 -->
+	<select id="getHunterFoucsType" resultType="map" >
+	    SELECT 
+		IFNULL(c.type,1) as type
+	    FROM `alq_collection_hunter` c 
+	    WHERE hunter_id=#{hId} AND member_id=#{mId}
+	</select>
+
+	<!--获取批发商头像-->
+	<select id="getHunterLogoImage" resultType="java.util.Map">
+		select h.id,ifnull(h.nickname,m.phone) nickname,m.im_id,
+		(select a.address from alq_attachment a where a.id= h.logo_attachment_id)address from
+		alq_member m ,alq_hunter h where m.hunter_id = h.id and h.id= #{hid}
+	</select>
+</mapper>

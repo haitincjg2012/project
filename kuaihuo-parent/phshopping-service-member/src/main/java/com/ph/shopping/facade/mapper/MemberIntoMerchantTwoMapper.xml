@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MemberIntoMerchantTwoMapper">
+
+	<!--获取商户消费时段-->
+	<select id="getMerchantTimeTwo" parameterType="java.lang.Long" resultType="com.ph.shopping.facade.member.vo.MerchantTimeSectionVO">
+		SELECT
+			startTime,
+			endTime
+		FROM
+			ph_merchant_time_section
+		WHERE
+			merchantId =#{merchantId}
+	</select>
+</mapper>

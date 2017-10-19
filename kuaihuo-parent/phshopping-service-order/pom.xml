@@ -1,0 +1,169 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.ph</groupId>
+		<artifactId>phshopping-parent</artifactId>
+		<version>2.1-release</version>
+	</parent>
+	<artifactId>phshopping-service-order</artifactId>
+	<description>订单接口服务</description>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+	</properties>
+
+	<dependencies>
+		<!-- 必须导入 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+		<!-- zkclient -->
+        <dependency>
+            <groupId>com.101tec</groupId>
+            <artifactId>zkclient</artifactId>
+        </dependency>
+        <!-- dubbo -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo</artifactId>
+        </dependency>
+        <!-- zookeeper -->
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+        </dependency>
+        <!--mysql -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		 <!-- 公共包 -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-common-core</artifactId>
+			<version>${common-core.version}</version>
+		</dependency>
+	    <!-- 工具类包 -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-common-util</artifactId>
+			<version>${common-util.version}</version>
+		</dependency>
+		<!-- 公共配置 -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-common-config</artifactId>
+			<version>${common-config.version}</version>
+		</dependency>
+		<!-- order接口 -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-order</artifactId>
+			<version>${facade-order.version}</version>
+		</dependency>
+		<!-- 商品接口 -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-product</artifactId>
+			<version>${facade-product.version}</version>
+		</dependency>
+		<!-- 会员接口 -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-member</artifactId>
+			<version>${facade-member.version}</version>
+		</dependency>
+		<!-- 积分接口 -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-score</artifactId>
+			<version>${facade-score.version}</version>
+		</dependency>
+		<!-- 商户接口 -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-spm</artifactId>
+			<version>${facade-spm.version}</version>
+		</dependency>
+		<!-- pay接口 -->
+		<dependency>
+			<groupId>com.ph</groupId>
+			<artifactId>phshopping-facade-pay</artifactId>
+			<version>${facade-pay.version}</version>
+		</dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ph</groupId>
+            <artifactId>phshopping-facade-profit</artifactId>
+            <version>2.1-release</version>
+        </dependency>
+
+		<!--事務配置-->
+		<dependency>
+			<groupId>com.lorne.tx</groupId>
+			<artifactId>dubbo-transaction</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.lorne.tx</groupId>
+			<artifactId>lorne-tx-core</artifactId>
+		</dependency>
+		
+		<dependency>
+		    <groupId>commons-configuration</groupId>
+		    <artifactId>commons-configuration</artifactId>
+		    <version>1.8</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpmime</artifactId>
+		    <version>4.3.6</version>
+		</dependency>
+		
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- springboot打jar包 -->
+			<plugin>
+	               <groupId>org.springframework.boot</groupId>
+	               <artifactId>spring-boot-maven-plugin</artifactId>
+	               <executions>
+	                   <execution>
+	                       <goals>
+	                           <goal>repackage</goal>
+	                       </goals>
+	                   </execution>
+	               </executions>
+	           </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${compiler.version}</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/java</directory>
+				<includes>
+					<include>**/*.*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+			</resource>
+		</resources>
+	</build>
+</project>

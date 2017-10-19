@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IcCardMapper">
+
+	<!-- 根据条形码获取会员卡信息 -->
+	<select id = "selectIcCardInfoByCode" parameterType="map" resultType="com.ph.shopping.facade.member.entity.IcCardInfo">
+		SELECT
+			id,
+			innerCode,
+			outerCode,
+			createTime,
+			updateTime
+		FROM
+			ph_ic_card_info
+		WHERE
+			isDelete != 1
+		<if test="outerCode != null and outerCode != ''">
+			and outerCode = #{outerCode}
+		</if>
+		<if test="innerCode != null and innerCode != ''">
+			and innerCode = #{innerCode}
+		</if>
+		<if test="isDelete != null">
+			and isDelete = #{isDelete}
+		</if>
+		order by createTime desc
+	</select>
+	
+	<!-- 会员卡绑定(单独写个会员卡绑定mapper) -->
+	<insert id="insertIcMemberBind" parameterType="com.ph.shopping.facade.member.entity.IcMemberBind">
+		INSERT INTO ph_ic_member_bind (
+			icCardId,
+			memberId,
+			merchantId,
+			createTime,
+			updateTime,
+			status,
+			createrid
+		)
+		VALUES(
+			#{icCardId},
+			#{memberId},
+			#{merchantId},
+			#{createTime},
+			#{updateTime},
+			#{status},
+			#{createrid}
+		)	
+	</insert>
+	<!-- 根据会员卡查询绑定的会员卡信息、判断是否存在 （可优化查询条数据） (单独写个会员卡绑定mapper) -->
+	<select id="selectMemberCarBind" resultType="com.ph.shopping.facade.member.entity.IcMemberBind" parameterType="com.ph.shopping.facade.member.entity.IcMemberBind">
+		SELECT
+			id,
+			icCardId,
+			memberId,
+			merchantId,
+			createTime,
+			updateTime,
+			STATUS,
+			reportTime,
+			createrid
+		FROM
+			ph_ic_member_bind
+		<where>
+		    <if test="id != null">
+		    	and id = #{id}
+		    </if>
+		    <if test="icCardId != null">
+		    	and icCardId = #{icCardId}
+		    </if>
+		    <if test="memberId != null">
+		    	and memberId = #{memberId}
+		    </if>
+		    <if test="merchantId != null">
+		    	and merchantId = #{merchantId}
+		    </if>
+		    <if test="createTime != null">
+		    	and createTime = #{createTime}
+		    </if>
+		    <if test="updateTime != null">
+		    	and updateTime = #{updateTime}
+		    </if>
+		    <if test="status != null">
+		    	and status = #{status}
+		    </if>
+		    <if test="reportTime != null">
+		    	and reportTime = #{reportTime}
+		    </if>
+		    <if test="operatorUserId != null">
+		    	and createrid = #{createrid}
+		    </if>
+		</where>
+	</select>
+	<!-- 根据会员id修改会员卡绑定数据表 商户操作，根据会员Id操作会员卡  (单独写个会员卡绑定mapper) -->
+	<update id="updateMemeberIcCardBind" parameterType="com.ph.shopping.facade.member.entity.IcMemberBind">
+		UPDATE ph_ic_member_bind
+		<trim prefix="set" suffixOverrides=",">
+		  <if test="status != null ">
+		  	status = #{status},
+		  </if>
+		  <if test="reportTime != null ">
+		  	reportTime = #{reportTime},
+		  </if>
+		  <if test="updaterId != null ">
+		  	updaterId = #{updaterId},
+		  </if>
+		  <if test="updateTime != null ">
+		  	updateTime = #{updateTime},
+		  </if>
+		</trim>
+		where
+			memberId = #{memberId}
+	</update>
+	<!-- 根据会员卡ID 修改数据 ，根据会员卡Id操作会员卡  (单独写个会员卡绑定mapper)-->
+	<update id="updateCardBindInfoByIcId" parameterType="com.ph.shopping.facade.member.entity.IcMemberBind">
+		UPDATE ph_ic_member_bind
+		<trim prefix="set" suffixOverrides=",">
+		  <if test="status != null ">
+		  	status = #{status},
+		  </if>
+		  <if test="reportTime != null ">
+		  	reportTime = #{reportTime},
+		  </if>
+		  <if test="updaterId != null ">
+		  	updaterId = #{updaterId},
+		  </if>
+		  <if test="updateTime != null ">
+		  	updateTime = #{updateTime},
+		  </if>
+		</trim>
+		where
+			icCardId = #{icCardId}
+	</update>
+	<!-- 查询用户绑定的会员卡信息 （序号能页面处理则在页面处理）-->
+	<select id="selectMemberBindCardByPage" parameterType="map" resultType="com.ph.shopping.facade.member.vo.MemberCardInfoVO">
+		select @row := @row + 1 num,a.* from (
+			SELECT
+				p1.icCardId,
+				p1.memberId,
+				p1.merchantId,
+				p1.createTime,
+				p1.updateTime,
+				p1. status,
+				p1.reportTime,
+				p1.createrid,
+				p2.innerCode,
+				p2.outerCode,
+				
+				ph.memberName,
+				ph.telPhone
+			FROM
+				ph_member ph
+			LEFT JOIN ph_ic_member_bind p1 on ph.id = p1.memberId
+			LEFT JOIN ph_ic_card_info p2 ON p1.icCardId = p2.id
+			WHERE
+				p2.isDelete != 1
+			<if test="telPhone != null and telPhone != ''">
+				and ph.telPhone = #{telPhone}
+			</if>
+			<if test="createTime != null">
+				and p1.createTime = #{createTime}
+			</if>
+			<if test="updateTime != null">
+				and p1.updateTime = #{updateTime}
+			</if>
+			<if test="icCardId != null">
+				and p1.icCardId = #{icCardId}
+			</if>
+			<if test="memberId != null">
+				and p1.memberId = #{memberId}
+			</if>
+			<if test="merchantId != null">
+				and p1.merchantId = #{merchantId}
+			</if>
+			<if test="status != null">
+				and p1.status = #{status}
+			</if>
+			<if test="innerCode != null and innerCode != ''">
+				and p2.innerCode = #{innerCode}
+			</if>
+			<if test="outerCode != null and outerCode != ''">
+				and p2.outerCode = #{outerCode}
+			</if>
+			order by p1.createTime desc
+		)a,(SELECT @row := 0) r
+	</select>
+	<!-- 根据手机号查询会员卡信息 -->
+	<select id="selectMemberBindCardInfoByPhone" parameterType="java.lang.String" resultType="com.ph.shopping.facade.member.vo.MemberCardInfoVO">
+		select 
+			p1.icCardId, 
+			p1.memberId,
+			p1.merchantId,
+			p1.createTime,
+			p1.updateTime,
+			p1.status,
+			p1.reportTime,
+			p1.createrid,
+			
+			p2.innerCode,
+			p2.outerCode,
+			
+			ph.memberName,
+			ph.telPhone
+		from 
+			ph_member ph
+		left join ph_ic_member_bind p1 on ph.id = p1.memberId
+		left join ph_ic_card_info p2 on p1.icCardId = p2.id
+		WHERE
+			p2.isDelete != 1
+		and p1.status = 1
+		and ph.telPhone = #{phone}
+	</select>
+	<!-- 判断会员卡是否被绑定 （与selectMemberCarBind可一起优化）-->
+	<select id = "selectMemberCardBindNum" parameterType="map" resultType="int">
+		SELECT
+			count(1)
+		FROM
+			ph_ic_member_bind pb
+		LEFT JOIN ph_ic_card_info pi ON pb.icCardId = pi.id
+		WHERE
+			pi.isDelete != 1
+		AND pb.status = 1
+		<if test="outerCode != null and outerCode != ''">
+			and pi.outerCode = #{outerCode}
+		</if>
+		<if test="innerCode != null and innerCode != ''">
+			and pi.innerCode = #{innerCode}
+		</if>
+	</select>
+	<!-- 加载会员卡列表数据 -->
+    <select id="selectMemberCardByPage" parameterType="com.ph.shopping.facade.member.dto.MemberCardInfoDTO"
+            resultType="com.ph.shopping.facade.member.vo.MemberCardInfoVO">
+		SELECT
+			id icCardId,
+			innerCode,
+			outerCode,
+			createTime,
+			updateTime,
+			isDelete
+		FROM
+			ph_ic_card_info
+		where
+			isDelete != 1
+		<if test="icCardId != null">
+			and id = #{icCardId}
+		</if>
+		<if test="innerCode != null and innerCode != ''">
+			and innerCode = #{innerCode}
+		</if>
+		<if test="outerCode != null and outerCode != ''">
+			and outerCode = #{outerCode}
+		</if>
+		<if test="isDelete != null">
+			and isDelete = #{isDelete}
+		</if>
+	</select>
+	<!-- 判断卡号是否存在 -->
+	<select id="selectIcCardCountInfoByCode" parameterType="map" resultType="int">
+		SELECT
+			count(1)
+		FROM
+			ph_ic_card_info
+		WHERE
+			isDelete != 1
+		<if test="outerCode != null and outerCode != ''">
+			and outerCode = #{outerCode}
+		</if>
+		<if test="innerCode != null and innerCode != ''">
+			and innerCode = #{innerCode}
+		</if>
+	</select>
+	<select id="selectIcinnerCodeByInnerCodes" parameterType="java.util.List" resultType="java.lang.String">
+		SELECT
+			innerCode
+		FROM
+			ph_ic_card_info
+		WHERE
+			isDelete != 1
+		AND 
+			innerCode 
+		IN
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</select>
+	<select id="selectIcOuterCodeByOuterCodes" parameterType="java.util.List" resultType="java.lang.String">
+		SELECT
+			outerCode
+		FROM
+			ph_ic_card_info
+		WHERE
+			isDelete != 1
+		AND 
+			outerCode 
+		IN
+        <foreach collection="list" item = "item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</select>
+	<!-- 批量新增 -->
+	<insert id="batchInsertCard" parameterType="java.util.List">
+		INSERT INTO ph_ic_card_info(
+			innerCode,
+			outerCode,
+			createTime,
+			isDelete
+		)
+		VALUES
+	    <foreach collection="list" item="item" index="index" separator=",">  
+ 		(
+	 		#{item.innerCode},
+	 		#{item.outerCode},
+	 		#{item.createTime},
+	 		#{item.isDelete}
+		)  
+    	</foreach>
+	</insert>
+	<!-- 根据会员卡信息查询会员信息 -->
+	<select id = "selectMemberCardInfoByCode" parameterType="map" resultType="com.ph.shopping.facade.member.dto.MemberCardInfoDTO">
+		SELECT
+			ph.id,
+			ph.telPhone,
+			ph.referencePhone,
+			ph.memberName,
+			ph.sex,
+			ph.idCardNo,
+			ph.isMarketing,
+			ph.createTime memberCreateTime,
+			ph.certification,
+			
+			pimb.createTime bindCreateTime,
+		
+			pici.innerCode,
+			pici.outerCode
+		FROM
+			ph_ic_card_info pici
+		LEFT JOIN ph_ic_member_bind pimb ON pici.id = pimb.icCardId
+		LEFT JOIN ph_member ph ON pimb.memberId = ph.id
+		WHERE pici.isDelete != 1
+		and pimb.status = 1
+		and ph.status != 1
+		<if test = "innerCode != null and innerCode != ''">
+			and pici.innerCode = #{innerCode}
+		</if>
+		<if test = "outerCode != null and outerCode != ''">
+			and pici.outerCode = #{outerCode}
+		</if>
+	</select>
+</mapper>

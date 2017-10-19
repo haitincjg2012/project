@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.PositionMapper">
+    <resultMap id="baseResultMap" type="com.ph.shopping.facade.spm.vo.PositionVO">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="createUser" property="createUser" jdbcType="VARCHAR"/>
+        <result column="createdIp" property="createdIp" jdbcType="VARCHAR"/>
+        <result column="createdTime" property="createdTime" jdbcType="TIMESTAMP"/>
+        <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="cityId" property="cityId" jdbcType="BIGINT"/>
+        <result column="cityName" property="cityName" jdbcType="VARCHAR"/>
+        <result column="countyId" property="countyId" jdbcType="BIGINT"/>
+        <result column="countyName" property="countyName" jdbcType="VARCHAR"/>
+        <result column="provinceId" property="provinceId" jdbcType="BIGINT"/>
+        <result column="provinceName" property="provinceName" jdbcType="VARCHAR"/>
+        <result column="townId" property="townId" jdbcType="BIGINT"/>
+        <result column="townName" property="townName" jdbcType="VARCHAR"/>
+    </resultMap>
+    <!-- 查询条件 -->
+    <sql id="where_clause">
+        <trim prefix="where" prefixOverrides="and">
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="provinceId != null">
+                and provinceId = #{provinceId}
+            </if>
+            <if test="provinceName != null and provinceName !='' ">
+                and provinceName like CONCAT('%',TRIM(#{provinceName}),'%')
+            </if>
+            <if test="cityId != null">
+                and cityId = #{cityId}
+            </if>
+            <if test="cityName != null and cityName !='' ">
+                and cityName like CONCAT('%',TRIM(#{cityName}),'%')
+            </if>
+            <if test="countyId != null">
+                and countyId = #{countyId}
+            </if>
+            <if test="countyName != null and countyName !='' ">
+                and countyName like CONCAT('%',TRIM(#{countyName}),'%')
+            </if>
+            <if test="townId != null">
+                and townId = #{townId}
+            </if>
+        </trim>
+    </sql>
+
+
+    <sql id="where_parent_clause">
+        <trim prefix="where" prefixOverrides="and">
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="provinceId != null and provinceId!= ''">
+                and provinceId = #{provinceId}
+            </if>
+            <if test="provinceName != null and provinceName !='' ">
+                and provinceName like CONCAT('%',TRIM(#{provinceName}),'%')
+            </if>
+            <if test="cityId != null and cityId !=''">
+                and cityId = #{cityId}
+            </if>
+            <if test="cityName != null and cityName !='' ">
+                and cityName like CONCAT('%',TRIM(#{cityName}),'%')
+            </if>
+            <if test="countyId != null and countyId !=''">
+                and countyId = #{countyId}
+            </if>
+            <if test="countyName != null and countyName !='' ">
+                and countyName like CONCAT('%',TRIM(#{countyName}),'%')
+            </if>
+            <if test="townId != null  and townId !=''">
+                and townId = #{townId}
+            </if>
+        </trim>
+        <trim prefix="GROUP BY" prefixOverrides=",">
+            <choose>
+                <!-- <when test="provinceId == 0">
+                        provinceId
+                </when> -->
+                <when test="provinceId != null and provinceId != '' and (cityId == null or cityId == '') and (countyId == null or countyId == '')">
+                    cityId
+                </when>
+                <when test="cityId != null and cityId != '' and (countyId == null or countyId == '')">
+                    countyId
+                </when>
+                <when test="countyId != null and countyId != ''">
+                    townId
+                </when>
+                <otherwise>
+                    provinceId
+                </otherwise>
+            </choose>
+        </trim>
+    </sql>
+    <!-- 返回参数 -->
+    <sql id="base_column_list">
+	    id, createUser, createdIp, createdTime, updateTime, cityId, cityName, countyId, countyName, 
+	    provinceId, provinceName, townId, townName
+  </sql>
+    <!-- 列表查询 -->
+    <select id="getPositionList" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.spm.dto.PositionDTO">
+        select
+        <include refid="base_column_list"/>
+        from ph_position
+        <include refid="where_clause"/>
+    </select>
+    <!-- 子级列表查询 -->
+    <select id="getPositionChildList" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.spm.dto.PositionDTO">
+        select
+        <include refid="base_column_list"/>
+        from ph_position
+        <include refid="where_parent_clause"/>
+    </select>
+    <!-- 列表查询 -->
+    <select id="getPositionById" resultMap="baseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="base_column_list"/>
+        from ph_position
+        where id = #{id}
+    </select>
+
+    <!-- 根据townID 得到town名称 -->
+    <select id="getPositionVoByTownIds" parameterType="java.util.List" resultMap="baseResultMap">
+        select
+        <include refid="base_column_list"/>
+        from ph_position
+        where townId in
+        <foreach item="id" collection="list" separator="," open="(" close=")" index="">
+            #{id}
+        </foreach>
+    </select>
+
+    <!-- 查询所有省、市、区、社区  根据传入字段进行分组-->
+    <select id="getPositionVoByGroup" parameterType="java.lang.String" resultMap="baseResultMap">
+        select
+        <choose>
+            <when test="_parameter!=null and _parameter == 'countyId' ">
+                cityId, cityName, countyId, countyName,
+                provinceId, provinceName
+            </when>
+            <otherwise>
+                <include refid="base_column_list"/>
+            </otherwise>
+        </choose>
+        from ph_position
+        <choose>
+            <when test=" _parameter!=null and _parameter == 'countyId' ">
+                group by countyId
+            </when>
+        </choose>
+    </select>
+</mapper>

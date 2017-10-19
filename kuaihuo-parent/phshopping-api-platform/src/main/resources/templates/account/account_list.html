@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+<meta charset="UTF-8">
+<title>账户余额</title>
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/css/common/models.css}">
+<!--bootstrap-select  css文件-->
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}" />
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}" />
+<!--日期  css文件-->
+<link rel="stylesheet" type="text/css"
+	th:href="@{/static/js/plugins/datepicker/css/bootstrap-datepicker.css}">
+
+</head>
+<body>
+	<div class="MainContent">
+		<!--面包屑-->
+		<div class="current">
+			当前位置：<a href="#">帐户管理</a>&nbsp;&gt;&nbsp;<span>帐户余额</span>
+		</div>
+		<!--end 面包屑-->
+		<!--主体内容-->
+		<div class="MainCont">
+			<!--标题-->
+			<div class="ph_subTit no_border">
+				<h2>帐户余额</h2>
+			</div>
+			<!--end 标题-->
+			<div class="require balanceCon">
+				<span id="balance" type="text" name="balance"
+					th:text="${userBalance}" class="ph_carryTxt"></span>
+			</div>
+			<div class="PopupBtn btnLeft ph_btnBor">
+				<shiro:hasPermission name="userBalanceCharge">
+					<input class="submit" name="" type="button" value="充值"
+						onclick="window.location.href='/web/useraccountmanager/toonlinecharge'">
+				</shiro:hasPermission>
+				<shiro:hasPermission name="userBalanceDrawCash">
+					<input class="submit" name="" type="button" value="提现"
+						onclick="window.location.href='/web/useraccountmanager/todrawcash'">
+				</shiro:hasPermission>
+			</div>
+			<div class="ph_subTit ph_subMarTop no_border">
+				<h2>帐户明细</h2>
+			</div>
+			<!--筛选条件-->
+			<shiro:hasPermission name="userBalanceQuery">
+			<div class="ph_screen">
+				<form id="userBalanceFrom">
+					<table class="ph_tableBox">
+						<tr>
+							<th>来源：</th>
+							<td><select class="selectpicker" id="userSource">
+									<option value="1">全部</option>
+							</select></td>
+							<th>下单时间：</th>
+							<td colspan="2">
+								<p class="dayBox">
+									<input class="start_rise date start" id="startDate"
+										name="startDate" type="text">&nbsp;-&nbsp;<input
+										class="start_rise date end" id="endDate" name="endDate"
+										type="text">
+								</p>
+							</td>
+							<td><input type="button" value="查询" onclick="doQuery()"><input
+								type="button" value="重置"
+								onclick="Dialog.clearData('userBalanceFrom','userSource')"></td>
+						</tr>
+					</table>
+				</form>
+			</div>
+			</shiro:hasPermission>
+			<!--余额流水列表-->
+			<div class="ph_wareBox">
+				<table class="ph_wareList" id="userBalanceTrade">
+				</table>
+			</div>
+		</div>
+		<!--end 主体内容-->
+	</div>
+
+	<script type="text/javascript"
+		th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+	<!--bootstrap-select-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+	<!--分页-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+	<!--日期控件-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/bootstrap-datepicker.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/jquery.timepicker.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/jquery.datepair.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/datepicker/datepicker.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/util.js}"></script>
+
+	<script type="text/javascript"
+		th:src="@{/static/js/account/account_list.js}"></script>
+</body>
+</html>

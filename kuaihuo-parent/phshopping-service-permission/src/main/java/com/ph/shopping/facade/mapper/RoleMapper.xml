@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.RoleMapper">
+
+	<sql id="baseSelect">
+		SELECT
+		r.id,
+		r.roleName,
+		r.roleCode,
+		r.status,
+		r.description
+	</sql>
+
+	<sql id="baseCondition">
+		<if test="id != null and id !=''">
+			and r.id = #{id}
+		</if>
+		<if test="roleName != null and roleName != ''">
+			and r.roleName = #{roleName}
+		</if>
+		<if test="status != null and status !=''">
+			and r.status = #{status}
+		</if>
+	</sql>
+
+	<!-- 根据用户Id获取角色 -->
+	<select id="getRoleListByUserId" resultType="com.ph.shopping.facade.permission.vo.RoleVO">
+		<include refid="baseSelect"/>
+  		  FROM
+  		       ph_permission_user_role ur
+		INNER JOIN
+  	          ph_permission_role r
+		ON
+  	          ur.roleID=r.id
+  	     WHERE
+		r.status = 0 and ur.userId=#{userId}
+  </select>
+  
+  <!--查询角色信息-->
+  <select id="selectRoleBySelective" 
+  	parameterType="com.ph.shopping.facade.permission.entity.Role"
+  	resultType="com.ph.shopping.facade.permission.entity.Role">
+	  <include refid="baseSelect"/>
+	FROM
+	  ph_permission_role r
+	  WHERE 1=1
+	  <include refid="baseCondition"/>
+
+
+  </select>
+
+
+	<!-- 分页获取所有角色 -->
+	<select id="getRoleByPage" resultType="com.ph.shopping.facade.permission.vo.RoleVO"
+			parameterType="com.ph.shopping.facade.permission.dto.RoleDTO">
+		<include refid="baseSelect"/>
+		FROM
+			ph_permission_role r
+		WHERE 1=1
+		<include refid="baseCondition"/>
+        ORDER BY r.roleName DESC
+	</select>
+
+	<!--角色列表-->
+	<select id="getAllRole" resultType="com.ph.shopping.facade.permission.entity.Role">
+		<include refid="baseSelect"/>
+		FROM
+			ph_permission_role r
+		WHERE
+        r.roleCode = 1
+	</select>
+
+    <!--通过角色Id查询用户列表-->
+	<select id="getUserListByRoleId" resultType="com.ph.shopping.facade.permission.vo.UserVO">
+        SELECT
+        u.id,
+        u.userName,
+        u.telphone,
+        u.password,
+        u.loginTime,
+        u.createTime,
+        u.isable
+        FROM
+        ph_permission_user_role ur
+        INNER JOIN ph_permission_common_user u
+        on ur.userId=u.id
+        WHERE
+        ur.roleId = #{roleId}
+    </select>
+</mapper>

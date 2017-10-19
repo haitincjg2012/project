@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>角色列表</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--文件树插件 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/ztree/zTreeStyle.css}">
+    <style>
+        #filename{
+            width: 67px !important;
+        }
+        #SWFUpload_0{
+            width: 67px !important;
+        }
+        #filename-button{
+            background-repeat: no-repeat;
+            width: 67px !important;
+        }
+    </style>
+
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">批发行业分类</a>&nbsp;&gt;&nbsp;<span>行业分类列表</span></div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+
+        <div class="ph_subTit">
+            <h2>行业分类列表</h2>
+            <shiro:hasPermission name="roleAdd">
+                <div class="ph_snbBtn">
+                    <input class="Js_deliver" name="" type="button" value="添加行业分类">
+                    <input class="Js_delivers" name="" type="button" value="行业分类">
+                </div>
+            </shiro:hasPermission>
+        </div>
+
+        <!--end 标题-->
+        <!--角色列表-->
+        <div class="ph_wareBox">
+            <table class="ph_wareList" id="example"></table>
+        </div>
+        <!--end 角色列表-->
+    </div>
+    <!--end 主体内容-->
+</div>
+
+<!--遮罩层-->
+<div class="maskBox"></div>
+<!--end 遮罩层-->
+
+<!--增加角色弹窗-->
+<div class="PopupBox" id="deliverBox">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <form id="addRoleForm">
+                <table class="ph_tableBox">
+                    <input id="editRoleId" name="address" type="hidden">
+                    <input id="id" name="id" type="hidden">
+
+
+                    <form id= "uploadForm" style="display:none">
+                        <p >上传图片：</p > <input type="file" name="filename" id="filename" value= "" onchange="doUpload()"/>
+                    </form>
+                    <tr>
+                        <th><span class="require">*</span>行业名：</th>
+                        <td><input id="editRoleName" class="validate[required, maxSize[20]]" name="name"
+                                   type="text"></td>
+                    </tr>
+                    <tr>
+                        <th><span class="require">*</span>置顶状态：</th>
+                        <td>
+                            <select name="isTop" id="istop_id">
+                                <option value="0">未置顶</option>
+                                <option value="1">置顶</option>
+                            </select>
+                        </td>
+                    </tr>
+
+                </table>
+            </form>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 增加角色弹窗-->
+<!--增加角色弹窗二级分类的弹框-->
+<div class="PopupBox" id="deliverBox_2">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <form id="addRoleForm_2">
+                <table class="ph_tableBox">
+                    <input id="editRoleId_2" name="address" type="hidden">
+                    <input id="id_2" name="id" type="hidden">
+
+
+                    <form id= "uploadForm_2" style="display:none">
+                        <p >上传图片：</p > <input type="file" name="filename" id="filename_2" value= "" onchange="doUpload()"/>
+                    </form>
+                    <tr>
+                        <th><span class="require">*</span>一级行业名：</th>
+                        <td><td>
+                                <select name="type" id="industry_first">
+
+
+                                </select>
+                           </td>
+                    </tr>
+                    <tr>
+                        <th><span class="require">*</span>二级行业名：</th>
+                        <td><input id="editRoleName_3" class="validate[required, maxSize[20]]" name="secondName"
+                                   type="text"></td>
+                    </tr>
+
+                </table>
+            </form>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 增加角色弹窗-->
+<!--分配角色弹窗-->
+<div class="PopupBox" id="menuTreeBox">
+    <!--内容-->
+    <input id="roleId" type="hidden">
+    <div class="PopupCon">
+        <div id="rolemenu">
+            <div class="zTreeDemoBackground left">
+                <ul id="treeDemo" class="ztree"></ul>
+            </div>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 分配角色弹窗-->
+<!--end 分配角色弹窗-->
+
+<!--操作框 -->
+<div id="handle">
+</div>
+<!--end 操作框-->
+
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!--分页-->
+<script type="text/javascript" th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/spm/spmExtends.js}"></script>
+<!--bootstrap-select-->
+
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+
+<!--文件树插件-->
+<!--<script type="text/javascript" th:src="@{/static/js/plugins/ztree/jquery-1.4.4.min.js}"></script>-->
+<script type="text/javascript" th:src="@{/static/js/plugins/ztree/jquery.ztree.core.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/ztree/jquery.ztree.excheck.min.js}"></script>
+<!--图片上传-->
+<script type="text/javascript" th:src="@{/static/uploadfy/jquery.uploadify.js}"></script>
+<!--上传图片-->
+<script type="text/javascript" th:inline="javascript">
+    var tb;
+    var sessionUser = [[${session.login_back_session}]];
+    $("#uploadForm").show();
+    $(function() {                                                                     //上传图片============================================================
+        $("#filename").uploadify({
+            'buttonImage' : '/static/uploadfy/upload.png',
+            'fileObjName' : 'urlfile',
+            'auto' : true, //是否自动上传
+            'buttonText' : '选择文件',
+            'swf' : '/static/uploadfy/uploadify.swf',
+            'uploader' : '/web/attachment/upload',
+            'multi': false,
+            'simUploadLimit' : 1, //一次同步上传的文件数目
+            //'fileTypeExts': '*.jpg;*.jpeg;*.png;*.bmp;*.gif',//允许的格式
+            //'fileTypeDesc': '支持格式:jpg/jpeg/png/gif',
+            'onCancel' : function(file) {
+                //$.messager.alert("温馨提示",'取消上传 '+file.name + ' 成功');
+            },
+            'onUploadSuccess' : function(file, data, response) {
+                var json = $.parseJSON(data);
+                console.log("file:"+file);
+                console.log("data:"+data);
+                console.log("result:"+    json.data);
+                $("#editRoleId").val(json.data);
+
+            }
+        });
+    });
+    //================================================================================================================================================================
+    $('.ph_wareBox').on('click', '.Js_menuTree', function () {
+        layer.open({
+            type: 1,
+            title: '分配权限',
+            closeBtn: 0,
+            area: ['600px', '450px'],
+            btn: ['保存', '取消'],
+            btnAlign: 'c',
+            content: $('#menuTreeBox')
+        });
+    });
+
+    //===========================================================================================================上传数据============================================
+    $('.ph_snbBtn').on('click', '.Js_deliver', function () {
+        $("#filename").show();
+        $("#filename").prev().show();
+        layer.open({
+            type: 1,
+            title: '添加行业名',
+            closeBtn: 0,
+            area: ['442px', '312px'],
+            btn: ['保存', '取消'],
+            btnAlign: 'c',
+            content: $('#deliverBox'),
+            btn1: function (index) {
+                var flag = $("#addRoleForm").validationEngine("validate");
+                if (!flag) {
+                    return false;
+                }
+                //提交数据
+                $.ajax({
+                    type: "POST",
+                    url: "/web/industry/addIndustry",
+                    data: $("#addRoleForm").serialize(),
+                    success: function (d) {
+                        console.log(d);
+                        if (d.success) {
+                            layer.alert("保存成功！", {
+                                icon: 1,
+                                title: '提示',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                            tb.draw();
+                        } else {
+                            layer.alert(d.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+                //清空表单
+                $('#addRoleForm')[0].reset()
+                layer.close(index);
+            }
+        });
+    });
+ //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++二级行业分类添加++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    $('.ph_snbBtn').on('click', '.Js_delivers', function () {
+       getAjax();
+        layer.open({
+            type: 1,
+            title: '添加行业名二级',//标题名
+            closeBtn: 0,
+            area: ['442px', '312px'],//弹框的大小
+            btn: ['保存', '取消'],
+            btnAlign: 'c',
+            content: $('#deliverBox_2'),//设置的弹框
+            btn1: function (index) {
+
+                $.ajax({
+                    type: "POST",
+                    url: "/web/industry/addSecondIndstry",//保存二级分类
+                    data: $("#addRoleForm_2").serialize(),
+                    success: function (d) {
+                        console.log(d);
+                        if (d.success) {
+                            layer.alert("保存成功！", {
+                                icon: 1,
+                                title: '提示',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                            tb.draw();
+                        } else {
+                            layer.alert(d.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+                //清空表单
+                $('#addRoleForm')[0].reset()
+                layer.close(index);
+            }
+        });
+    });
+ //====================================================================ajax直接异步请求===================
+    function getAjax(){
+        $.ajax({
+            type: "POST",
+            data :"",
+        dataType: "JSON",
+                async: false,
+                url: "/web/industry/findFirstIndustry",
+                success: function(result) {
+
+                    var datas = result.data;
+                    $("#industry_first").empty();
+
+                    //$("#citys0").empty().append("<option value=''>请选择市</option>");
+                    $.each(datas, function() {
+                        $("#industry_first").append(
+                                "<option value="+this.id
+
+                                +">" + this.name
+
+                                + "</option>");
+                    });
+
+                }
+
+    });
+    }
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++首页展示数据+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
+    $(function () {
+        var Popupe = new PopupBase();
+        Popupe.show('.ph_wareBox', '.Js_btn', '.maskBox,.DeterBox');
+        Popupe.showHide('.subQuemit', '.refundBox,.deliverBox,.menuTreeBox', '.SucBox');
+        Popupe.show('.ph_snbBtn,.ph_wareBox', '.Js_deliver', '.maskBox,.deliverBox');
+        Popupe.show('.ph_snbBtn,.ph_wareBox', '.Js_delivers', '.maskBox,.deliverBox');
+        Popupe.show('.ph_wareBox', '.Js_menuTree', '.maskBox,.menuTreeBox');
+        Popupe.hide('.close', '.maskBox,.DeterBox,.SucBox,.deliverBox,.menuTreeBox');
+        tb = $('#example').DataTable({
+            "lengthChange": false,
+            "ordering": false,
+            "searching": false,
+            "bServerSide": true,
+            "autoWidth": false,
+            "sPaginationType": "full_numbers",
+            "bJQueryUI": true,
+            "sDom": '<"">t<"F"ip>',
+            "sAjaxSource": "/web/industry/industrydatalist", //ajax调用接口===============================调用接口=====================================
+            "aoColumnDefs": [{sDefaultContent: '', aTargets: ['_all']}],
+            "aoColumns": [
+                {"sWidth": "50px", "sTitle": "序号", "mData": "id", "title": "id"},
+                {"sTitle": "排序时间", "mData": "sortnumtime", "class": "sClass"},
+                {"sTitle": "是否置于首位", "mData": "isTop", "class": "sClass",
+                    "mRender":function(data, type, full){
+                        var text;
+                        if(full.isTop==0){
+                            text="<font color='#C7C7C7'>未置顶</font>";
+                        }else if(full.isTop==1){
+                            text="<font>置顶</font>";
+                        }else if(full.isTop==null){
+                            text="<font color='#C7C7C7'>未置顶</font>";
+                        }
+                        return text;
+                    }},
+                {"sTitle": "创建时间", "mData": "createdTime", "class": "sClass"},
+                {"sTitle": "行业名字", "mData": "name", "class": "sClass"},
+
+                {
+                    "sWidth": "110px",
+                    "sTitle": "操作",
+                    "mData": "id",
+                    "sClass": "ph_tableShow",
+                    "mRender": function (data, type, full) {
+                        var text = '<div class="ph_operateBox"><input class="ph_operate" name="" type="button" value="操作选项">';
+                        text = text + '<ul class="ph_operateList hide" role="menu">';
+                        if (full.status == '1') {
+                            if ([[${session.roleStart}]]) {
+                                text += '<li ><a href="#" onclick="enableById(\'' + full.id + '\');">启用</a> </li>';
+                            }
+                        } else {
+                            if ([[${session.roleFrozen}]]) {
+                                text += '<li><a href="#" onclick="disableById(\'' + full.id + '\');">删除</a> </li>';
+                            }
+                        }
+                        if ([[${session.roleUpdate}]]) {
+                            text += '<li><a href="javascript:void(0);" onclick="editRole(\'' + full.id + '\',\'' + full.name + '\',\'' + full.isTop + '\');">编辑</a></li>';
+                        }
+                        if (full.roleCode == 1 && full.id != 1 && full.id != 7 && full.id != 8) {
+                            if ([[${session.roleDelete}]]) {
+                                text += '<li><a href="javascript:void(0);" onclick="deleteById(\'' + full.id + '\');">删除</a> </li>';
+                            }
+
+                        }
+                       /* if ([[${session.roleUpdateRoleMenu}]]) {
+                            text += '<li><a href="javascript:void(0);"  onclick="updateRoleMenu(\'' + full.id + '\',\'' + full.roleName + '\');">分配权限</a> </li>';
+                        }*/
+                        text = text + '</ul></div>';
+                        return text;
+                    }
+                }
+            ],
+            "oLanguage": {
+                "sProcessing": "数据加载中······",
+                "sLengthMenu": "显示 _MENU_ 条记录",
+                "sZeroRecords": "没有您要搜索的内容！",
+                "sEmptyTable": "列表中无数据存在！",
+                "sInfo": "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+                "sInfoEmpty": "显示 0 到 0 条记录",
+                "sInfoFiltered": "数据列表中共  _MAX_ 条记录",
+                "oPaginate": {
+                    "sFirst": "首页",
+                    "sPrevious": "上一页",
+                    "sNext": "下一页",
+                    "sLast": "末页"
+                }
+            },
+            "fnServerData": function (sSource, aoData, fnCallback, oSettings) {
+                oSettings.jqXHR = $.ajax({
+                    "dataType": 'json',
+                    "type": "GET",
+                    "async": 'false',
+                    "url": sSource,
+                    "data": {
+                        'pageNum': (aoData[3].value / aoData[4].value) + 1,
+                        'pageSize': aoData[4].value,
+                        'id': $("#id").val(),
+                        'roleName': $("#roleName").val(),
+                        'status': $('#selectStatus').val()
+                    },
+                    "success": fnCallback
+                });
+            },
+            "fnDrawCallback": function () {
+                var api = this.api();
+                var startIndex = api.context[0]._iDisplayStart;//获取到本页开始的条数
+                api.column(0).nodes().each(function (cell, i) {
+                    cell.innerHTML = startIndex + i + 1;
+                });
+
+            }
+        });
+
+        //验证初始化
+        $('#addRoleForm').validationEngine({
+            promptPosition: 'bottomLeft'
+            , autoPositionUpdate: false
+            , addPromptClass: 'formError-text'
+            , autoHidePrompt: true
+            , autoHideDelay: 3000
+            , fadeDuration: 0.3
+        });
+
+
+        /*$('.ph_snbBtn').on('click', '.Js_deliver', function () {
+         layer.open({
+         type: 1,
+         title: '添加角色',
+         closeBtn: 0,
+         area: ['442px', '312px'],
+         btn: ['保存', '取消'],
+         btnAlign: 'c',
+         content: $('#deliverBox'),
+         btn1: function (index) {
+         var flag = $("#addRoleForm").validationEngine("validate");
+         if (!flag) {
+         return false;
+         }
+         //提交数据
+         $.ajax({
+         type: "POST",
+         url: "/web/permission/role/add",
+         data: $("#addRoleForm").serialize(),
+         success: function (d) {
+         console.log(d);
+         if (d.success) {
+         layer.alert("保存成功！", {
+         icon: 1,
+         title: '提示',
+         closeBtn: 0,
+         btnAlign: 'c'
+         });
+         tb.draw();
+         } else {
+         layer.alert(d.message, {
+         icon: 2,
+         title: '失败',
+         closeBtn: 0,
+         btnAlign: 'c'
+         });
+         }
+         }
+         });
+         //清空表单
+         $('#addRoleForm')[0].reset()
+         layer.close(index);
+         }
+         });
+         });*/
+        $('.ph_wareBox').on('click', '.Js_menuTree', function () {
+            layer.open({
+                type: 1,
+                title: '分配权限',
+                closeBtn: 0,
+                area: ['600px', '450px'],
+                btn: ['保存', '取消'],
+                btnAlign: 'c',
+                content: $('#menuTreeBox')
+            });
+        });
+    });
+
+    function reset() {
+        $("#selectStatus").selectpicker('val', "");
+        $("#selectForm")[0].reset();
+
+    }
+    //条件查询重新加载数据
+    function query() {
+        tb.draw();
+    }
+ //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++编辑**************************************
+    function editRole(id, roleName, type) {
+        $("#filename").hide();
+        $("#filename").prev().hide();
+        if(type==0){
+            $("#istop_id").val("0");
+        }
+        if(type==1){
+            $("#istop_id").val("1");
+        }
+        if(type==null){
+            $("#istop_id").val("0");
+        }
+        //给表单赋值
+        $("#id").val(id);
+        $("#editRoleName").val(roleName);
+
+
+        layer.open({
+            type: 1,
+            title: '编辑角色',
+            closeBtn: 0,
+            area: ['442px', '312px'],
+            btn: ['保存', '取消'],
+            btnAlign: 'c',
+            content: $('#deliverBox'),
+            btn1: function (index) {
+                var flag = $("#addRoleForm").validationEngine("validate");
+                if (!flag) {
+                    return false;
+                }
+                $.ajax({
+//              async       : false,
+                    type: "POST",
+                    url: "/web/industry/editIndustry",
+                    data: $("#addRoleForm").serialize(),
+                    success: function (d) {
+                        console.log(d);
+                        if (d.success) {
+                            tb.draw(false);
+                            layer.alert("保存成功！", {
+                                icon: 1,
+                                title: '提示',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        } else {
+                            layer.alert(d.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+                $('#addRoleForm')[0].reset()
+                layer.close(index);
+
+            },
+            btn2: function (index) {
+                //清空表单
+                $('#addRoleForm')[0].reset()
+                layer.close(index);
+            }
+        });
+    }
+
+    //删除方法
+    function deleteById(roleId) {
+        layer.confirm('是否删除？', {
+            icon: 3,
+            btn: ['是', '否'], //按钮
+            btn1: function (index) {
+                $.ajax({
+                    async: false,
+                    url: "/web/permission/role/delete",
+                    data: {id: roleId},
+                    type: "POST",
+                    dataType: "json",
+                    success: function (data) {
+                        console.log(data)
+                        if (data.code == "200") {
+                            tb.draw(false);
+                            layer.alert("删除成功！", {
+                                icon: 1,
+                                title: '提示',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        } else {
+                            layer.alert(data.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+                layer.close(index);
+            },
+
+        });
+    }
+
+    //启用角色
+    function enableById(roleId) {
+        layer.confirm('是否启用角色？', {
+            icon: 3,
+            btn: ['是', '否'], //按钮
+            btn1: function (index) {
+                $.ajax({
+                    async: false,
+                    url: "/web/permission/role/enable",
+                    data: {id: roleId},
+                    type: "POST",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.code == "200") {
+                            tb.draw(false);
+                            layer.alert("启用成功！", {
+                                icon: 1,
+                                title: '提示',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        } else {
+                            layer.alert(data.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+                layer.close(index);
+            }
+        });
+    }
+    //删除行业分类
+    function disableById(roleId) {
+        console.log("选中删除："+roleId)
+        layer.confirm('是否要删除？', {
+            icon: 3,
+            btn: ['是', '否'], //按钮
+            btn1: function (index) {
+                $.ajax({
+                    async: false,
+                    url: "/web/industry/deleteIndustry",
+                    data: {id: roleId},
+                    type: "POST",
+                    dataType: "json",
+                    success: function (data) {
+                        console.log(data);
+                        if (data.code == "200") {
+                            tb.draw(false);
+                            layer.alert("已删除！", {
+                                icon: 1,
+                                title: '提示',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        } else {
+                            layer.alert(data.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+                layer.close(index);
+            }
+        });
+    }
+
+
+    //============================以下为分配权限==============================/
+    var setting = {
+        check: {
+            enable: true
+        },
+        data: {
+            simpleData: {
+                enable: true,
+
+            }
+        },
+        callback: {
+            onCheck: onCheck
+        }
+    };
+
+    //Mr.Shu 2017.5.13
+    var menuTreeVOS = new Array();
+    function onCheck(event, treeId, treeNode) {
+        var treeObj = $.fn.zTree.getZTreeObj("treeDemo"),
+                nodes = treeObj.getCheckedNodes(true);
+        var newTree = new Array();
+        for (var i = 0; i < nodes.length; i++) {
+            var MenuTreeVO = {}
+            MenuTreeVO.id = nodes[i].id;
+            MenuTreeVO.pId = nodes[i].pId;
+            MenuTreeVO.btnId = nodes[i].btnId;
+            console.info(MenuTreeVO);
+            newTree.push(MenuTreeVO);
+            //v[i] = nodes[i].id;
+        }
+        //$('#menuIds').val(v.join(","));
+        menuTreeVOS = newTree;
+    }
+    ;
+    var zNodes;
+
+    function updateRoleMenu(id, roleName) {
+        $("#roleId").val(id);
+        //获取角色数据
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "/web/permission/role/getRoleMenu",
+            data: {roleId: id},
+            success: function (data) {
+
+                console.info(data.data)
+                if (data.data) {
+                    zNodes = data.data;
+                    var old = new Array();
+                    var ii = 0;
+                    if (zNodes) {
+                        for (var i = 0; i < zNodes.length; i++) {
+                            if (zNodes[i].checked) {
+
+                                //Mr.Shu 2017.5.13
+                                var MenuTreeVO = {}
+                                MenuTreeVO.id = zNodes[i].id;
+                                MenuTreeVO.pId = zNodes[i].pId;
+                                MenuTreeVO.btnId = zNodes[i].btnId;
+                                console.info(MenuTreeVO);
+                                old.push(MenuTreeVO);
+
+                                //old[ii] = zNodes[i].id;
+                                //ii++;
+                            }
+                        }
+                        menuTreeVOS = old;
+                        //$('#menuIds').val(old.join(","));
+                    }
+
+                    var tree = $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+                    tree.expandAll(false);
+                    layer.open({
+                        type: 1,
+                        title: '对【' + roleName + '】分配权限',
+                        closeBtn: 0,
+                        area: ['500px', '600px'],
+                        btn: ['保存', '取消'],
+                        btnAlign: 'c',
+                        content: $('#menuTreeBox'),
+                        btn1: function (index) {
+                            //Mr.Shu 2017.5.13
+                            var json = {
+                                'menuTreeVOS': menuTreeVOS,
+                                'roleId': $("#roleId").val()
+                            };
+                            var data = JSON.stringify(json);
+                            console.info(data);
+
+                            //提交数据
+                            $.ajax({
+                                async: false,
+                                type: "POST",
+                                dataType: "json", //Mr.Shu 2017.5.13
+                                contentType: 'application/json;charset=utf-8', //设置请求头信息 //Mr.Shu 2017.5.13
+                                url: "/web/permission/role/updateRoleMenu",
+                                data: data,
+                                success: function (d) {
+                                    if (d.code == "200") {
+                                        layer.alert("权限修改成功,该角色的所有用户将重新登录！", {
+                                            icon: 1,
+                                            title: '提示',
+                                            closeBtn: 0,
+                                            btnAlign: 'c',
+                                            btn1: function (index) {
+
+                                                var isDraw = true;
+
+                                                if (sessionUser.sessionRoleVo) {
+                                                    for (var i = 0; i < sessionUser.sessionRoleVo.length; i++) {
+                                                        if (id == sessionUser.sessionRoleVo[i].id) {
+                                                            isDraw = false;
+                                                            window.location.href = '/web/permission/role/listPage'
+                                                        }
+                                                    }
+                                                }
+
+                                                if (isDraw) {
+                                                    tb.draw(false);
+                                                }
+
+                                                layer.close(index);
+                                            }
+                                        });
+
+                                    } else {
+                                        layer.alert(data.message, {
+                                            icon: 2,
+                                            title: '失败',
+                                            closeBtn: 0,
+                                            btnAlign: 'c'
+                                        });
+                                    }
+                                }
+                            });
+                            layer.close(index);
+                        }
+                    });
+                } else {
+                    layer.alert("该角色没有基础菜单!", {
+                        icon: 2,
+                        title: '失败',
+                        closeBtn: 0,
+                        btnAlign: 'c'
+                    });
+                    return;
+                }
+            }
+
+        });
+
+    }
+
+</script>
+</body>
+</html>

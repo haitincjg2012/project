@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.register.UserRegisterDao">
+
+    <!--判断用户是否存在-->
+    <select id="getId" resultType="Long" parameterType="java.lang.String">
+        SELECT hunter.id  from alq_hunter AS hunter Where hunter.phone=#{phone}
+    </select>
+    <!-- 判断用户是否存在 -->
+    <select id="findAllById" resultType="com.alqsoft.entity.member.Member" parameterType="java.lang.String">
+       select * from alq_member as mem where mem.phone=#{phone}
+    </select>
+    
+</mapper>

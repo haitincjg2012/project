@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.attachment.AttachmentDao">
+	
+
+	<select id="getAttachmentById" resultType="map" parameterType="Long">
+		SELECT * FROM alq_attachment  WHERE id=#{imageId}
+	</select>
+
+	<select id="getLogoImgByHunterId" resultType="java.lang.String" parameterType="Long">
+		SELECT address FROM alq_attachment ac
+		LEFT JOIN alq_hunter h on ac.id = h.logo_attachment_id
+		WHERE h.id=#{hunterId}
+	</select>
+	
+</mapper>

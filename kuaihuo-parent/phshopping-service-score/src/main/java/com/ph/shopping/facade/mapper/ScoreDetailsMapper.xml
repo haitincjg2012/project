@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.ScoreDetailsMapper">
+
+	<select id="getScore" parameterType="long" resultType="com.ph.shopping.facade.score.vo.MemberScoreVO2">
+		SELECT
+			distinct m.standbyscore,
+			m.enablescore,
+			m.drawcashScore,
+			IFNULL(m.memberRewardScore,0) memberRewardScore,
+			IFNULL(m.merchantRewardScore,0) merchantRewardScore,
+			IFNULL(m.memberProfitScore,0) memberProfitScore,
+			IFNULL(m.shareMerchantScore,0) shareMerchantScore,
+			IFNULL(m.shareMemberScore,0) shareMemberScore,
+			IFNULL(m.totleShareMemberScore,0) totleShareMemberScore,
+			IFNULL(m.totleShareMerchantScore,0) totleShareMerchantScore,
+			IFNULL(m.storeManagerScore,0) storeManagerScore,
+			IFNULL(m.totalStoreManagerScore,0) totalStoreManagerScore,
+			IFNULL(b.bindStatus,0) bindStatus,
+			p.payPwd
+		FROM
+			ph_member_score m
+		left join ph_member_bank_card_bind b on b.userId = m.memberId
+		left join ph_traders_password p on m.memberId=p.userId AND p.customerType = 1
+		WHERE  m.memberid = #{memberId}
+	</select>
+
+
+	<select id="getScoreDetail" resultType="Map">
+		select
+		IFNULL(score+handingCharge,0) score,
+		createTime,
+		IFNULL(totelScore,0) totelScore,
+		transCode
+		from ph_score_total_trade
+		where memberId = #{id}
+		<if test="transCode == 2002">
+			and transCode in (2002,2012)
+		</if>
+		<if test="transCode == 2003">
+			and transCode in (2003,2013)
+		</if>
+		<if test="transCode == 2004">
+			and transCode in (2004,2014)
+		</if>
+		ORDER BY createTime DESC
+	</select>
+
+	<select id="dayCashScore" parameterType="Map" resultType="Long">
+		SELECT IFNULL(SUM(p.score+p.handingCharge),0)
+		FROM ph_member_drawcash_record p
+		WHERE p.memberId =1 AND p.transCode = #{transCode}
+		AND DATEDIFF(p.createTime,NOW()) = 0
+		AND p.`status` = 1 and
+	</select>
+
+	<update id="updateMemberScore">
+		update ph_member_score
+		<set>
+			<if test="standbyScore != 0">
+				standbyScore = standbyScore + #{standbyScore},
+			</if>
+			<if test="enableScore != 0">
+				enableScore = enableScore + #{enableScore},
+			</if>
+			<if test="drawcashScore != 0">
+				drawcashScore = drawcashScore + #{drawcashScore},
+			</if>
+			<if test="1==1">
+				updateTime = sysdate(),
+			</if>
+		</set>
+		where memberId= #{memberId}
+	</update>
+
+	<!-- 记入总流水 -->
+	<insert id="insertMemberTrade"
+			parameterType="com.ph.shopping.facade.score.entity.PhScoreTotalTrade">
+		<selectKey resultType="java.lang.Long" keyProperty="id">
+			SELECT
+			LAST_INSERT_ID() as id
+		</selectKey>
+		insert into ph_score_total_trade (memberId, transCode,
+		score,
+		createTime, updateTime, orderNo, handingCharge)
+		values
+		(#{memberId,jdbcType=BIGINT},
+		#{transCode,jdbcType=INTEGER},
+		#{score,jdbcType=DECIMAL},
+		SYSDATE(),SYSDATE(),#{orderNo,jdbcType=VARCHAR},#{handingCharge}
+		)
+	</insert>
+
+	<insert id="insertIncomeTrade">
+		insert into ph_score_income_trade (memberId,
+		transCode,
+		score, setId,createTime,
+		updateTime,orderNo,handingCharge
+		)
+		values
+		(#{memberId,jdbcType=BIGINT},
+		#{transCode,jdbcType=INTEGER},
+		#{score,jdbcType=DECIMAL},
+		#{setId,jdbcType=BIGINT},
+		SYSDATE(),SYSDATE(),#{orderNo,jdbcType=VARCHAR},#{handingCharge}
+		)
+	</insert>
+
+	<insert id="insertCostTrade">
+		insert into ph_score_cost_trade (memberId, transCode,
+		score, setId,createTime, updateTime,orderNo,handingCharge
+		)
+		values
+		(#{memberId,jdbcType=BIGINT}, #{transCode,jdbcType=INTEGER},
+		#{score,jdbcType=DECIMAL},
+		#{setId,jdbcType=BIGINT},
+		SYSDATE(),SYSDATE(),#{orderNo,jdbcType=VARCHAR},#{handingCharge}
+		)
+	</insert>
+
+	<select id="countOnLineMoney" resultType="java.lang.Long"
+			parameterType="java.lang.Long">
+		select IF(sum(orderMoney),NULL,0) as totalMoney from
+		ph_member_sub_order_online p
+		where p.createrId=#{memberId} and p.status = 3 and
+		p.doneTime &lt;= sysdate()
+	</select>
+
+	<select id="countUnLineMoney" resultType="java.lang.Long"
+			parameterType="java.lang.Long">
+		select IF(sum(orderMoney),NULL,0) as totalMoney from
+		ph_member_order_unline p
+		where p.memberId=#{memberId} and p.status=2 and
+		p.doneTime &lt;= sysdate()
+	</select>
+
+
+	<select id="getMemberLevel" parameterType="java.lang.Long"
+			resultType="java.lang.Integer">
+		select m.level from ph_member m where id=#{memberId}
+	</select>
+
+	<select id="getMemberScores" resultType="com.ph.shopping.facade.score.vo.MemberScoreVO1">
+		select
+		m.standbyscore,m.enablescore,m.drawcashScore,m.memberId from
+		ph_member_score m
+	</select>
+
+
+	<select id="getMemberScorePage" resultType="com.ph.shopping.facade.score.vo.MemberScoreShopVO">
+		SELECT
+		t.createTime,
+		t.score score,
+		t.handingCharge fee,
+		t1.remark,
+		t1.source
+		FROM
+		ph_score_total_trade t
+		INNER JOIN ph_transcode t1 ON t.transCode = t1.transCode
+		WHERE
+		memberId = #{memberId}
+		ORDER BY t.createTime DESC
+	</select>
+
+	<select id="getMemberCostScore" resultType="com.ph.shopping.facade.score.vo.MemberCostScoreVO">
+		select sum(o.payMoney) payMoney,o.memberId,o.orderNo,o.payDate
+		from(
+		select po.createrId memberId,po.orderMoney payMoney,po.orderNo,po.doneTime payDate
+		from ph_member_sub_order_online po
+		where
+		po.status=3 and po.isBackScore=0
+		and date_add(po.doneTime , INTERVAL 7 day)  &lt;= NOW()
+		UNION ALL
+		select pu.memberId,pu.orderMoney as payMoney,pu.orderNo,pu.doneTime payDate
+		from ph_member_order_unline pu
+		where pu.status=2 and pu.isBackScore=0
+		and date_add(pu.doneTime , INTERVAL 1 day)  &lt;= NOW()
+		) o
+		group by o.orderNo
+	</select>
+
+	<update id="updateOrderIsBackScore1">
+		update ph_member_sub_order_online set isBackScore = 1 where
+		orderNo = #{orderNo}
+	</update>
+
+	<update id="updateOrderIsBackScore2">
+		update ph_member_order_unline set isBackScore = 1 where
+		orderNo = #{orderNo}
+	</update>
+
+	<!-- 修改会员推荐奖励积分 -->
+	<update id="updateMemberScoreByReward">
+		update
+		ph_member_score
+		set
+		memberRewardScore = IFNULL(memberRewardScore,0) + #{rewardScore}
+		where
+		memberId = #{memberId}
+	</update>
+	<!-- 查询累计积分数据 -->
+	<select id="getAccumulativeScore" parameterType="map" resultType="java.lang.Long">
+		SELECT
+		IFNULL(sum(score),0)
+		FROM
+		ph_score_total_trade
+		WHERE
+		transCode in
+		<foreach item="item" index="index" collection="codes" open="("
+				 separator="," close=")">
+			#{item}
+		</foreach>
+		AND memberId = #{memberId}
+	</select>
+	<!-- 查询当日到账积分 -->
+	<select id="getTodayScore" parameterType="map" resultType="java.lang.Long">
+		SELECT
+		IFNULL(sum(score),0)
+		FROM
+		ph_score_total_trade
+		WHERE
+		transCode in
+		<foreach item="item" index="index" collection="codes" open="("
+				 separator="," close=")">
+			#{item}
+		</foreach>
+		AND memberId = #{memberId}
+		AND createTime BETWEEN #{startTime} and #{endTime};
+	</select>
+	<!-- 查询可用积分记录 -->
+	<select id="selectScoreRecordsByList" parameterType="map" resultType="com.ph.shopping.facade.score.vo.MemberScoreRecordVO">
+		SELECT
+		a.createTime time,
+		a.score score,
+		a.handingCharge fee,
+		a.orderNo,
+		b.source 'desc',
+		b.remark
+		FROM
+		ph_score_total_trade a left join ph_transcode b on a.transCode = b.transCode
+		WHERE
+		a.transCode in
+		<foreach item="item" index="index" collection="codes" open="("
+				 separator="," close=")">
+			#{item}
+		</foreach>
+		AND a.memberId = #{memberId}
+		order by a.createTime desc
+	</select>
+	<!-- 查询会员是否是推广师 -->
+	<select id="isPromotionByMemberId" parameterType="java.lang.Long" resultType="int">
+		SELECT
+		IFNULL(count(1),0)
+		FROM
+		ph_member
+		WHERE
+		id = #{memberId}
+		AND status != 1
+		AND isMarketing = 1
+	</select>
+
+	<select id="getToken" parameterType="Long" resultType="String">
+		select token from ph_member WHERE id = #{id}
+	</select>
+
+
+	<select id="getMerchantScoreDetail" resultType="Map">
+		SELECT
+			score,
+			createTime
+		  FROM ph_user_balance_trade
+		  WHERE userId = #{userId}
+	</select>
+
+
+	<select id="getCurrentDayScore" parameterType="java.util.Map" resultType="java.lang.Long">
+
+		SELECT SUM(score) FROM  ph_score_total_trade  WHERE DATE_FORMAT(createTime,'%Y-%m-%d')
+		 = DATE_FORMAT(NOW(),'%Y-%m-%d') AND memberId = #{id} AND transCode = #{transCode} and score>0
+	</select>
+</mapper>

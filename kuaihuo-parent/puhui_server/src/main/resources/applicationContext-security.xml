@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:sec="http://www.springframework.org/schema/security" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd  
+                        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.2.xsd
+                        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.1.xsd"
+	default-lazy-init="true">
+	<global-method-security pre-post-annotations="enabled" />
+	<!-- 无权限的页面指定 -->
+	<http pattern="/ckeditor/**" security="none" />
+	<http pattern="/ueditor/**" security="none" />
+	<http pattern="/uploadfy/**" security="none" />
+	<http pattern="/common/**" security="none"></http>
+	<http pattern="/javascript/**" security="none"></http>
+	<http pattern="/themes/**" security="none"></http>
+	<http pattern="/css/**" security="none"></http>
+	<http pattern="/js/**" security="none"></http>
+	<http pattern="/insdep/**" security="none"></http>
+	<!-- 开启webservice功能的时候需要开启 -->
+	<!-- <http pattern="/webservice/**" security="none"></http> -->
+	<http pattern="/javasimon/**" security="none"></http>
+	<http pattern="/view/**" security="none"></http>
+	<http pattern="/login.jsp*" security="none"></http>
+	<http pattern="/captcha/get-captcha" security="none"></http>
+	<http pattern="/captcha/forward-wrong" security="none"></http>
+	<http pattern="/index.jsp" security="none"></http>
+	<http pattern="/attachment/**" security="none"></http>
+	<http pattern="/sms/**" security="none"></http>
+	<http pattern="/pc/view/code/**" security="none"></http>
+	<http pattern="/ydmvc/whoAreYou/shenhuiyuan.do" security="none"></http>
+	<http pattern="/pay/yinlian/gzylcash/GZYLCashPay" security="none"></http>
+		
+		
+	<!-- 配置url安全 -->
+	<http use-expressions="true" entry-point-ref="authenticationProcessingFilterEntryPoint">
+		<intercept-url pattern="/main" access="isAuthenticated()" />
+		<intercept-url pattern="/**" access="isAuthenticated()" />
+		<!-- 登录页面指定 -->
+		<!-- <form-login login-page="/login.jsp" login-processing-url="/login" 
+			authentication-failure-url="/login.jsp?error=1" default-target-url="/main" 
+			always-use-default-target="true" /> -->
+		<custom-filter ref="validateCodeAuthenticationFilter"
+			position="FORM_LOGIN_FILTER" />
+		<!-- 注销登录 -->
+		<logout logout-url="/logout" logout-success-url="/login.jsp"
+			delete-cookies="JSESSIONID" />
+		<!-- 免登陆配置 -->
+		<remember-me />
+		<!-- session的配置 -->
+		<session-management invalid-session-url="/login.jsp">
+			<concurrency-control max-sessions="1"
+				error-if-maximum-exceeded="false" />
+		</session-management>
+		<!-- 配置安全拦截器 -->
+		<custom-filter ref="mySecurityFilter" before="FILTER_SECURITY_INTERCEPTOR" />
+	</http>
+	<beans:bean id="validateCodeAuthenticationFilter"
+		class="com.alqsoft.security.ValidateCodeUsernamePasswordAuthenticationFilter">
+		<beans:property name="filterProcessesUrl" value="/login"></beans:property>
+		<beans:property name="authenticationSuccessHandler"
+			ref="loginLogAuthenticationSuccessHandler"></beans:property>
+		<beans:property name="authenticationFailureHandler"
+			ref="simpleUrlAuthenticationFailureHandler"></beans:property>
+		<beans:property name="authenticationManager" ref="myAuthenticationManager"></beans:property>
+	</beans:bean>
+	<beans:bean id="loginLogAuthenticationSuccessHandler"
+		class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
+		<beans:property name="defaultTargetUrl" value="/main"></beans:property>
+	</beans:bean>
+	<beans:bean id="simpleUrlAuthenticationFailureHandler"
+		class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+		<beans:property name="defaultFailureUrl" value="/captcha/forward-wrong"></beans:property>
+	</beans:bean>
+	<beans:bean id="authenticationProcessingFilterEntryPoint"
+		class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+		<beans:property name="loginFormUrl" value="/login"></beans:property>
+	</beans:bean>
+	<beans:bean id="messageSource"
+		class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<beans:property name="basename" value="classpath:/messages_zh_CN" />
+	</beans:bean>
+	<!-- 配置过滤器 -->
+	<beans:bean id="mySecurityFilter"
+		class="org.alqframework.security.springsecurity.filter.MySecurityFilter">
+		<!-- 用户拥有的权限 -->
+		<beans:property name="authenticationManager" ref="myAuthenticationManager" />
+		<!-- 资源与权限对应关系 -->
+		<beans:property name="securityMetadataSource" ref="mySecurityMetadataSource" />
+		<!-- 资源 和 用户权限 走的默认策略 -->
+		<!-- <beans:property name="accessDecisionManager" ref="affirmativeBased" /> -->
+		<beans:property   name = "accessDecisionManager"   ref="mySecurityAccessDecisionManager"/> 
+	</beans:bean>
+	<!-- 配置URL+权限管理器 -->
+	<beans:bean id="mySecurityMetadataSource"
+		class="com.alqsoft.security.MyFilterInvocationSecurityMetadataSource">
+	</beans:bean>
+	<!-- arrirmtveBased 认证管理器 -->
+	<beans:bean id="affirmativeBased"
+		class="org.springframework.security.access.vote.AffirmativeBased">
+		<beans:constructor-arg index="0" ref="decisionVoters" />
+	</beans:bean>
+	<!-- 投票者 -->
+	<util:list id="decisionVoters" list-class="java.util.LinkedList">
+		<beans:bean class="org.springframework.security.access.vote.RoleVoter" />
+		<beans:bean
+			class="org.springframework.security.access.vote.AuthenticatedVoter" />
+	</util:list>
+	<!-- 实现用户查询服务 -->
+	<!-- <bean id="userDetailServiceImpl" class="com.myspring.test.security.UserDetailServiceImpl"></bean> -->
+	<!-- 配置认证管理 -->
+	<authentication-manager alias="myAuthenticationManager">
+		<authentication-provider ref="myAbstractUserDetailsAuthenticationProvider" ><!-- user-service-ref="myUserDetailsService" -->
+			<!-- 密码加密 --><!--  ref="myAbstractUserDetailsAuthenticationProvider" -->
+		    <!-- <password-encoder ref="myPassWordEncoder"></password-encoder>  -->
+		</authentication-provider> 
+	</authentication-manager>
+	<!-- 用户是否拥有所请求资源的权限 -->   
+    <beans:bean   id = "mySecurityAccessDecisionManager"   class = "com.alqsoft.security.MySecurityAccessDecisionManager"   /> 
+	<!-- 用户登录配置 -->
+	<beans:bean id="myUserDetailsService" class="com.alqsoft.security.MyUserDetailsService"></beans:bean>
+	<!-- 自定义provider -->
+	<beans:bean id="myAbstractUserDetailsAuthenticationProvider" class="com.alqsoft.security.MyAbstractUserDetailsAuthenticationProvider">
+	</beans:bean>
+</beans:beans>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.TradOrderMapper">
+	<!-- 根据手机号查询用户信息 -->
+	<select id="getMemberInfo" parameterType="cm.ph.shopping.facade.order.entity.PhMemberOrderUnline" resultType="cm.ph.shopping.facade.order.vo.MemberInfo">
+		SELECT 
+			memberName,id 
+		FROM ph_member 
+			WHERE 
+		telPhone=#{memberPhone}
+	</select>
+	<!-- 扫码支付时根据会员ID查询 -->
+	<select id="getMemberInfoByMemberId" parameterType="cm.ph.shopping.facade.order.entity.PhMemberOrderUnline" resultType="cm.ph.shopping.facade.order.vo.MemberInfo">
+		SELECT 
+			telPhone
+		FROM ph_member
+			WHERE
+		id=#{memberId}
+	</select>
+	<!-- 根据商户ID查询信息 -->
+	<select id="getMerchantInfo" parameterType="cm.ph.shopping.facade.order.entity.PhMemberOrderUnline" resultType="cm.ph.shopping.facade.order.vo.MerchantVO">
+		SELECT 
+			merchantName,telPhone,personName,address
+		FROM ph_merchant 
+			WHERE 
+		userId=#{merchantId}
+	
+	</select>
+	<!-- 创建交易订单 -->
+	<insert id="createTradOrder" parameterType="cm.ph.shopping.facade.order.dto.PhMemberOrderUnlineDTOS" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO 
+			ph_member_order_unline 
+		(
+			orderNo,orderMoney,status,memberId,remark,merchantId,
+			createTime,isSettle,isBackScore,createrId,isProfit,merchantName,
+			merchantPhone,memberPhone,type,payType
+		) 
+		VALUES
+		(
+			#{orderNo},#{orderMoney},0,#{memberId},
+			#{remark},#{merchantId},now(),0,0,#{merchantId},0,#{merchantName},
+			#{merchantPhone},#{memberPhone},#{type},#{payType}
+		)
+	</insert>
+
+	<!--远程支付推送消息入库-->
+	<insert id="insertPayPushMessage" parameterType="map">
+		INSERT INTO
+		ph_message_push_record
+		 (
+			messageContent,
+			userId,
+			STATUS,
+			createTime,
+			messageType
+		)
+		VALUES
+			(
+				#{content},#{userId},1,now(),#{messageType}
+			)
+	</insert>
+	<!-- 获取交易订单 -->
+	<select id="getMerchantTradOrder" parameterType="cm.ph.shopping.facade.order.dto.PhMemberOrderUnlineDTO" resultType="cm.ph.shopping.facade.order.dto.PhMemberOrderUnlineDTO">
+		SELECT 
+			orderNo,DATE_FORMAT(createTime,'%Y-%m-%d %H:%i') as createTime,OrderMoney,memberPhone,type,id,payType,status
+		FROM ph_member_order_unline
+			where status=#{status} and merchantId=#{merchantId} ORDER BY id desc
+	</select>
+	<!-- 更新交易订单状态  -->
+	<update id="updateOrder" parameterType="cm.ph.shopping.facade.order.entity.PhMemberOrderUnline">
+		UPDATE ph_member_order_unline 
+			SET status=#{status},updateTime=#{updateTime},
+			isSettle=1,isProfit=1,profitTime=now(),updaterId=#{updaterId},dealCode=#{dealCode},
+			settleTime=now(),doneTime=now(),profitTime=now(),payTime=#{payTime}
+			WHERE id=#{id}
+	</update>
+	<!-- 支付失败更新交易订单状态  -->
+	<update id="updateOrderForFail" parameterType="cm.ph.shopping.facade.order.entity.PhMemberOrderUnline">
+		UPDATE ph_member_order_unline 
+			SETupdateTime=#{updateTime},
+			updaterId=#{updaterId},dealCode=#{dealCode},payTime=#{payTime}
+			WHERE id=#{id}
+	</update>
+	<!-- 获取订单号 -->
+	<select id="getOrderNo" parameterType="java.lang.Long" resultType="cm.ph.shopping.facade.order.entity.PhMemberOrderUnline">
+		SELECT  
+		 	orderNo,merchantId
+		 FROM 
+		 	ph_member_order_unline 
+		 WHERE id=#{id} 
+	</select>
+	<!-- 修改账户余额 -->
+	<update id="updateMerchantMoney" parameterType="map">
+		UPDATE 
+			ph_user_balance 
+		SET score=score+#{merchantMoney},updateTime=now() where userId=#{merchantId}
+	</update>
+	<!-- 余额变动记录 -->
+	<insert id="insertMerchantMoney" parameterType="map">
+		INSERT INTO 
+			ph_user_balance_trade
+		(userId,score,userType,orderNo,createTime,handingCharge,transCode)
+		VALUES
+		(#{merchantId},#{merchantMoney},1,#{orderNo},now(),0,1061)<!-- 1061为线上交易订单 -->
+	</insert>
+	<!-- 验证会员是否存在 -->
+	<select id="getMemberByPhone" parameterType="string" resultType="com.ph.shopping.facade.member.entity.Member">
+		SELECT
+			o.id,o.promoterId,t.telPhone
+		FROM
+			ph_member o
+			left join ph_member t
+			on o.promoterId=t.id
+		WHERE
+			o.telPhone = #{memberPhone}
+	</select>
+    <!---->
+    <select id="getOrderUnline" parameterType="long" resultType="long">
+        SELECT
+            isProfit
+        FROM
+            ph_member_order_unline
+        WHERE
+            memberId = #{memberId}
+    </select>
+	<select id="getMerchantScoreById" parameterType="java.lang.Long" resultType="java.lang.Long">
+		SELECT
+			ub.score
+		FROM
+			ph_user_balance ub
+		LEFT JOIN ph_permission_common_user cu ON cu.id = ub.userId
+		LEFT JOIN ph_merchant m ON m.userId = ub.userId
+		WHERE
+			m.userId = #{merchantId}<!-- userId为商户表中的userId -->
+	</select>
+</mapper>

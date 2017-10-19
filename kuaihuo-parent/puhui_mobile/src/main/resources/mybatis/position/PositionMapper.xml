@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.position.PositionDao">
+
+    <resultMap id="Position" type="com.alqsoft.entity.position.Position">
+        <id column="id" property="id" />
+        
+    </resultMap>
+	
+	<select id="getPosition" resultType="map">
+		SELECT DISTINCT provinceId AS id, provinceName AS name FROM ph_position 
+	</select>
+	<select id="getCityByPid" parameterType="Long" resultType="map">
+		SELECT DISTINCT cityId AS id, cityName AS name FROM ph_position WHERE provinceId = #{pId}
+	</select>
+	<select id="getCountyByCid" parameterType="Long" resultType="map">
+		SELECT DISTINCT countyId AS id, countyName AS name FROM ph_position WHERE cityId = #{cId}
+	</select>
+	
+	<select id="getBycityid" parameterType="Long" resultType="map">
+	
+	SELECT DISTINCT cityId AS id, cityName AS name,provinceId AS pid ,provinceName AS pname FROM ph_position WHERE cityId = #{cid}
+	
+	</select>
+	
+	<select id="getBycountyid" parameterType="Long" resultType="map">
+	SELECT cityId AS id, cityName AS name,countyId AS cid,countyName AS cname,provinceId AS pid,provinceName AS pname FROM ph_position WHERE countyId = #{cid}
+	</select>
+	
+	<select id="getTownByCid" parameterType="Long" resultType="map">
+		SELECT townId AS id, townName AS name FROM ph_position WHERE countyId = #{cId}
+	</select>
+	<select id="getPositionByTownId" parameterType="Long" resultMap="Position">
+		SELECT * FROM ph_position WHERE townId = #{townId}
+	</select>
+	<select id="getPositionByCountyId" parameterType="Long" resultMap="Position">
+		SELECT * FROM ph_position WHERE countyId = #{countyId}
+	</select>
+	<select id="getCityInfoByCountyId" parameterType="Long" resultMap="Position">
+		SELECT DISTINCT cityId, cityName FROM ph_position WHERE countyId = #{countyId}
+	</select>
+	<select id="getAllBYCountyId" parameterType="Long" resultMap="Position">
+		SELECT DISTINCT countyId, countyName, cityId, cityName, provinceId, provinceName FROM ph_position WHERE countyId = #{countyId}
+	</select>
+	<select id="getAllByTownId" parameterType="Long" resultMap="Position">
+		SELECT DISTINCT townId, townName, countyId, countyName, cityId, cityName, provinceId, provinceName FROM ph_position WHERE townId = #{townId}
+	</select>
+</mapper>

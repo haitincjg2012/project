@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.ProductPropertyMapper">
+	<resultMap id="baseResultMap"
+		type="com.ph.shopping.facade.product.vo.ProductPropertyVO">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="propertyName" property="propertyName" jdbcType="VARCHAR" />
+		<result column="classifyId" property="classifyId" jdbcType="BIGINT" />
+		<result column="sort" property="sort" jdbcType="INTEGER" />
+		<result column="createrId" property="createrId" jdbcType="BIGINT" />
+		<result column="updaterId" property="updaterId" jdbcType="BIGINT" />
+		<result column="createTime" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="isDelete" property="isDelete" jdbcType="TINYINT" />
+	</resultMap>
+	<!-- 扩展查询语句返回列名 -->
+	<resultMap id="extendProductPropertyResultMap"
+		type="com.ph.shopping.facade.product.vo.ProductPropertyVO" extends="baseResultMap">
+		<result column="classifyName" property="classifyName" jdbcType="VARCHAR" />
+	</resultMap>
+	
+		<!-- 扩展值属性返回值-->
+<resultMap type="com.ph.shopping.facade.product.vo.ProductPropertyVO"  id="extendProductPropertyForValListResultMap" extends="baseResultMap">
+			<collection property="productPropertyValVoList" ofType="com.ph.shopping.facade.product.vo.ProductPropertyValVO">
+					 <id column="product_id" property="id" jdbcType="BIGINT" />
+<!-- 					<result column="propertyId" property="propertyId" jdbcType="BIGINT" /> -->
+					<result column="content" property="content" jdbcType="VARCHAR" />
+					<result column="productId" property="productId" jdbcType="BIGINT" />
+<!-- 					<result column="createrId" property="createrId" jdbcType="BIGINT" /> -->
+<!-- 					<result column="createTime" property="createTime" jdbcType="TIMESTAMP" /> -->
+			</collection>
+</resultMap>
+
+	<!-- 商品属性对应的返回值 -->
+	<sql id="base_column_list">
+			pro.id as id,pro.propertyName as propertyName,pro.classifyId as classifyId ,
+			pro.sort as sort,pro.createrId as createrId,pro.updaterId as updaterId,
+			pro.updateTime as updateTime,pro.createTime as createTime,pro.isDelete as isDelete
+	</sql>
+	
+	<!-- 与分类联合查询使用 -->
+	<sql id="base_column_listClass">
+		classifyName
+	</sql>
+
+	<!-- 查询条件 -->
+	<sql id="sqlWhere">
+		<trim prefix="where" prefixOverrides="and">
+			<if test="id != null and id != ''">
+				and pro.id = #{id}
+			</if>
+			<if test="propertyName != null and propertyName != ''">
+				and pro.propertyName like
+				CONCAT('%',TRIM(#{propertyName}),'%')
+			</if>
+			<if test="classifyId != null and classifyId != ''">
+				and FIND_IN_SET(pcl.id, getProductClassifyChildrenById(#{classifyId}))
+<!-- 				pro.classifyId=#{classifyId} -->
+			</if>
+			<if test="isDelete != null">
+				and pro.isDelete = #{isDelete}
+			</if>
+			<if test="createrId != null and createrId != ''">
+				and pro.createrId = #{createrId}
+			</if>
+			<if test="updaterId != null and updaterId != ''">
+				and pro.updaterId = #{updaterId}
+			</if>
+			<if test="createTime != null and createTime != ''">
+				and pro.createTime = #{createTime}
+			</if>
+			<if test="updateTime != null and updateTime != ''">
+				and pro.updateTime = #{updateTime}
+			</if>
+		</trim>
+	</sql>
+
+	<!-- 商品属性列表查询(后台使用) -->
+	<select id="getPhProductPropertyVoList" resultMap="extendProductPropertyResultMap"
+		parameterType="com.ph.shopping.facade.product.dto.ProductPropertyDTO">
+		select
+		<include refid="base_column_list" />
+		,pcl.classifyName  as  classifyName
+		from ph_product_property pro
+		left join
+		ph_product_classify pcl on pro.classifyId = pcl.id
+		<include refid="sqlWhere" />
+<!-- 		order by pro.createTime desc -->
+			order by	pro.sort
+	</select>
+
+	<!-- 商品属性列表count查询(后台使用) -->
+	<select id="getPhProductPropertyVoCount" resultType="int"
+		parameterType="com.ph.shopping.facade.product.dto.ProductPropertyDTO">
+		select
+		count(1) num
+		from ph_product_property pro
+		left join
+		ph_product_classify pcl on pro.classifyId = pcl.id
+		<include refid="sqlWhere" />
+	</select>
+
+
+	<!-- 通过商品所属的三级分类id查询对应的属性（后台和商城都可使用） -->
+	<select id="getProductPropertyVoByThreeCassifyId"	
+		resultMap="extendProductPropertyForValListResultMap"
+		parameterType="com.ph.shopping.facade.product.dto.ProductDTO">
+			select
+
+			t.pyId as id,t.propertyName as propertyName,t.classifyId as classifyId,t.sort as sort ,t.createrId as createrId,
+			t.updaterId as updaterId,t.updateTime as updateTime,t.createTime as createTime,t.isDelete as isDelete,
+			pv.content as content,pv.productId as productId,pv.id as product_id
+			from
+			(
+			SELECT py.id as pyId	,py.propertyName as propertyName,py.classifyId as classifyId,py.sort as sort ,py.createrId as createrId,
+			py.updaterId as updaterId,py.updateTime as updateTime,py.createTime as createTime,py.isDelete as isDelete
+			FROM
+			ph_product_property AS py LEFT JOIN ph_product_classify AS pc
+			ON py.classifyId=pc.id WHERE pc.status=1 AND pc.isDelete=0 AND py.isDelete=0 and
+			FIND_IN_SET(pc.id, getProductClassifyParentsById(#{productClassifyId}))
+			) t LEFT JOIN ph_product_property_val as pv
+			ON pv.propertyId=t.pyId WHERE  pv.productId=#{id} or pv.productId is null
+	</select>
+
+</mapper>

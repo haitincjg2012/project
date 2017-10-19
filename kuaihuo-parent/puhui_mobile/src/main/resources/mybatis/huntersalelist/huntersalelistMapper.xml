@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.huntersalelist.HunterSaleListDao">
+ <!--   <resultMap type="AdAttachment" id="adattachmentMap">
+	<result column="id" property="id"/>
+     <result column="address" property="address"/>
+     <result column="name" property="name"/>
+   </resultMap> -->
+ <!-- 通过销量获取数据 -->
+	 <select id="findAllProductSaleList" resultType="Map" >
+		SELECT 
+		DISTINCT(spf.product_id),
+		ROUND(spf.sale_price/100,2) AS price , pro.name ,pro.imageurl,pro.sale_num as sale_num,pro.start_num as startNum
+		
+		FROM alq_product_specification AS spf 
+		
+		LEFT JOIN alq_product AS pro
+		
+		ON spf.product_id=pro.id 
+				
+	    WHERE pro.hunter_id=#{hId} AND pro.status=1
+	    GROUP By pro.id
+        ORDER BY ${result} ${sort}
+        Limit #{currentPage},#{numPage}
+        
+	</select>
+ 
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.ph.shopping.facade.mapper.ScoreCostTradeMapper">
+
+    <!--会员提现记录新增支出记录-->
+    <insert id="addScoreCostTrade" parameterType="com.ph.shopping.facade.pay.entity.ScoreCostTrade"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into ph_score_cost_trade(memberId,transCode,score,setId,orderNo,fee,updateTime,createTime)
+        values(#{memberId},#{transCode},#{score},#{setId},#{orderNo},#{fee},#{updateTime},#{createTime})
+    </insert>
+
+</mapper>

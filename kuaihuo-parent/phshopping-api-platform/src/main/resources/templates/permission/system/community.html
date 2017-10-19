@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>社区列表</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--日期  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/datepicker/css/bootstrap-datepicker.css}">
+</head>
+<body>
+<div class="MainContent">
+      <!--面包屑-->
+    <div class="current">当前位置：<a href="#">系统管理</a>&nbsp;&gt;&nbsp;<span>社区列表</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+           <h2>社区列表</h2>
+            <div class="ph_snbBtn">
+                <shiro:hasPermission name="communityAdd">
+                    <input class="Js_addLogistic" name="" type="button" value="添加社区">
+                </shiro:hasPermission>
+			</div>
+        </div>
+        <!--end 标题-->
+        
+        <!--筛选条件开始-->
+        <div class="ph_screen">
+            <shiro:hasPermission name="communityQuery">
+                <table class="ph_tableBox">
+
+                    <tr>
+                        <th>行政区域：</th>
+                        <td colspan="3">
+                            <div class="ph_distpicker" id="distpicker">
+                                <select class="ph_dist" id="provinceId" name="provinceId"
+                                        onchange="getCityies('provinceId','cityId','countyId')">
+                                    <option value="">请选择</option>
+                                </select> <input id="provinceName1" name="provinceName1" hidden="hidden">
+                                <select class="ph_dist" id="cityId" name="cityId"
+                                        onchange="getCounties('cityId','countyId')">
+                                    <option value="">请选择</option>
+                                </select> <input id="cityName1" name="cityName1" hidden="hidden">
+                                <select class="ph_dist" id="countyId" name="countyId">
+                                    <option value="">请选择</option>
+                                </select> <input id="countyName1" name="countyName1" hidden="hidden">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>社区名称：</th>
+                        <td colspan="3"><input name="townName" id="townName" type="text"></td>
+                        <td colspan="2">
+                            <input name="" type="button" th:onclick="'query();'" value="查询"><input name=""
+                                                                                                   th:onclick="'reset();'"
+                                                                                                   type="button"
+                                                                                                   value="重置">
+                        </td>
+                    </tr>
+                </table>
+            </shiro:hasPermission>
+        </div>
+		<!--筛选条件结束-->
+		        
+        <!--商品列表-->
+        <div class="ph_wareBox ph_tabScroll">
+            <table class="ph_wareList" id="table">
+            </table>
+        </div>
+        <!--end 商品列表-->
+        <!--分页-->
+        <!--end 分页-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<!--遮罩层-->
+<div class="maskBox"></div>
+<!--end 遮罩层-->
+<!--添加社区列表弹窗-->
+<div class="PopupBox"  id="addLinkmanBox">
+    <!--关闭按钮-->
+    <a href="javascript: void(0);" class="close"></a>
+    <!--end 关闭按钮-->
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+        <form class="form-inline" id="addCommunityForm">
+	        <table class="ph_tableBox">
+	            <tr>
+	           
+                    <th> <span class="require">*</span>行政区域：</th>
+                    <td colspan="8">
+                        <div class="ph_distpicker" id="distpicker">
+							<input id="positionId" name="id" hidden="hidden">
+							<select class="ph_dist" id="provinceId1" name="provinceId"
+								onchange="getCityies('provinceId1','cityId1','countyId1')">
+								<option value="">请选择</option>
+							</select> <input id="provinceName" name="provinceName" hidden="hidden">
+							<select class="ph_dist" id="cityId1" name="cityId"
+								onchange="getCounties('cityId1','countyId1')">
+								<option value="">请选择</option>
+							</select> <input id="cityName" name="cityName" hidden="hidden">
+							<select class="ph_dist" id="countyId1" name="countyId">
+								<option value="">请选择</option>
+							</select> <input id="countyName" name="countyName" hidden="hidden">
+						 </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th><span class="require">*</span> 社区名称：</th>
+                    <td colspan="8"><input name="townName" id="townName1" type="text"></td> 
+                </tr>
+                
+	          </table>
+	        </div>
+        </form>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 添加社区列表弹窗-->
+
+
+
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!--分页-->
+<script type="text/javascript"   th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!-- 区域 -->
+<script type="text/javascript" th:src="@{/static/js/common/cascade.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+
+<!--日期控件-->
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/bootstrap-datepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.timepicker.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/jquery.datepair.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/datepicker/datepicker.js}"></script>
+
+
+<script type="text/javascript" th:src="@{/static/js/common/util.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/area.js}"></script>
+	
+<script type="text/javascript" th:inline="javascript">
+    var  tb;
+    $(function() {
+        var Popupe = new PopupBase();
+        Popupe.show('.Js_deliver', '.maskBox,.deliverBox');
+        Popupe.show('.Js_refund', '.maskBox,.Js_refundBox');
+        Popupe.show('.Js_btn', '.maskBox,.DeterBox');
+        Popupe.show('.Js_refunddeta', '.maskBox,.Js_refundDetaBox');
+        Popupe.showHide('.subQuemit','.refundBox','.SucBox');
+        Popupe.hide('.close', '.maskBox,.DeterBox,.SucBox,.deliverBox,.Js_refundBox,.Js_refundDetaBox');
+
+        //分页
+        tb=$("#table").DataTable({
+            "bServerSide": true,
+            "sPaginationType": "full_numbers",
+            "bJQueryUI": true,
+            "sDom": '<"">t<"F"ip>',
+            "sAjaxSource": "/web/community/getCommunityList", //ajax调用接口
+            "aoColumnDefs": [{sDefaultContent: '',aTargets: [ '_all' ]}],
+            "aoColumns": [
+            	{ "sWidth":"50px","sTitle" : "序号","mData": "id","sClass":"sClass" },
+            	{ "sWidth":"250px","sTitle" : "行政区域","class":"sClass","mRender":function(data, type, full){
+	                	var text;
+	                	if(!(full.provinceName===null)){
+	                		text = full.provinceName;
+	                	}
+	                	if(!(full.cityName===null)){
+	                		text = text+"-"+full.cityName;
+	                	}
+	                	if(!(full.countyName===null)){
+	                		text = text+"-"+full.countyName;
+	                	}
+                 	return text;
+     				}
+	                },
+	                
+            	{ "sWidth":"150px","sTitle" : "社区名称","mData": "townName","sClass":"sClass" },
+                {
+                    "sWidth": "110px",
+                    "sTitle": "操作",
+                    "mData": "id",
+                    "sClass": "ph_tableShow",
+                    "mRender": function (data, type, full) {
+                        var text = '-';
+                        if ([[${session.communityUpdate}]]) {
+                            text = '<div class="ph_operateBox"><input class="ph_operate" name="" type="button" value="操作选项">';
+                            text = text + '<ul class="ph_operateList hide" role="menu">';
+                            text += '<li><a href="javascript:void(0);" onclick="editTown(\'' + full.id + '\')">修改</a></li>';
+                            text = text + '</ul></div>';
+                        }
+                        return text;
+                    }
+                }
+            ],
+            "oLanguage" : {
+                "sProcessing" : "数据加载中······",
+                "sLengthMenu" : "显示 _MENU_ 条记录",
+                "sZeroRecords" : "没有您要搜索的内容！",
+                "sEmptyTable" : "列表中无数据存在！",
+                "sInfo" : "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+                "sInfoEmpty" : "显示 0 到 0 条记录",
+                "sInfoFiltered" : "数据列表中共  _MAX_ 条记录",
+                "oPaginate" : {
+                    "sFirst" : "首页",
+                    "sPrevious" : "上一页",
+                    "sNext" : "下一页",
+                    "sLast" : "末页"
+                }
+            },
+            "fnServerData" : function ( sSource, aoData, fnCallback, oSettings ) {
+                oSettings.jqXHR = $.ajax( {
+                    "dataType" 	: 'json',
+                    "type" 		: "GET",
+                    "async"     : 'false',
+                    "url" 		: sSource,
+                    "data" 		: {
+                        'pageNum': (aoData[3].value/aoData[4].value)+1,
+                        'pageSize' :  aoData[4].value,
+                        'provinceId'   :$("select[name='provinceId']").val(),
+						'cityId' 		:$("select[name='cityId']").val(),
+						'countyId'	:$("select[name='countyId']").val(),
+						'townName'  :  $("#townName").val()
+                    },
+                    "success"	: fnCallback
+                } );
+            },
+            "fnDrawCallback" : function(){
+            	var api = this.api();
+          	　　var startIndex= api.context[0]._iDisplayStart;//获取到本页开始的条数
+          	　　api.column(0).nodes().each(function(cell, i) {
+          	　　　　cell.innerHTML = startIndex + i + 1;
+          	　　});
+            }
+        });
+        
+        //新增社区列表
+        $('.ph_snbBtn').on('click', '.Js_addLogistic', function() {
+        	po();
+    		layer.open({
+    			type : 1,
+    			title : '添加社区列表',
+    			closeBtn : 0,
+    			area : [ '442px', '392px' ],
+    			btn : [ '确定', '取消' ],
+    			yes : function(index, layero) {
+    				var bool = validateParam();
+    				if (bool) {
+    					var params = $("#addCommunityForm").serializeJson();
+    					$.ajax({
+    						url : '/web/community/addCommunity',
+    						type : 'post',
+    						data : params,
+    						dataType : 'json',
+    						success : function(json) {
+    							if (json.code == 200) {
+    								clearData();
+    								Dialog.alertInfo(json.message);
+    								layer.close(index);
+    								tb.draw(false);
+    							} else {
+    								Dialog.alertWarn(json.message);
+    							}
+    						}
+    					})
+    				}
+    			},
+    			btnAlign : 'c',
+    			content : $('#addLinkmanBox')
+    		});
+    	});
+    });
+
+  //编辑社区列表
+    function editTown(id) {
+    	$.ajax({
+    		url : '/web/community/getPositionById', 
+    		type : 'get',
+    		data : {
+    			"id" : id
+    		},
+    		dataType : 'json',
+    		success : function(json) {
+    			  // alert(JSON.stringify(json));
+    			if (json.code == 200) {
+    				var da = json.data;
+    				$("#provinceId1").find("option:selected").text(da.provinceName);
+    				$("#provinceId1").find("option:selected").val(da.provinceId);
+    				$("#cityId1").find("option:selected").text(da.cityName);
+    				$("#cityId1").find("option:selected").val(da.cityId);
+    				$("#countyId1").find("option:selected").text(da.countyName);
+    				$("#countyId1").find("option:selected").val(da.countyId);
+    				$("#townName1").val(da.townName);
+    				$("#positionId").val(da.id);    
+    				
+    				$("#provinceId1").attr("disabled",true); 
+    	        	$("#cityId1").attr("disabled",true); 
+    	        	$("#countyId1").attr("disabled",true); 
+    	        	
+    				layer.open({
+    					type : 1,
+    					title : '修改社区列表',
+    					closeBtn : 0,
+    					area : [ '442px', '392px' ],
+    					btn : [ '确定', '取消' ],
+    					yes : function(index, layero) {
+    						var bool = validateParam();
+    						if (bool) {
+    							var params = $("#addCommunityForm").serializeJson();
+    							//alert(JSON.stringify(params));
+    							$.ajax({
+    								url : '/web/community/updateCommunity',
+    								type : 'post',
+    								data : params,
+    								dataType : 'json',
+    								success : function(json) {
+    									if (json.code == 200) {
+    										clearData();
+    										Dialog.alertInfo(json.message);
+    										layer.close(index);
+    										$("#table").DataTable().draw(false);
+    									} else {
+    										Dialog.alertWarn(json.message);
+    									}
+    								}
+    							})
+    						}
+    					},
+    					btnAlign : 'c',
+    					content : $('#addLinkmanBox'),
+    					end: function () {
+    						$("#provinceId1").attr("disabled",false); 
+    	    	        	$("#cityId1").attr("disabled",false); 
+    	    	        	$("#countyId1").attr("disabled",false); 
+    						clearData();
+    		            }
+    				});
+    			} else {
+    				alert("错误无!");
+    			}
+    		}
+    	});
+    }
+  
+    //条件查询重新加载数据
+    function query() {
+        tb.draw();
+    };
+
+
+    function clearData() {
+    	  $('#provinceId1').empty();
+          $('#cityId1').empty();
+          $('#countyId1').empty();
+          $('#townName1').val("");
+          jQuery("<option value=''>请选择</option>").appendTo("#provinceId1");
+          jQuery("<option value=''>请选择</option>").appendTo("#cityId1");
+          jQuery("<option value=''>请选择</option>").appendTo("#countyId1");
+ 
+    }
+    
+    //验证
+    function validateParam() {
+    	
+    
+    	var provinceName1 = $("#provinceId1").find("option:selected").text();
+
+    	$("#provinceName").val(provinceName1);
+    
+    	var cityName1 = $("#cityId1").find("option:selected").text();
+    	$("#cityName").val(cityName1);
+
+    	var countyName1 = $("#countyId1").find("option:selected").text();
+    	$("#countyName").val(countyName1);
+    	
+    	var provinceId1 = $("#provinceId1").val();
+    	if (!provinceId1) {
+    		Dialog.alertWarn('省不能为空!');
+    		return false;
+    	}
+
+    	var cityId1 = $("#cityId1").val();
+    	if (!cityId1) {
+    		Dialog.alertWarn('市不能为空!');
+    		return false;
+    	}
+    	
+    	var countyId1 = $("#countyId1").val();
+    	if (!countyId1) {
+    		Dialog.alertWarn('区不能为空!');
+    		return false;
+    	}
+    	
+    	var townName1 = $("#townName1").val();
+    	if (!townName1) {
+    		Dialog.alertWarn('社区不能为空!');
+    		return false;
+    	}
+    	return true;
+    }
+   
+    
+    //区域
+		function getCityies(provinceId, cityId, countyId) {
+			Area.getCityies(provinceId, cityId, countyId);
+		}
+		
+		function getCounties(cityId, countyId) {
+			Area.getCounties(cityId, countyId);
+		}
+    
+    /**
+     * 查询条件清除
+     */
+    function reset() {
+        $('#provinceId').val("");
+        $('#cityId').val("");
+        $('#countyId').val("");
+        $('#townName').val("");
+    }
+    
+    //弹窗里面的区域
+	$(function() {
+		var provinceId1 = 0;
+		$.ajax({
+			url : '/web/position/getPositionList',
+			type : 'post',
+			data : {
+				provinceId : provinceId1
+			},
+			dataType : 'json',
+			success : function(json) {
+				for (var i = 0; i < json.length; i++) {
+					$("#provinceId1").append("<option value='" + json[i].provinceId + "'>" + json[i].provinceName + "</option>");
+				}
+			}
+		});
+	});
+    
+    function po(){
+    	var provinceId1 = 0;
+		$.ajax({
+			url : '/web/position/getPositionList',
+			type : 'post',
+			data : {
+				provinceId : provinceId1
+			},
+			dataType : 'json',
+			success : function(json) {
+				for (var i = 0; i < json.length; i++) {
+					$("#provinceId1").append("<option value='" + json[i].provinceId + "'>" + json[i].provinceName + "</option>");
+				}
+			}
+		});
+    }
+</script>
+</body>
+</html>

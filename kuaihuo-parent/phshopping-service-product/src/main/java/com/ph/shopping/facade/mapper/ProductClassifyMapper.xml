@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.ProductClassifyMapper">
+	<!-- 商品类型表所有字段 -->
+	<sql id="base_columns">
+		pc.id, pc.classifyName, pc.classifyLevel, pc.description, pc.url, pc.parentId,
+		pc.status, pc.isDelete, pc.sort, pc.createTime, pc.updateTime, pc.createrId , pc.updaterId
+	</sql>
+
+	<!-- 查询条件 -->
+	<sql id="sqlWhere">
+		<trim prefix="where" prefixOverrides="and">
+			<if test="id != null and id !='' ">
+				and pc.id = #{id}
+			</if>
+			<if test="classifyName != null and classifyName !='' ">
+				and pc.classifyName like CONCAT('%',TRIM(#{classifyName}),'%')
+			</if>
+			<if test="classifyLevel != null and classifyLevel !='' ">
+				and pc.classifyLevel = #{classifyLevel}
+			</if>
+			<if test="parentId!= null and parentId!='' ">
+				and pc.parentId = #{parentId}
+			</if>
+			<if test="status != null and status !='' ">
+				and pc.status = #{status}
+			</if>
+			<if test="sort != null and sort !='' ">
+				and pc.sort = #{sort}
+			</if>
+			<if test="createrId != null and createrId !='' ">
+				and pc.createrId = #{createrId}
+			</if>
+			<if test="updaterId != null and updaterId !='' ">
+				and pc.createrId = #{updaterId}
+			</if>
+			<choose>
+				<when test="isDelete != null and isDelete !='' ">
+					and pc.isDelete = #{isDelete}
+				</when>
+				<when test="isDelete == null or isDelete =='' ">
+					and pc.isDelete = 0
+				</when>
+			</choose>
+		</trim>
+		order by pc.parentId
+	</sql>
+
+	<!-- 条件查询商品分类列表  -->
+	<select id="getProductClassifyVOList"
+			parameterType="com.ph.shopping.facade.product.dto.ProductClassifyDTO"
+			resultType="com.ph.shopping.facade.product.vo.ProductClassifyVO">
+		SELECT
+		<include refid="base_columns" />
+		, (
+			SELECT count(1) num
+			FROM ph_product_classify c, ph_product p
+			WHERE p.productClassifyId = c.id and FIND_IN_SET(p.productClassifyId, getProductClassifyChildrenById(pc.id))
+		) productCount
+		FROM ph_product_classify pc
+		<include refid="sqlWhere" />
+	</select>
+
+	<!-- 根据商品类型id获取下面所有被引用的商品数量 分类及子类条件为 未删除的, 商品条件为 未删除的 -->
+	<select id="getExistProductCountByClassify"
+		parameterType="java.lang.Long"
+		resultType="Integer">
+		SELECT count(p.id) num
+		FROM ph_product_classify pc, ph_product p
+		WHERE p.productClassifyId = pc.id and FIND_IN_SET(p.productClassifyId, getProductClassifyChildrenById(#{id}))
+			and pc.isDelete=0 and p.isDelete=0
+	</select>
+
+	<!-- 根据当前分类获取所有子类别(结果包含自己)  -->
+	<select id="getProductClassifyChildren"
+			parameterType="com.ph.shopping.facade.product.dto.ProductClassifyDTO"
+			resultType="com.ph.shopping.facade.product.vo.ProductClassifyVO">
+		SELECT
+		<include refid="base_columns" />
+		FROM ph_product_classify pc
+		WHERE FIND_IN_SET(pc.id, getProductClassifyChildrenById(#{id}))
+		and pc.isDelete = 0
+		<if test="status != null and status !='' ">
+			and pc.status = #{status}
+		</if>
+	</select>
+
+	<!-- 根据当前分类获取所有上级类别(结果包含自己)  -->
+	<select id="getProductClassifyParents"
+			parameterType="com.ph.shopping.facade.product.dto.ProductClassifyDTO"
+			resultType="com.ph.shopping.facade.product.vo.ProductClassifyVO">
+		SELECT
+		<include refid="base_columns" />
+		FROM ph_product_classify pc
+		WHERE FIND_IN_SET(pc.id, getProductClassifyParentsById(#{id}))
+		and pc.isDelete = 0
+		<if test="status != null and status !='' ">
+			and pc.status = #{status}
+		</if>
+	</select>
+
+	<!-- 逻辑删除商品类别(包含删除所有子类别)  -->
+	<update id="deleteProductClassifyById"
+			parameterType="java.lang.Long">
+		UPDATE ph_product_classify pc SET pc.isDelete = 1
+		WHERE FIND_IN_SET(pc.id, getProductClassifyChildrenById(#{id}))
+	</update>
+
+	<!-- 根据商品类别id[逻辑删除]该类别以及子类别中包含的[属性]  -->
+	<update id="deleteProductPropertyByProductClassifyId"
+			parameterType="java.lang.Long">
+		UPDATE ph_product_property pp SET pp.isDelete = 1
+		WHERE FIND_IN_SET(pp.classifyId, getProductClassifyChildrenById(#{id}))
+	</update>
+
+	<!-- 根据商品类别id[物理删除]该类别以及子类别中包含的[属性值]  -->
+	<update id="deleteProductPropertyValByProductClassifyId"
+			parameterType="java.lang.Long">
+		DELETE pv from ph_product_property pp, ph_product_property_val pv
+		WHERE FIND_IN_SET(pp.classifyId, getProductClassifyChildrenById(#{id})) and pv.propertyId=pp.id
+	</update>
+
+	<!-- 停用商品分类,时停用该类型的所有子类分类(如果有子类)  -->
+	<update id="updateDisableProductClassifyById"
+			parameterType="java.lang.Long">
+		  UPDATE ph_product_classify pc
+		 SET pc.status = 0
+		 WHERE FIND_IN_SET(pc.id, getProductClassifyChildrenById(#{id})) and pc.isDelete=0;
+	</update>
+
+	<!-- 启用商品分类,同时启用该类型的所有上级类分类(如果有上级)  -->
+	<update id="updateEnableProductClassifyById"
+			parameterType="java.lang.Long">
+		 UPDATE ph_product_classify pc
+		 SET pc.status = 1
+		 WHERE FIND_IN_SET(pc.id, getProductClassifyParentsById(#{id})) and pc.isDelete=0;
+	</update>
+
+	<!-- 商城首页导航分类  -->
+	<select id="getProductClassifyShowIndex" parameterType="java.lang.Integer"
+			resultType="com.ph.shopping.facade.product.vo.ProductClassifyVO">
+		select
+			<include refid="base_columns" />
+			from (select
+					<include refid="base_columns" />
+					from ph_product_classify pc
+					where parentId=0 and classifyLevel=1 and isDelete=0 and status=1 order by sort asc limit #{number}) pc
+		union
+		select
+			<include refid="base_columns" />
+			from ph_product_classify pc where pc.parentId in (
+			select s.id from(
+				select ppc.id from ph_product_classify ppc
+				where ppc.parentId=0 and ppc.classifyLevel=1 and ppc.isDelete=0 and ppc.status=1 order by ppc.sort asc limit #{number}
+				) s
+			)
+	</select>
+
+	<!-- 商城分类模块  -->
+	<select id="getIndexClassify" resultType="com.ph.shopping.facade.product.vo.ProductClassifyVO">
+		select
+		<include refid="base_columns" />
+		from ph_product_classify pc, ph_mall_index m where m.classifyId=pc.id group by pc.id
+	</select>
+</mapper>

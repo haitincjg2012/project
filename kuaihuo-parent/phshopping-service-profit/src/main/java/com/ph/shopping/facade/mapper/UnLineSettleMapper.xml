@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IUnLineSettleMapper">
+	<select id="getUnLineSettleList" parameterType="com.ph.shopping.facade.profit.dto.UnLineSettleDTO" resultType="com.ph.shopping.facade.profit.vo.UnLineSettleVO">
+		SELECT
+			p.id,
+			p.orderNo,
+			p.createTime orderTime,
+			p.settleTime,
+			p.orderMoney,
+						CASE p.payType
+				WHEN 0 THEN
+						0
+				ELSE
+					(1 - p1.businessProfitRatio) * p.orderMoney
+			END settleMoney,
+			
+			p2.telPhone memberTel,
+			p2.memberName,
+			p1.telPhone merchantTel,
+			p1.companyName merchantCompanyName,
+			p1.merchantName,
+			p.payType,
+			p.isSettle
+		FROM
+			ph_member_order_unline p,
+			  ph_merchant p1 , 
+			 ph_member p2  
+		WHERE
+			p. STATUS = 2
+			AND  p.merchantId = p1.userId
+			AND  p2.id = p.memberId
+			<if test="orderNo !=null and orderNo !='' ">
+				AND p.orderNo = #{orderNo}
+			</if>	
+			<if test="startDate !=null and startDate !='' ">
+				AND  date_format(p.createTime, '%Y-%m-%d')  &gt;=  #{startDate}
+			</if>
+			<if test="endDate !=null and endDate !='' ">
+				AND  date_format(p.createTime, '%Y-%m-%d')  &lt;=  #{endDate} 
+			</if>
+			
+			<if test="merchantTel !=null and merchantTel !='' ">
+				AND p1.telPhone = #{merchantTel}
+			</if>	
+			<if test="memberTel !=null and memberTel !='' ">
+				AND p2.telPhone  =  #{memberTel} 
+			</if>
+			<if test="isSettle !=null  and isSettle != -1 ">
+				AND p.isSettle  =  #{isSettle} 
+			</if>
+			<if test="payType !=null  and payType != -1  ">
+				AND p.payType  =  #{payType} 
+			</if>
+		ORDER BY p.id DESC
+	</select>
+	<!-- 获取线下订单中需要结算的订单和结算金额 -->
+	<select id="getUnLineSettleOrder" resultType="com.ph.shopping.facade.profit.vo.UnLineSettleOrderVO">
+			SELECT
+				p.id,
+				p.merchantId,
+				CASE p.payType
+				WHEN 0 THEN
+						0
+				ELSE
+					(1 - p1.businessProfitRatio) * p.orderMoney
+			END settleMoney,
+			 p.orderNo
+			FROM
+				ph_member_order_unline p,
+				ph_merchant p1
+			WHERE
+				p.merchantId = p1.userId
+			AND p.isSettle = 0
+			AND date_add(p.doneTime, INTERVAL 1 DAY) &lt; NOW() 
+			AND p.`status` = 2
+	</select>
+	<!-- 批量更改线下订单结算表中结算状态为结算 -->
+	<update id="updateUnLineOrderIsSettleBatch" parameterType="java.util.List">
+		UPDATE ph_member_order_unline SET isSettle = 1 ,updateTime = now(),updaterId = 0,settleTime = now()  WHERE id IN
+			<foreach collection="list" item="item" index="index" open="("
+				separator="," close=")">
+				#{item.id}
+			</foreach>
+	</update>
+</mapper>

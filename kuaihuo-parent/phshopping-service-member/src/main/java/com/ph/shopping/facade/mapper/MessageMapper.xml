@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MessageMapper">
+
+	<select id="findUserPhone"  resultType="com.ph.shopping.facade.member.vo.MessageVO">
+		SELECT telPhone userId FROM ph_member WHERE id=#{userId}
+	</select>
+	<!-- 获取消息发送数据列表 -->
+	<select id="selectMessageSendInfoByList"
+		parameterType="com.ph.shopping.facade.member.dto.message.MessageQueryDTO"
+		resultType="com.ph.shopping.facade.member.vo.MessageVO">
+		SELECT
+			a.id templateId,
+			a.messageTitle,
+			a.messageAlert,
+			a.messageTemplate,
+			a.messageType,
+			b.messageContent,
+			b.createTime,
+			b.createrId,
+			b.isRead,
+			b.id recordId,
+			b.userId,
+			b.messageType as type
+		FROM
+			ph_message_push_record b
+		LEFT JOIN ph_message_push_basedata a ON a.id = b.templateId
+		where b.status = 1
+		<!-- <if test="userType != null">
+		    and b.userType = #{userType}
+		</if> -->
+		<if test="telPhone != null">
+		    and b.userId = #{telPhone}
+		</if>
+		<if test="equipmentId != null and equipmentId != '' ">
+		    and b.equipmentId = #{equipmentId}
+		</if>
+		order by b.createTime desc
+	</select>
+	<!-- 根据消息模板ID 得到详情 -->
+	<select id="selectMessageInfoByTemplateIdId" parameterType="java.lang.Long" resultType="com.ph.shopping.facade.member.vo.MessageVO">
+		SELECT
+			a.id templateId,
+			a.messageTitle,
+			a.messageAlert,
+			a.messageTemplate,
+			a.messageType,
+			a.createTime,
+			a.trustSlogan,
+			a.brandSlogan,
+			a.createrId
+		FROM
+			ph_message_push_basedata a
+		where
+			a.id = #{templateId}
+	</select>
+	<!-- 修改消息发送状态 -->
+	<update id="updateMessageByStatus" parameterType="map">
+		update
+			ph_message_push_record
+		set
+			status = #{status}
+		where id in 
+		<foreach collection="ids" index="index" item="item" separator="," open="(" close=")">
+	      	#{item}
+	    </foreach>
+	</update>
+	<!-- 根据消息记录ID 得到发送的消息详情 -->
+	<select id="selectMessageInfoById" parameterType="java.lang.Long" resultType="com.ph.shopping.facade.member.vo.MessageVO">
+		SELECT
+			a.id templateId,
+			a.messageTitle,
+			a.messageAlert,
+			a.messageTemplate,
+			a.messageType,
+			b.messageContent,
+			b.createTime,
+			b.createrId,
+			b.isRead,
+			b.id recordId,
+			b.messageType as type
+		FROM
+			ph_message_push_record b
+		LEFT JOIN ph_message_push_basedata a ON a.id = b.templateId
+		WHERE
+			b.id = #{recordId}
+	</select>
+	<!-- 查询是否有未读记录 -->
+	<select id="selectUnreadMessageRecordByUid" parameterType="com.ph.shopping.facade.member.dto.message.UnreadMessageRecordDTO" resultType="int">
+		SELECT
+			count(1)
+		FROM
+			ph_message_push_record
+		WHERE
+			isRead = 0
+		AND status = 0
+		AND	userId = #{userId}
+		AND userType = #{userType}
+	</select>
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IOrderProfitTotalMapper">
+	<!-- 获取供应链分润总表list -->
+	<select id="getSupplyProfitTotalList" parameterType="com.ph.shopping.facade.profit.dto.SupplyProfitTotalDTO" resultType="com.ph.shopping.facade.profit.vo.SupplyProfitTotalVO">
+		SELECT
+			SUM(p.profited)  profited,
+			p.userType,
+			p.userName,
+			pp.telphone
+		FROM
+			ph_profit_user_record p,
+			ph_permission_common_user pp
+		WHERE
+			p.userId = pp.id
+		<if test="telPhone !=null and telPhone !='' ">
+			and pp.telPhone = #{telPhone}
+		</if>
+		<if test="userType !=null and userType !='' and userType != 0 ">
+			and p.userType = #{userType}
+		</if>
+		GROUP BY
+			p.userId
+	</select>
+	<!-- 推广师分润总表数据 -->
+	<select id="getPromoterProfitTotalList" parameterType="com.ph.shopping.facade.profit.dto.PromoterProfitTotalDTO" resultType="com.ph.shopping.facade.profit.vo.PromoterProfitTotalVO">
+		SELECT
+			SUM(p.score) profited,
+			p1.telPhone,
+			p1.memberName
+		FROM
+			ph_score_total_trade p
+		LEFT JOIN ph_member p1 ON p1.id = p.memberId
+		WHERE
+			p.transCode IN (1051, 1055, 1058)
+		<if test="telPhone !=null and telPhone !='' ">
+			and p1.telPhone = #{telPhone}
+		</if>
+		<if test="memberName !=null and memberName !=''">
+			and p1.memberName = #{memberName}
+		</if>
+		GROUP BY
+		p.memberId
+	</select>
+	<!-- 推广师获取分润的总额(此人通过分润途径得到的金额) -->
+	<select id="getProfitTotalByMemberID" resultType="java.lang.Long">
+		SELECT
+			IFNULL(sum(score),0) totalScore
+		FROM
+			ph_score_total_trade p
+		WHERE
+			p.transCode IN (1051, 1058, 1055)
+		AND p.memberId = #{memberID}
+	</select>
+	
+	<!--推广师分润记录 pc商城用 -->
+	<select id="getPromoterProfitRecordList" resultType="com.ph.shopping.facade.profit.vo.PromoterProfitRecordVO">
+    	SELECT
+    		p.id,
+			p.enterpriseName,
+			p.enterpriseType,
+			p.deliveryDate,
+			p.orderMoney orderMoney1,
+			p.profitDate,
+			p.proProfit proProfit1,
+			p.orderNo
+		FROM
+			ph_profit_promoter_record p
+		where 1=1
+			and p.promoterId = #{promoterId}
+		<if test="enterpriseType != 1 and  enterpriseType != null and  enterpriseType != '' " >
+			and p.enterpriseType = #{enterpriseType}
+		</if>
+		<if test="enterpriseName != null and  enterpriseName != '' ">
+			and p.enterpriseName like CONCAT('%',#{enterpriseName},'%')
+		</if>
+    </select>
+    
+</mapper>

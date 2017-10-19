@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.mybatis.dao.cashreceivestation.MyCashReceiveStationDao">
+	
+	<!-- 管理员后台——提现明细列表 -->
+	<select id="getCashReceiveStationList" resultType="Map" parameterType="map">
+		SELECT m.phone AS phone,crs.mer_seq_id AS merSeqId,crs.money AS money,crs.fee_income AS feeIncome,
+			   h.have_deposit_money AS haveDepositMoney,crs.`status` AS status,crs.created_time AS createdTime
+		FROM cash_receive_station AS crs
+		LEFT JOIN alq_hunter AS h ON crs.css_id=h.id 
+		LEFT JOIN alq_member AS m ON m.hunter_id=h.id  
+		<include refid="where_sql"></include> 
+		ORDER BY crs.created_time DESC LIMIT #{startIndex},#{endIndex}
+	</select>
+	<!-- 管理员后台——提现明细列表-总条数 -->
+	<select id="getCashReceiveStationCount" resultType="int" parameterType="map">
+		SELECT count(*) FROM cash_receive_station AS crs
+		LEFT JOIN alq_hunter AS h ON crs.css_id=h.id 
+		LEFT JOIN alq_member AS m ON m.hunter_id=h.id  
+		<include refid="where_sql"></include> 
+	</select>
+	
+	
+	<sql id="where_sql">
+    	<where>  
+    		  1=1
+	        <if test="phone != null and phone != ''">
+				AND m.phone like concat('%',#{phone},'%') 
+			</if>
+			<if test="merSeqId != null and merSeqId != ''">
+				AND crs.mer_seq_id like concat('%',#{merSeqId},'%')
+			</if>
+			<if test="startTime != null and startTime != ''">  
+	     		<![CDATA[AND crs.created_time >= #{startTime}]]>  
+	    	</if>
+	    	<if test="endTime != null and endTime != ''">  
+	     		<![CDATA[AND crs.created_time <= #{endTime}]]>  
+	    	</if>
+	        
+   		</where> 
+	</sql>
+	
+	<!-- 行业协会后台——提现明细列表 -->
+	<select id="getIndustryAssociationCashReceiveStationList" resultType="Map" parameterType="map">
+		SELECT i.phone AS phone,crs.mer_seq_id AS merSeqId,crs.money AS money,crs.fee_income AS feeIncome,
+			   i.have_deposit_money AS haveDepositMoney,crs.`status` AS status,crs.created_time AS createdTime
+		FROM cash_receive_station AS crs
+		LEFT JOIN alq_industry_association AS i ON crs.css_id=i.id  
+		<include refid="where_industryassociation_sql"></include> 
+		ORDER BY crs.created_time DESC LIMIT #{startIndex},#{endIndex}
+	</select>
+	<!-- 行业协会后台——提现明细列表-总条数 -->
+	<select id="getIndustryAssociationCashReceiveStationCount" resultType="int" parameterType="map">
+		SELECT count(*) FROM cash_receive_station AS crs
+		LEFT JOIN alq_industry_association AS i ON crs.css_id=i.id  
+		<include refid="where_industryassociation_sql"></include> 
+	</select>
+	
+	<sql id="where_industryassociation_sql">
+    	<where>  
+    		  crs.css_id=#{industryassociationId} and crs.css_type=2
+			<if test="phone != null and phone != ''">
+				AND i.phone like concat('%',#{phone},'%') 
+			</if>
+			<if test="merSeqId != null and merSeqId != ''">
+				AND crs.mer_seq_id like concat('%',#{merSeqId},'%')
+			</if>
+	        <if test="startTime != null and startTime != ''">  
+	     		<![CDATA[AND crs.created_time >= #{startTime}]]>  
+	    	</if>
+	    	<if test="endTime != null and endTime != ''">  
+	     		<![CDATA[AND crs.created_time <= #{endTime}]]>  
+	    	</if>
+	    	
+   		</where> 
+	</sql>
+</mapper>
+

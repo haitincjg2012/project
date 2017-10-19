@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.IHunterOrderProfitMapper">
+
+	<!-- 查询省市县 -->
+	<select id="getAreaByTownId" resultType="com.ph.shopping.facade.profit.vo.PositionVO"
+		parameterType="java.lang.Long">
+		select p.id,
+		p.provinceId,p.provinceName,p.cityId,p.cityName,p.countyId,p.countyName,p.townId,p.townName
+		from ph_position p where p.townId = #{townId}
+	</select>
+
+	<!-- 根据县id获取乡镇列表 -->
+	<select id="getTowns" resultType="com.ph.shopping.facade.profit.vo.PositionTownVO"
+		parameterType="java.lang.Long">
+		select p.id, p.townId,p.townName from ph_position p where p.countyId =
+		#{countyId}
+	</select>
+
+	<!-- 四级联动 -->
+	<!-- 查询省 -->
+	<select id="getPosition" resultType="com.ph.shopping.facade.profit.vo.PositionProvinceVO">
+		SELECT DISTINCT id,
+		provinceId, provinceName FROM ph_position GROUP BY provinceId
+	</select>
+	<!-- 查询市 -->
+	<select id="getCityByPid" parameterType="Long"
+		resultType="com.ph.shopping.facade.profit.vo.PositionCityVO">
+		SELECT DISTINCT id, cityId, cityName FROM ph_position WHERE
+		provinceId =(SELECT provinceId FROM ph_position WHERE id =
+		#{provinceId}) GROUP BY cityId
+	</select>
+	<!-- 查询区/县 -->
+	<select id="getCountyByCid" parameterType="Long"
+		resultType="com.ph.shopping.facade.profit.vo.PositionCountyVO">
+		SELECT DISTINCT id,countyId, countyName FROM ph_position
+		WHERE cityId =(SELECT cityId FROM ph_position WHERE id = #{cityId})
+		GROUP BY countyId
+	</select>
+	<!-- 查询乡镇 -->
+	<select id="getTownByCid" parameterType="Long"
+		resultType="com.ph.shopping.facade.profit.vo.PositionTownVO">
+		SELECT id, townId,townName FROM ph_position WHERE countyId
+		= (SELECT countyId FROM ph_position WHERE id = #{countyId})
+	</select>
+	
+	
+	
+	<!-- 批发商订单分润记录list -->
+	<select id="hunterOrderProfitList" parameterType="com.ph.shopping.facade.profit.dto.HunterOrderProfitDTO"
+	 resultType="com.ph.shopping.facade.profit.vo.HunterOrderProfitVO">
+		SELECT
+			*
+		FROM
+			ph_profit_hunter_order p
+		WHERE
+			1 = 1
+		<if test="orderNo !=null and orderNo !='' ">
+			AND p.orderNo = #{orderNo}
+		</if>	
+		<if test="startProfitTime !=null and startProfitTime !='' ">
+			AND  date_format(p.createTime, '%Y-%m-%d')   &gt;=  #{startProfitTime}
+		</if>
+		<if test="stopProfitTime !=null and stopProfitTime !='' ">
+			AND  date_format(p.createTime, '%Y-%m-%d')  &lt;=   #{stopProfitTime}
+		</if>
+			ORDER BY p.id DESC	
+	</select>
+	<!-- 插入批发商分润记录表 -->
+	<insert id="insertHunterOrderProfit">
+		insert into  ph_profit_hunter_order
+			(
+			orderNo,
+			orderMoney,
+			phProfit,
+			hunterProfit,
+			chargeProfit,
+			phChargeProfit,
+			ystChargeProfit,
+			cityAgentName,
+			countyAgentName,
+			cityPromoterName,
+			countyPromoterName,
+			cityAgentProfit,
+			countyAgentProfit,
+			cityPromoterProfit,
+			countyPromoterProfit,
+			chargeProfitTotal,
+			chargeProfitRemain,
+			chainProfit,
+			phChainProfit,
+			ystChainProfit,
+			cityAgentChainProfit,
+			countyAgentChainProfit,
+			chainProfitTotal,
+			chainProfitRemain,
+			memberTel,
+			provinceId,
+			cityId,
+			countyId,
+			townId,
+			hunterTel,
+			cityAgentId,
+			countyAgentId,
+			countyPromoterId,
+			cityPromoterId,
+			createTime,
+			profitTime,
+			isAccept,
+			
+			townAgentId,
+			townAgentName,
+			townPromoterId,
+			townPromoterName,
+			townAgentProfit,
+			townPromoterProfit,
+			townAgentChainProfit,
+			compensationMoney,
+			guildProfit,
+			yytProfit,
+			fromSys
+			)
+			VALUES
+			(
+			#{orderNo},
+			#{orderMoney},
+			#{phProfit},
+			#{hunterProfit},
+			#{chargeProfit},
+			#{phChargeProfit},
+			#{ystChargeProfit},
+			#{cityAgentName},
+			#{countyAgentName},
+			#{cityPromoterName},
+			#{countyPromoterName},
+			#{cityAgentProfit},
+			#{countyAgentProfit},
+			#{cityPromoterProfit},
+			#{countyPromoterProfit},
+			#{chargeProfitTotal},
+			#{chargeProfitRemain},
+			#{chainProfit},
+			#{phChainProfit},
+			#{ystChainProfit},
+			#{cityAgentChainProfit},
+			#{countyAgentChainProfit},
+			#{chainProfitTotal},
+			#{chainProfitRemain},
+			#{memberTel},
+			#{provinceId},
+			#{cityId},
+			#{countyId},
+			#{townId},
+			#{hunterTel},
+			#{cityAgentId},
+			#{countyAgentId},
+			#{countyPromoterId},
+			#{cityPromoterId},
+			now(),
+			#{profitTime},
+			1,
+			
+			#{townAgentId},
+			#{townAgentName},
+			#{townPromoterId},
+			#{townPromoterName},
+			#{townAgentProfit},
+			#{townPromoterProfit},
+			#{townAgentChainProfit},
+			#{compensationMoney},
+			#{guildProfit},
+			#{yytProfit},
+			#{fromSys}
+			)
+	</insert>
+	<!--快火批发商订单分润-->
+	<select id="hunterOrderProfitPageList" resultType="map">
+		<!--select
+		o.order_no as orderNo ,                                    &lt;!&ndash;订单号&ndash;&gt;
+		DATE_FORMAT(o.agree_time,"%y-%m-%d %h:%i")as agreeDate  ,  &lt;!&ndash;订单时间&ndash;&gt;
+		DATE_FORMAT(o.profit_timel,"%y-%m-%d %h:%i")as  profitDate,  &lt;!&ndash;分润时间&ndash;&gt;
+		(select mm.phone as memPhone from alq_hunter hh LEFT JOIN alq_member mm on mm.hunter_id=hh.id where hh.id=o.hunter_id) as hunterPhone,
+		                                                                                        &lt;!&ndash;批发商账号&ndash;&gt;
+		(select mm.phone  from alq_member mm  where mm.id=o.member_id)  as memberPhone  ,
+		                                                                                         &lt;!&ndash;商户账号&ndash;&gt;
+		(select gg.telPhone from ph_agent gg where o.agent_id=gg.id)       as agentPhone  ,      &lt;!&ndash;代理账号&ndash;&gt;
+		#&lt;!&ndash;推荐人账号&ndash;&gt;
+		(select sum(oo.total_price) from alq_order as oo GROUP BY o.order_no)     as totalPrice ,&lt;!&ndash;订单金额&ndash;&gt;
+		o.service_fen as serviceFee   ,                                                          &lt;!&ndash;订单服务费&ndash;&gt;
+		o.puhui_fen as puhuiFee   ,                                                              &lt;!&ndash;基金&ndash;&gt;
+		o.manage_fen as manageFee  ,                                                             &lt;!&ndash;管理费&ndash;&gt;
+		o.kuhuo_fen as kuhuoFee ,                                                                &lt;!&ndash;快火收入&ndash;&gt;
+		o.agent_fen as agentFee  ,                                                               &lt;!&ndash;代理分润&ndash;&gt;
+		o.promoter_fen as promoterFee                                                            &lt;!&ndash;推荐人分润&ndash;&gt;
+		from alq_order o where o.fen_run_status=1-->
+		select
+		o.id as id,
+		o.order_no as orderNo , <!--订单号-->
+		DATE_FORMAT(o.agree_time,"%y-%m-%d %h:%i")as agreeDate  , <!--订单时间-->
+		DATE_FORMAT(o.profit_timel,"%y-%m-%d %h:%i")as  profitDate,  <!--分润时间-->
+
+		(select mm.phone as memPhone from alq_hunter hh LEFT JOIN alq_member mm on mm.hunter_id=hh.id where hh.id=o.hunter_id) as hunterPhone,
+		(select mm.phone  from alq_member mm  where mm.id=o.member_id)  as memberPhone  ,     <!--批发商账号-->
+		<!--商户账号-->
+		(select gg.telPhone from ph_agent gg where o.agent_id=gg.id)       as agentPhone  ,               <!--代理账号-->
+		<!--推荐人账号-->
+		ifNull((select sum(oo.total_price) from alq_order as oo where oo.order_no=o.order_no) ,0)/100    as totalPrice ,            <!--订单金额-->
+		ifNull(o.service_fen,0)/100 as serviceFee   ,                      <!--订单服务费-->
+		ifNull(o.puhui_fen,0)/100 as puhuiFee   ,                      <!--基金-->
+		ifNull(o.manage_fen,0)/100 as manageFee  ,                     <!--管理费-->
+		ifNull(o.kuhuo_fen,0)/100 as kuhuoFee ,                          <!--快火收入-->
+		ifNull(o.agent_fen,0)/100 as agentFee  ,                        <!--代理分润-->
+		ifNull(o.promoter_fen,0)/100 as promoterFee                         <!--推荐人分润-->
+		from alq_order o where o.fen_run_status=1
+		<if test="orderNo !=null and orderNo !='' ">
+			AND o.order_no = #{orderNo}
+		</if>
+		<if test="startOrderTime !=null and startOrderTime !='' ">
+			AND  date_format(o.agree_time, '%Y-%m-%d')   &gt;=  #{startProfitTime}
+		</if>
+		<if test="stopOrderTime !=null and stopOrderTime !='' ">
+			AND  date_format(o.agree_time, '%Y-%m-%d')   &lt;=  #{stopOrderTime}
+		</if>
+		<if test="startProfitTime !=null and startProfitTime !='' ">
+			AND  date_format(o.profit_timel, '%Y-%m-%d')   &gt;=  #{startProfitTime}
+		</if>
+		<if test="stopProfitTime !=null and stopProfitTime !='' ">
+			AND  date_format(o.profit_timel, '%Y-%m-%d')    &lt;=   #{stopProfitTime}
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MemberMapper">
+	
+	<sql id = "member_base_column">
+		pm.id,
+		pm.telPhone,
+		pm.memberName,
+		pm.sex,
+		pm.idCardNo,
+		pm.memberPwd,
+		pm.isMarketing,
+		pm.status,
+		pm.level,
+		pm.certification,
+		pm.createTime,
+		pm.updateTime,
+		pm.headImage,
+		pm.equipmentId,
+		pm.token,
+		pm.tokenToMobile,
+		pm.nikeName,
+		pm.isFrozen,
+		pm.agentId,
+		pm.isStoreManager
+	</sql>
+	
+	<!-- 根据分页信息查询会员数据 -->
+	<select id="selectMemberListByPage" parameterType="com.ph.shopping.facade.member.dto.MemberDTO" resultType="com.ph.shopping.facade.member.vo.MemberVO">
+		SELECT
+		<include refid="member_base_column"/>
+		FROM
+			ph_member pm
+		where 
+			pm.status != 1
+		<if test="certification != null">
+			and pm.certification = #{certification}
+		</if>
+		<if test="status != null">
+			and pm.status = #{status}
+		</if>
+		<if test="level != null">
+			and pm.level = #{level}
+		</if>
+		<if test="id != null">
+			and pm.id = #{id}
+		</if>
+		<if test="telPhone != null and telPhone != ''">
+			and pm.telPhone = #{telPhone}
+		</if>
+		<if test="memberName != null and memberName != ''">
+			and pm.memberName like concat(concat('%',#{memberName}),'%')
+		</if>
+		<if test="sex != null ">
+			and pm.sex = #{sex}
+		</if>
+		<if test="idCardNo != null and idCardNo != ''">
+			and pm.idCardNo = #{idCardNo}
+		</if>
+		<if test="isMarketing != null">
+			and pm.isMarketing = #{isMarketing}
+		</if>
+		<if test="createStartTime != null and createStartTime != ''">
+		    AND DATE_FORMAT(pm.createTime,'%Y-%m-%d') >= str_to_date(#{createStartTime},'%Y-%m-%d')
+		</if>
+		<if test="createEndTime != null and createEndTime != ''">
+			AND DATE_FORMAT(pm.createTime,'%Y-%m-%d') &lt;= str_to_date(#{createEndTime},'%Y-%m-%d')
+		</if>
+		order by pm.createTime desc
+	</select>
+		
+	<!-- 查询会员数据列表（不分页） -->
+	<select id="selectMemberList" parameterType="com.ph.shopping.facade.member.dto.MemberDTO" resultType="com.ph.shopping.facade.member.entity.Member">
+		SELECT
+		<include refid="member_base_column"/>
+		FROM
+			ph_member pm
+		WHERE
+			pm.status != 1
+		<if test="certification != null">
+			and pm.certification = #{certification}
+		</if>
+		<if test="status != null">
+			and pm.status = #{status}
+		</if>
+		<if test="level != null">
+			and pm.level = #{level}
+		</if>
+		<if test="id != null">
+			and pm.id = #{id}
+		</if>
+		<if test="createTime != null">
+			and pm.createTime = #{createTime}
+		</if>
+		<if test="updateTime != null">
+			and pm.updateTime = #{updateTime}
+		</if>
+		<if test="telPhone != null and telPhone != ''">
+			and pm.telPhone = #{telPhone}
+		</if>
+		<if test="memberName != null and memberName != ''">
+			and pm.memberName like concat(concat('%',#{memberName}),'%')
+		</if>
+		<if test="sex != null ">
+			and pm.sex = #{sex}
+		</if>
+		<if test="idCardNo != null and idCardNo != ''">
+			and pm.idCardNo = #{idCardNo}
+		</if>
+		<if test="isMarketing != null">
+			and pm.isMarketing = #{isMarketing}
+		</if>
+		order by pm.createTime desc
+	</select>
+	
+	<!-- 根据手机号获取会员信息 -->
+	<select id="selectMemberInfoByMobile" parameterType="java.lang.String" resultType="com.ph.shopping.facade.member.entity.Member">
+		SELECT
+		<include refid="member_base_column"/>
+		FROM
+			ph_member pm
+		WHERE
+			pm.telPhone = #{mobile}
+		AND 
+			pm.status != 1
+	</select>
+	
+	<!-- 根据手机号判断会员是否存在 -->
+	<select id="selectMemberIsExistByPhone" parameterType="java.lang.String" resultType="int">
+		select count(1) FROM
+			ph_member pm
+		WHERE
+			pm.telPhone = #{phone}
+		AND 
+			pm.status != 1 
+	</select>
+	
+	<!-- 根据条件 查询会员信息 -->
+	<select id = "selectMemberInfo" parameterType="com.ph.shopping.facade.member.dto.MemberDTO" resultType="com.ph.shopping.facade.member.entity.Member">
+		SELECT
+		<include refid="member_base_column"/>
+		FROM
+			ph_member pm
+		WHERE
+			pm.status != 1
+		<if test="id != null">
+			and pm.id = #{id}
+		</if>
+		<if test="certification != null">
+			and pm.certification = #{certification}
+		</if>
+		<if test="status != null">
+			and pm.status = #{status}
+		</if>
+		<if test="level != null">
+			and pm.level = #{level}
+		</if>
+		<if test="id != null">
+			and pm.id = #{id}
+		</if>
+		<if test="createTime != null">
+			and pm.createTime = #{createTime}
+		</if>
+		<if test="updateTime != null">
+			and pm.updateTime = #{updateTime}
+		</if>
+		<if test="telPhone != null and telPhone != ''">
+			and pm.telPhone = #{telPhone}
+		</if>
+		<if test="memberName != null and memberName != ''">
+			and pm.memberName like concat(concat('%',#{memberName}),'%')
+		</if>
+		<if test="sex != null ">
+			and pm.sex = #{sex}
+		</if>
+		<if test="idCardNo != null and idCardNo != ''">
+			and pm.idCardNo = #{idCardNo}
+		</if>
+		<if test="isMarketing != null">
+			and pm.isMarketing = #{isMarketing}
+		</if>
+	</select>
+
+
+	<!-- 查询推广师（会员）是否可以分润  -->
+	<select id="selectPromotionIsCanProfit" parameterType="com.ph.shopping.facade.member.dto.MemberDTO" resultType="com.ph.shopping.facade.member.entity.Member">
+		SELECT
+			<include refid="member_base_column"/>
+		FROM
+			ph_member pm
+		where pm.id = #{id}
+		<if test="isMarketing != null and isMarketing != ''">
+			and pm.isMarketing =  #{isMarketing}
+		</if>
+		<if test="status != null and status != ''">
+			and pm.status =  #{status}
+		</if>
+	</select>
+	<!-- 跟新设备ID -->
+	<update id="updateEquipmentIdByMobile" parameterType="map">
+		UPDATE ph_member SET 
+			equipmentId = #{equipmentId}
+		WHERE
+			telPhone = #{telPhone}
+	</update>
+	<!-- 根据手机号查询商户是否存在 -->
+	<select id="isMerchantByTelPhone" parameterType="java.lang.String" resultType="int">
+		SELECT
+			IFNULL(count(1),0)
+		FROM
+			ph_permission_common_user
+		WHERE
+			telphone = #{toTelPhone}
+	</select>
+	<!-- 查询分享记录 -->
+	<select id="selectMemberShareByList" parameterType="com.ph.shopping.facade.member.dto.MemberShareRecordDTO" resultType="com.ph.shopping.facade.member.vo.MemberShareRecordVO">
+		SELECT
+			a.id,
+			a.createTime,
+			a.telPhone,
+			a.toTelPhone,
+			a.userId,
+			a.type,
+			<if test="type == 0">
+				b.memberName userName
+			</if>
+			<if test="type == 1">
+				b.merchantName userName
+			</if>
+		FROM
+			ph_member_share_record a
+		<if test="type == 0">
+			LEFT JOIN ph_member b ON a.toTelPhone = b.telPhone
+		</if>
+		<if test="type == 1">
+			LEFT JOIN ph_merchant b ON a.toTelPhone = b.telPhone
+		</if>
+		where
+			a.type = #{type}
+		AND
+			a.userId = #{memberId}
+	</select>
+	
+	<select id="getIndexAdAttachDao" resultType="Map" parameterType="java.lang.Integer">
+		SELECT type,address,header As name,detail_content,id FROM alq_ad_attachment ORDER BY created_time DESC limit #{0},#{1}
+	</select>
+	<select id="getTextDetail" resultType="Map" parameterType="java.lang.Long">
+		SELECT type,detail_content as detailContent FROM alq_ad_attachment Where id=#{id}
+	</select>
+	
+	<!-- 根据手机号获取会员信息登录VO -->
+	<select id="selectMemberInfoByMobileVO" parameterType="java.lang.String" resultType="com.ph.shopping.facade.member.vo.MemberVO">
+		SELECT
+		<include refid="member_base_column"/>
+		FROM
+			ph_member pm
+		WHERE
+			pm.telPhone = #{mobile}
+		AND 
+			pm.status != 1
+	</select>
+	<!--根据昵称查找用户-->
+	<select id="getNikeName" resultType="Map" parameterType="String">
+		SELECT
+		<include refid="member_base_column"/>
+		from ph_member pm
+		WHERE  pm.nikeName=#{nikeName}
+
+	</select>
+	<!--修改用户昵称-->
+	<update id="updateNikeName">
+	update ph_member pm
+		<set>
+			<if test="nikeName !=null">
+					pm.nikeName=#{nikeName}
+			</if>
+		</set>
+		WHERE  pm.id=#{memberid}
+
+	</update>
+
+	<select id="isMerchantById" parameterType="java.lang.Long" resultType="int">
+		SELECT
+		IFNULL(count(1),0)
+		FROM
+		ph_member
+		WHERE
+		id = #{memberid}
+	</select>
+
+	<select id="getMarkindByPhone" resultType="Map">
+		SELECT pm.isMarketing FROM ph_member pm WHERE pm.telPhone =#{phone}
+	</select>
+	<select id="selectMerchantByTelPhone" resultType="Map">
+		SELECT * FROM ph_merchant pm WHERE pm.telPhone =#{phone}
+	</select>
+	<update id="updateMerchantPromoterIdByTelPhone" parameterType="map">
+		UPDATE ph_merchant SET promoterId=#{aa} WHERE telPhone=#{telPhone}
+	</update>
+
+
+</mapper>

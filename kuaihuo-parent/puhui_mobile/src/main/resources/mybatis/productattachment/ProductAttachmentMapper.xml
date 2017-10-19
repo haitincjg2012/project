@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.productattachment.ProductAttachmentDao">
+
+	<!-- 查询商品图片byId -->
+	<select id="getProductAttachmentById" resultType="com.alqsoft.entity.productattachment.ProductAttachment" parameterType="Long">
+		SELECT * FROM alq_product_attachment WHERE id=#{pattid}
+	</select>
+
+	<select id="getProductAttachmentByProductId"  resultType="map" parameterType="Long">
+		SELECT
+		patt.`id`,
+		patt.`address`,
+		patt.sort_num as sortNum
+		FROM
+		alq_product_attachment patt WHERE patt.`product_id`=#{productid} ORDER BY patt.sort_num ASC
+	</select>
+	<select id="getProductPictureVOByProductId"  resultType="com.alqsoft.vo.ProductPictureVo" parameterType="Long">
+		select id,sort_num as sortNum ,address
+		from alq_product_attachment
+		where product_id = #{productId}
+
+	</select>
+</mapper>

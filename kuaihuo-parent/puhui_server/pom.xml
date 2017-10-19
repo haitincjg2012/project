@@ -1,0 +1,467 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>puhui_server</groupId>
+	<artifactId>puhui_server</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging> 
+	<!-- 版本信息 -->
+	<properties>
+		<spring>4.3.4.RELEASE</spring>
+		<spring-security>3.2.7.RELEASE</spring-security>
+		<spring-data-jpa>1.10.5.RELEASE</spring-data-jpa>
+		<!-- redis和方法缓存的配置包 --> 
+		<spring-data-redis>1.7.5.RELEASE</spring-data-redis>
+		<spring-data-mongodb>1.9.5.RELEASE</spring-data-mongodb>
+		<jedis>2.9.0</jedis>
+		<xstream>1.4.8</xstream>
+		<hibernate>4.3.9.Final</hibernate>
+		<hibernate-validator>5.1.3.Final</hibernate-validator>
+		<netty>5.0.0.Alpha2</netty>
+		<netty3>3.10.3.Final</netty3>
+		<cxf>2.7.14</cxf> 
+		<javasimon>3.4.0</javasimon><!-- 不升级 -->
+		<!-- <tomcat-jdbc>8.0.21</tomcat-jdbc> -->
+		<logback.version>1.1.3</logback.version>
+		<slf4j.version>1.7.12</slf4j.version> 
+		<jstl>1.2</jstl>
+		<commons-lang3>3.4</commons-lang3>
+		<commons-fileupload>1.3</commons-fileupload>
+		<commons-io>2.4</commons-io>
+		<commons-beanutils>1.9.2</commons-beanutils>
+		<conmons-codec>1.9</conmons-codec>
+		<commons-pool2>2.4.1</commons-pool2>
+		<jackson>2.5.3</jackson>
+		<mysql-connector-java>5.1.34</mysql-connector-java>
+		<dom4j>1.6.1</dom4j>
+		<jaxen>1.1.4</jaxen>
+		<junit>4.12</junit>
+		<guava>18.0</guava>
+		<mybatis-spring>1.2.2</mybatis-spring>
+		<mybatis>3.2.8</mybatis>
+		<poi>3.10.1</poi>
+		<jsoup>1.8.2</jsoup>
+		<mail>1.4.7</mail>
+		<httpclient>4.5.2</httpclient>
+		<fastweixin>1.2.6</fastweixin>
+		<owasp-java-html-sanitizer>r239</owasp-java-html-sanitizer>
+		<ehcache-core>2.6.11</ehcache-core>
+		<jdom>1.1</jdom>
+		<freemarker>2.3.22</freemarker>
+		<asm>5.0.3</asm>
+		<zxing-core>3.0.0</zxing-core>
+		<zxing-javase>3.0.0</zxing-javase>
+	</properties> 
+	<dependencies>
+		<dependency>
+		    <groupId>com.alibaba</groupId>
+		    <artifactId>fastjson</artifactId>
+		    <version>1.2.28</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>${asm}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache-core</artifactId>
+			<version>${ehcache-core}</version>
+		</dependency>
+		<!-- 1.8.5 可以正常运行，1.8.9不可以正常运行  -->
+	<dependency>
+    	<groupId>org.aspectj</groupId>
+    	<artifactId>aspectjweaver</artifactId>
+    	<version>1.8.5</version>
+    </dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+			<version>${spring}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>${spring}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>${spring}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>${spring}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring}</version>
+		</dependency>
+		<!-- redis和方法缓存的配置包 -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-oxm</artifactId>
+			<version>${spring}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thoughtworks.xstream</groupId>
+			<artifactId>xstream</artifactId>
+			<version>${xstream}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-redis</artifactId>
+			<version>${spring-data-redis}</version>
+		</dependency>
+ 		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<version>${jedis}</version>
+		</dependency> 
+		<!-- mongodb -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-mongodb</artifactId>
+			<version>${spring-data-mongodb}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-jpa</artifactId>
+			<version>${spring-data-jpa}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${spring}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+			<version>${spring-security}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-taglibs</artifactId>
+			<version>${spring-security}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+			<version>${spring-security}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>${hibernate}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>${hibernate}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>${hibernate-validator}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-ehcache</artifactId>
+			<version>${hibernate}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-all</artifactId>
+			<version>${netty}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty</artifactId>
+			<version>${netty3}</version>
+		</dependency>
+		<!-- cxf关于webservice的配置 -->
+		<!-- <dependency> <groupId>org.apache.cxf</groupId> <artifactId>cxf-rt-frontend-jaxws</artifactId> 
+			<exclusions> <exclusion> <groupId>asm</groupId> <artifactId>asm</artifactId> 
+			</exclusion> </exclusions> <version>${cxf}</version> </dependency> <dependency> 
+			<groupId>org.apache.cxf</groupId> <artifactId>cxf-rt-transports-http</artifactId> 
+			<version>${cxf}</version> </dependency> -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons-lang3}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>${conmons-codec}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>${commons-fileupload}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${commons-io}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>${commons-beanutils}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-pool2</artifactId>
+			<version>${commons-pool2}</version>
+		</dependency>
+		<dependency>
+			<groupId>jstl</groupId>
+			<artifactId>jstl</artifactId>
+			<version>${jstl}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${jackson}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${jackson}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson}</version>
+		</dependency>
+<!-- 		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-jdbc</artifactId>
+			<version>${tomcat-jdbc}</version>
+		</dependency> -->
+		<dependency>
+    			<groupId>org.apache.tomcat.embed</groupId>
+    			<artifactId>tomcat-embed-logging-juli</artifactId>
+    		<version>8.0.32</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${mysql-connector-java}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava}</version>
+		</dependency>
+		<!-- 模板引擎 -->
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>${freemarker}</version>
+		</dependency>
+		<!-- 分词功能 -->
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-analyzers</artifactId>
+			<version>3.6.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
+			<version>3.6.2</version>
+		</dependency>
+		<!-- poi解析 -->
+		<dependency> 
+			<groupId>org.apache.poi</groupId> 
+			<artifactId>poi</artifactId> 
+			<version>${poi}</version> 
+		</dependency> 
+		<dependency> 
+			<groupId>org.apache.poi</groupId> 
+			<artifactId>poi-ooxml</artifactId> 
+			<version>${poi}</version>
+		</dependency>
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>${dom4j}</version>
+		</dependency>
+		<dependency>
+			<groupId>jaxen</groupId>
+			<artifactId>jaxen</artifactId>
+			<version>${jaxen}</version>
+		</dependency>
+		<!-- Logging with SLF4J & LogBack -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>${logback.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-access</artifactId>
+			<version>${logback.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis-spring</artifactId>
+			<version>${mybatis-spring}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>${mybatis}</version>
+		</dependency>
+		<!-- jsoup HTML parser library @ http://jsoup.org/ -->
+		<!-- <dependency> <groupId>org.jsoup</groupId> <artifactId>jsoup</artifactId> 
+			<version>${jsoup}</version> </dependency> -->
+		<!-- http连接工具 -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>${httpclient}</version>
+		</dependency>
+		<!-- httpclient -->
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+		</dependency>
+		<!-- 开启邮件的功能 -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>${mail}</version>
+		</dependency>
+		<!-- 消息中间件的配置 -->
+		<!-- <dependency> <groupId>org.apache.activemq</groupId> <artifactId>activemq-client</artifactId> 
+			<version>5.9.1</version> </dependency> <dependency> <groupId>org.apache.activemq</groupId> 
+			<artifactId>activemq-pool</artifactId> <version>5.9.1</version> </dependency> 
+			<dependency> <groupId>org.springframework</groupId> <artifactId>spring-jms</artifactId> 
+			<version>${spring}</version> </dependency> -->
+		<!-- 开启solr访问的功能 -->
+		<dependency>
+  			<groupId>org.springframework.data</groupId>
+  		    <artifactId>spring-data-solr</artifactId>
+  			<version>2.0.5.RELEASE</version>
+		</dependency>  
+		<!--微信公众平台服务器 fastweixin -->
+		<dependency>
+			<groupId>com.github.sd4324530</groupId>
+			<artifactId>fastweixin</artifactId>
+			<version>${fastweixin}</version>
+		</dependency>
+		<!-- 安全拦截器用 -->
+		<dependency>
+			<groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
+			<artifactId>owasp-java-html-sanitizer</artifactId>
+			<version>${owasp-java-html-sanitizer}</version>
+		</dependency>
+		<!-- jdom -->
+		<dependency>
+			<groupId>org.jdom</groupId>
+			<artifactId>jdom</artifactId>
+			<version>${jdom}</version>
+		</dependency>
+		<!-- 监控的搭建 -->
+		<dependency>
+			<groupId>org.javasimon</groupId>
+			<artifactId>javasimon-spring</artifactId>
+			<version>${javasimon}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.javasimon</groupId>
+			<artifactId>javasimon-console-embed</artifactId>
+			<version>${javasimon}</version>
+		</dependency>
+		<!-- json -->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20140107</version>
+		</dependency>
+			<dependency> 
+		<!-- google zxing 生成二维码 --> 
+     <groupId>com.google.zxing</groupId>  
+        <artifactId>core</artifactId>  
+        <version>${zxing-core}</version>  
+    </dependency>  
+    <dependency>  
+        <groupId>com.google.zxing</groupId>  
+        <artifactId>javase</artifactId>  
+        <version>${zxing-javase}</version>  
+    </dependency>
+    <dependency>
+    	<groupId>commons-logging</groupId>
+    	<artifactId>commons-logging</artifactId>
+    	<version>1.2</version>
+    </dependency>
+    <!-- 配置文件加密 下 -->
+    <dependency>
+         <groupId>org.jasypt</groupId>
+            <artifactId>jasypt</artifactId>
+            <version>1.9.2</version>
+    </dependency>
+    <dependency>
+            <groupId>org.jasypt</groupId>
+            <artifactId>jasypt-spring31</artifactId>
+            <version>1.9.2</version>
+        </dependency>
+     <!-- 配置文件加密 上 -->
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	
+	</build>
+
+</project>

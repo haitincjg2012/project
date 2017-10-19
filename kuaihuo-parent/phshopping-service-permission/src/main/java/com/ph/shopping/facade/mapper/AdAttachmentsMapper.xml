@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.AdAttachmentsMapper">
+    <sql id="baseSelect">
+
+            SELECT
+            r.id as id,
+            r.created_time as time ,
+            r.address as address,
+            r.header as header,
+            r.name as name,
+            r.type as type
+
+    </sql>
+    <!-- 分页获取所数据 -->
+    <select id="getDataAtachmentList" resultType="com.ph.shopping.facade.permission.vo.AdAttachmentVo"
+            parameterType="com.ph.shopping.facade.member.dto.AdAtachmentDTO">
+        <include refid="baseSelect"/>
+        FROM
+        alq_ad_attachment r
+        WHERE 1=1
+        ORDER BY r.created_time DESC
+    </select>
+
+    <!--添加数据到alq_ad_attachment表-->
+    <insert id="addAdAttachment"  >
+
+insert into alq_ad_attachment(address,name,type,created_time,detail_content) values(#{address},#{name},#{type},NOW(),#{detail_content});
+    </insert>
+
+    <!--删除-->
+    <select id="deleteAttachment">
+        delete from alq_ad_attachment where id=#{id}
+    </select>
+
+    <!--编辑数据-->
+    <select id="editAttachment" >
+        update alq_ad_attachment set name=#{name},detail_content=#{detail_content} where id=#{id}
+    </select>
+</mapper>

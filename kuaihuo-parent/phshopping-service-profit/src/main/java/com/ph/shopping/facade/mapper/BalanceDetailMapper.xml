@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IBalanceDetailMapper">
+	<select id="getBalanceDetail" resultType="com.ph.shopping.facade.profit.vo.BalanceDetailVO">
+		SELECT
+		u.telPhone,
+		CASE 	b.userType
+		WHEN '2' then '供链角色-供应商'
+		WHEN '3' then '供链角色-市级代理'
+		WHEN '4' then '供链角色-县级代理'
+		WHEN '5' then '供链角色-社区代理'
+		WHEN '6' then '供链角色-商户' END
+		enterpriseType,
+		b.transCode,
+		CASE b.transCode
+		WHEN '1008' THEN '线下订单-服务费用'
+		WHEN '1016' THEN '取消线下订单返现'
+		WHEN '1030' THEN '在线充值'
+		WHEN '1031' THEN '余额提现'
+		WHEN '1032' THEN '供链订单-余额支付'
+		WHEN '1034' THEN '提现失败'
+		WHEN '1052' THEN '线下订单-管理分润'
+		WHEN '1060' THEN '线下订单-订单结算'
+		WHEN '1070' THEN '一期同步数据'
+		WHEN '1071' THEN '一期同步数据'
+		WHEN '1006' THEN '处理用户提现'
+		WHEN '1007' THEN '处理会员提现' END source,
+		b.orderNo,
+		DATE_FORMAT(b.createTime,'%Y-%m-%d %H:%i:%s') createTime,
+		b.score score1,
+		b.handingCharge handingCharge1,
+		b.id userId
+		FROM
+		ph_user_balance_trade b,
+		ph_permission_common_user u
+			WHERE 1=1 and b.userId = u.id
+			<trim>
+			<if test="startDate != null and startDate != ''">
+				and date_format(b.createTime, '%Y-%m-%d') &gt;= #{startDate}
+			</if>
+			<if test="endDate != null and endDate != ''">
+				and date_format(b.createTime, '%Y-%m-%d') &lt;= #{endDate}
+			</if>
+			<if test="orderNo != null and orderNo != ''">
+				and b.orderNo = #{orderNo}
+			</if>
+			<if test="telPhone != null and telPhone != ''">
+				and u.telPhone = #{telPhone}
+			</if>
+			<if test="transCode != null">
+				and b.transCode = #{transCode}
+			</if>
+			<if test="enterpriseType != null">
+				and b.userType = #{enterpriseType}
+			</if>
+			<if test="userId != null">
+				and b.userId = #{userId}
+			</if>
+		</trim>
+		ORDER BY b.createTime DESC
+	</select>
+</mapper>

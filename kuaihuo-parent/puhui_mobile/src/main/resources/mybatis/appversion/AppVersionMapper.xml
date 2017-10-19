@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.appversion.AppVersionDao">
+<resultMap type="appversion" id="appversionMap">
+	<result column="id" property="id"/>
+	<result column="is_used" property="isUsed"/>
+	<result column="is_must_to_update" property="isMustToUpdate"/>
+	<association  property="attachment" autoMapping="true" foreignColumn="id"  column="attachment_id" javaType="com.alqsoft.entity.attachment.Attachment" select="selectAttachmentById" />
+</resultMap>
+
+	<!-- 获取版本信息 -->
+	<select id="selectAttachmentById" resultType="com.alqsoft.entity.attachment.Attachment" parameterType="Long">
+		SELECT * FROM alq_attachment WHERE id = #{attachment_id}
+	</select>
+	
+	<!-- 查询软件更新版本信息 -->
+	<select id="getAppVersion" resultType="Map">
+		SELECT app.is_must_to_update AS isMustToUpdate,aa.address AS url,app.version AS version 
+		FROM alq_app_version AS app,alq_attachment AS aa WHERE app.is_used=1 AND app.attachment_id=aa.id
+	</select>
+	
+	<select id="getDownLink" resultType="Map">
+		SELECT aa.address AS url,app.version AS VERSION 
+		FROM alq_app_version AS app,alq_attachment AS aa WHERE  app.attachment_id=aa.id  LIMIT 1
+	</select>
+</mapper>

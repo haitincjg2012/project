@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.OrderAddressMapper">
+    <sql id="base_order_address_column">
+        moa.id,
+        moa.memberId,
+        moa.provinceId,
+        moa.cityId,
+        moa.areaId,
+        moa.townId,
+        moa.address,
+        moa.createTime,
+        moa.contacts,
+        moa.telPhone,
+        moa.phoneNo,
+        moa.isdefault,
+        moa.updateTime,
+        moa.isDelete,
+        moa.positionId,
+        moa.createrId,
+        moa.updaterId
+    </sql>
+    <sql id="position_column">
+        p.provinceName provinceName,
+        p.cityName cityName,
+        p.countyName areaName,
+        p.townName townName
+    </sql>
+    <sql id="where_order_address">
+        <trim prefix="where" prefixOverrides="and">
+            <include refid="where_general"/>
+        </trim>
+    </sql>
+    <sql id="where_general">
+        <if test="id != null">
+            and moa.id = #{id}
+        </if>
+        <if test="memberId != null">
+            and moa.memberId = #{memberId}
+        </if>
+    </sql>
+    <select id="listOrderAddressDetail" parameterType="cm.ph.shopping.facade.order.dto.PhOrderAddressDTO" resultType="cm.ph.shopping.facade.order.vo.PhOrderAddressVO">
+        SELECT
+        <include refid="position_column"></include>
+        ,
+        <include refid="base_order_address_column"></include>
+        form FROM
+        ph_member_order_address moa
+        LEFT JOIN ph_position p on p.id = moa.positionId
+        <include refid="where_order_address"/>
+        and isDelete = 2
+        order BY createTime
+    </select>
+</mapper>

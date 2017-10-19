@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+<meta charset="UTF-8">
+<title>在线充值</title>
+<link th:href="@{/static/css/common/models.css}" type="text/css"
+	rel="stylesheet" />
+</head>
+<body>
+	<div class="MainContent">
+		<!--面包屑-->
+		<div class="current">
+			当前位置：<a href="#">帐户管理</a>&nbsp;&gt;&nbsp;<a href="#">帐户余额</a>&nbsp;&gt;&nbsp;<span>在线充值</span>
+		</div>
+		<!--end 面包屑-->
+		<!--主体内容-->
+		<div class="MainCont">
+			<!--标题-->
+			<div class="ph_subTit no_border">
+				<h2>在线充值</h2>
+			</div>
+			<!--end 标题-->
+			<!--在线充值-->
+			<div class="ph_methodBox ph_setUp">
+				<p class="ph_methPass">
+					<label for=""> <span class="require">*</span>充值金额：
+					</label> <input id="score" name="score" type="text"
+						onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}"
+						onafterpaste="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}">
+				</p>
+			</div>
+			<!--end 在线充值-->
+			<!--返回按钮-->
+			<div class="PopupBtn btnLeft">
+				<input class="submit" id="onLineCharge" name="onLineCharge"
+					type="button" value="银联支付" onclick="onLinePay()">
+			</div>
+
+			<form action="/web/useraccountmanager/toecopaycharge" hidden="hidden" id="payForm" name="payForm" method="post" target="_blank">
+				<input type="hidden" name="amount" id="amount"> 
+			</form>
+			<!--end 返回按钮-->
+		</div>
+		<!--end 主体内容-->
+	</div>
+
+	<script type="text/javascript"
+		th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+	<!--弹窗-->
+	<script type="text/javascript"
+		th:src="@{/static/js/plugins/layer/layer.js}"></script>
+	<script type="text/javascript" th:src="@{/static/js/common/util.js}"></script>
+	<script type="text/javascript"
+		th:src="@{/static/js/account/account_pay.js}"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.AgentImageMapper" >
+  <resultMap id="baseResultMap" type="com.ph.shopping.facade.spm.vo.AgentImageVO" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="url" property="url" jdbcType="VARCHAR" />
+    <result column="sort" property="sort" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="agentId" property="agentId" jdbcType="BIGINT" />
+    <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="createTime" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <!-- 查询条件 -->
+  <sql id="where_clause" >
+  		<trim prefix="where" prefixOverrides="and">
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="agentId != null and agentId != '' ">
+				and agentId = #{agentId}
+			</if>
+		</trim>
+  </sql>
+  <!-- 返回字段 -->
+  <sql id="base_column_list" >
+   	 id, url, sort, type, agentId, updateTime, createTime
+  </sql>
+  <!-- 查询代理商图片列表 -->
+  <select id="getAgentImageList" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.spm.dto.AgentImageDTO" >
+    select
+    <include refid="base_column_list" />
+    from ph_agent_image
+    <include refid="where_clause"/>
+  </select>
+</mapper>

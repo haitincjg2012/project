@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.cashreceivestation.CashReceiveStationDao">
+
+	
+	<!-- 提现明细 -->
+	<select id="findCashReceiveStationById" resultType="Map" parameterType="map">
+		SELECT crs.mer_seq_id As merSeqId,IFNULL(ROUND(crs.money/100,2),0) As money,crs.`status` As status,crs.created_time As createdTime 
+			FROM cash_receive_station AS crs 
+			WHERE crs.css_type =1 AND crs.css_id=#{hunterId} 
+			ORDER BY crs.created_time DESC
+			LIMIT #{startIndex},#{endIndex} 
+	</select>
+	
+	<!-- 提现订单明细 -->
+	<select id="findCashReceiveStationByMerSeqId" resultType="Map" parameterType="map">
+		SELECT crs.mer_seq_id As merSeqId,IFNULL(ROUND(crs.money/100,2),0) As money,crs.created_time As createdTime,crs.update_time AS updateTime,
+				IFNULL(ROUND(crs.fee_income/100,2),0) AS feeIncome,crs.bank_name AS bankName,crs.card_no AS cardNo 
+			FROM cash_receive_station AS crs 
+			WHERE crs.css_type =1 AND crs.css_id=#{hunterId} AND crs.mer_seq_id=#{merSeqId}
+	</select>
+	<!-- 收入明细 -->
+	<select id="findMoneyIncome" resultType="Map" parameterType="Long">
+	SELECT IFNULL(ROUND(hunter.have_deposit_money/100,2),0) AS haveDepositMoney,IFNULL(ROUND(hunter.income_all_money/100,2),0) AS incomeAllMoney,
+	     IFNULL(ROUND(hunter.left_deposit_money/100,2),0) AS leftDepositMoney
+	FROM alq_hunter as hunter where hunter.id=#{id}
+	</select>
+</mapper>

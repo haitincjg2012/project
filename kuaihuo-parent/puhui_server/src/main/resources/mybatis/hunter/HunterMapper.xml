@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.mybatis.dao.hunter.HunterDao">
+	
+
+	<select id="getHunterByIndustryType" resultType="java.util.Map" parameterType="java.util.Map">
+	    SELECT h.id,h.nickname name FROM alq_hunter h WHERE h.industry_type_id = #{tid}
+	</select>
+
+	<select id="getHunterInfo" resultType="java.util.Map" parameterType="java.util.Map">
+		SELECT h.order_money,h.good_comment_num_order FROM alq_hunter h WHERE h.id= #{hid,jdbcType=BIGINT}
+	</select>
+	
+</mapper>

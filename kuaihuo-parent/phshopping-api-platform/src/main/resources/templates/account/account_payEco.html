@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+<meta charset="UTF-8">
+<title>在线充值</title>
+</head>
+<body>
+	<form action="" hidden="hidden" id="payEcoForm" name="payEcoForm" method="post" >
+		<input type="hidden" name="orderNum" id="orderNum"> 
+		<input type="hidden" name="amount" id="amount" th:value="${amount}">
+		<input type="hidden" name="description" id="description">
+	</form>
+
+	<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+	<script type="text/javascript">
+		$.post('/web/useraccountmanager/insertuserchargerecord', {
+			score : $("#amount").val()
+		}, function(data, textStatus, req) {
+			$("#orderNum").val(data.data.orderNum);
+			$("#description").val(data.data.description);
+			$("#payEcoForm").attr("action", data.data.payUrl);
+			setTimeout(function() {
+				$("#payEcoForm").submit();
+			}, 1000)
+			
+		}, 'json');
+	</script>
+</body>
+</html>

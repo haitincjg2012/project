@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.sendmsg.SendMsgDao">
+
+<select id="sendMessageCode" resultType="Long"  parameterType="String" >
+select count(*) from alq_member as mm where mm.phone=#{phone}
+
+</select>
+<!-- 通过手机号验证member表中是否存在用户 --> 
+ <select id="selectMemberByPhone" resultType="Long"  parameterType="String">
+ SELECT 
+ count(mm.id)
+  FROM 
+  alq_member as mm WHERE mm.phone=#{phone}
+ </select>  
+  
+    
+    
+</mapper>

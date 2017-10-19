@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.AgentLevelMapper" >
+  <resultMap id="baseResultMap" type="com.ph.shopping.facade.spm.vo.AgentLevelVO" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="levelName" property="levelName" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="createTime" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="createrId" property="createrId" jdbcType="BIGINT" />
+    <result column="updaterId" property="updaterId" jdbcType="BIGINT" />
+  </resultMap>
+  <!-- 查询条件 -->
+  <sql id="where_clause" >
+  		<trim prefix="where" prefixOverrides="and">
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="levelName != null and levelName !='' ">
+				and levelName like CONCAT('%',TRIM(#{levelName}),'%')
+			</if>
+			<if test="updateTime != null and updateTime != '' ">
+				and updateTime = #{updateTime}
+			</if>
+		</trim>
+  </sql>
+  <!-- 返回字段 -->
+  <sql id="base_column_list" >
+    id, levelName, status, createTime, updateTime, createrId, updaterId
+  </sql>
+  <!-- 查询代理商等级列表 -->
+  <select id="getAgentLevelList" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.spm.dto.AgentLevelDTO" >
+    select
+    <include refid="base_column_list"/>
+    from ph_agent_level
+    <include refid="where_clause"/>
+  </select>
+</mapper>

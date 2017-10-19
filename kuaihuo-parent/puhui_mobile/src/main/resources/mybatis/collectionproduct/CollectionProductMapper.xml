@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.alqsoft.dao.collectionproduct.CollectionProductDao" >
+  <resultMap id="BaseResultMap" type="com.alqsoft.vo.CollectionProductVO" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+   <!-- <result column="create_user" property="createUser" jdbcType="VARCHAR" />
+    <result column="created_ip" property="createdIp" jdbcType="VARCHAR" />
+    <result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />-->
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="member_id" property="memberId" jdbcType="BIGINT" />
+    <result column="product_id" property="productId" jdbcType="BIGINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    id,  type, member_id,product_id
+  </sql>
+
+  <select id="getCollectionProduct" resultMap="BaseResultMap" >
+    select 
+    <include refid="Base_Column_List" />
+
+    from alq_collection_product
+    where member_id = #{mid,jdbcType=BIGINT} and product_id = #{pid,jdbcType=BIGINT}
+  </select>
+
+
+  <select id="getCollectionProductList" resultType="java.util.Map">
+    SELECT cp.id,p.id productId,p.name,p.imageurl,h.id hunterId,p.status productStatus,
+ (SELECT ROUND(ps.sale_price/100,2) FROM alq_product_specification ps
+ WHERE ps.product_id= p.id and ifnull(ps.is_delete,0)=0 ORDER BY ps.created_time ASC LIMIT 1 ) price FROM
+   alq_product p ,alq_collection_product cp,alq_hunter h WHERE p.id=cp.product_id AND h.id=p.hunter_id AND cp.type= 0
+   and ifnull(h.state,1)=1
+   AND cp.member_id = #{uid,jdbcType=BIGINT}
+    LIMIT  #{page} , #{rows}
+  </select>
+
+
+</mapper>

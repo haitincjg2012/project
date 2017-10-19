@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IMemberOrderOnlineMapper">
+
+	<select id="getOrderByStatus" resultType="long">
+		SELECT id FROM 
+			ph_member_order_online 
+		WHERE status=1
+		  AND TIMESTAMPDIFF(SECOND , created_time, NOW())>=900
+	</select>
+	
+	<select id="getLock" parameterType="long" resultType="cm.ph.shopping.facade.order.entity.PhMemberOrderOnline">
+		SELECT * FROM 
+			ph_member_order_online 
+		WHERE id=#{id} FOR UPDATE
+	</select>
+	
+	<!-- 删除购物车信息 -->
+	<delete id="deleteShopCart">
+		DELETE FROM
+			 ph_shop_cart 
+			 where memberId=#{0} and merchantId=#{1}
+	</delete>
+	<!-- 删除购物车信息 快火二期-->
+	<delete id="deleteShopCartTwo">
+		DELETE FROM
+		ph_shop_cart
+		where memberId=#{0} and merchantId=#{1} and orderId=#{2}
+	</delete>
+	<!--获取用户预定的包间接口-->
+	<select id="getOnlineOrderDish" parameterType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2" resultType="long">
+		SELECT  DISTINCT
+			o.id
+		FROM
+		ph_dish_attachment a
+		INNER  JOIN ph_member_order_online_sku s ON a.dishId = s.dishId
+		INNER JOIN ph_member_order_online o ON o.id = s.orderOnlineId
+		WHERE
+		o.memberId = #{memberId}
+		AND o.merchantId = #{merchantId}
+		AND s.type = 1 and o.status!=7 and o.hopeServiceDate>NOW()
+	</select>
+	<!-- 添加订单信息 -->
+	<insert id="addOnLineOrder" useGeneratedKeys="true" keyProperty="id" parameterType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2">
+		INSERT into ph_member_order_online (
+			merchantId,memberId,message,created_time,
+			orderNo,status,hopeServiceDate,predictServiceDate,totalPrice
+		)
+		 values(
+		 	#{merchantId},#{memberId},#{message},now(),
+		 	#{orderNo},1,#{hopeServiceDate},#{predictServiceDate},#{totalPrice}
+		 )
+	</insert>
+	
+	<!-- 获取最大id -->
+	<select id="getMaxId" resultType="java.lang.Long">
+		SELECT MAX(id) from ph_member_order_online
+	</select>
+	<!-- 获取菜品信息 -->
+	<select id="getDishs" resultType="cm.ph.shopping.facade.order.dto.DishOrder">
+		select * from ph_dish where id in
+		  <foreach item="item" collection="array" index="index" open="(" separator="," close=")">  
+                #{item}  
+           </foreach>  
+	</select>
+	<!-- 添加订单菜品中间表 -->
+	<insert id="addOrderSku" parameterType="java.util.List">
+		INSERT into ph_member_order_online_sku (
+			dishId,dishName,type,created_time,orderOnlineId,dCount,money
+		)
+		 values
+	 <foreach collection="list" index="index" item="item"  separator=","> 
+			(#{item.id},#{item.dishName},#{item.type},now(),#{item.orderOnlineId},#{item.dCount1},#{item.money})
+     </foreach>
+		
+	</insert>
+	<!-- 获取当前餐位（被商家确认状态下）离店时间期望时间 -->
+	<select id="getTimeByid" parameterType="long" resultType="cm.ph.shopping.facade.order.entity.PhMemberOrderOnline">
+		select o.hopeServiceDate,o.predictServiceDate
+		 	from ph_member_order_online o left join
+		 ph_member_order_online_sku s 
+		 	on o.id=s.orderOnlineId where s.dishId=#{id} and (o.status=2 or o.status=3)
+	</select>
+	
+	<!-- 查询订单状态以及时间验证  -->
+	<select id="findOrderNoStatus" 
+		resultType="cm.ph.shopping.facade.order.entity.PhMemberOrderOnline">
+		 	SELECT hopeServiceDate,predictServiceDate,orderNo,status
+		 	 from ph_member_order_online o INNER JOIN ph_member_order_online_sku s ON o.id=s.orderOnlineId
+		 	 WHERE merchantId=#{merchantId} AND (status=2 or status=3) AND dishId=#{dishId}
+	</select>
+	
+	<!--商户接单  -->
+	<update id="updateOrderNoStatus" parameterType="cm.ph.shopping.facade.order.entity.PhMemberOrderOnline">
+		UPDATE ph_member_order_online set status = 2 WHERE
+		orderNo = #{orderNo}
+	</update>
+	<!-- 取消订单 -->
+	<update id="updateOrderNoStatusQu" parameterType="cm.ph.shopping.facade.order.entity.PhMemberOrderOnline">
+		UPDATE ph_member_order_online set status = 7,update_time=now() WHERE
+		orderNo = #{orderNo}
+	</update>
+	
+	<!-- 快火开心花 -->
+	<!-- 订单基础字段 -->
+	<sql id="order_base_column">
+		id , create_user , created_ip , created_time , update_time , actual_money , apply_refund_time , direct_hunter_after_money , direct_hunter_fen , fen_run_status ,
+		hope_service_date , hunter_refund_msg , industry_after_money , industry_fen , message , negotiate_price , negotiate_price_status , num , order_no ,
+		order_sub_no , pay_time , pay_type , predict_service_date , product_name , product_sale_price , product_specification_name , product_type_name , puhui_fen , puhui_run_status ,
+		receive_address , receive_name , receive_phone
+	</sql>
+	
+	<!-- 订单详情展示字段 -->
+	<sql id="queryOrderDitals_column">
+		o.id ,orderNo , DATE_FORMAT(o.predictServiceDate,'%m月%d日 %H:%i') predictServiceDate,
+		DATE_FORMAT(hopeServiceDate,'%m月%d日 %H:%i') hopeServiceDate, o.status ,
+		pm.merchantName, pmi.url merchantHeadImg, pm.telPhone merchantTelPhone,  IFNULL(o.totalPrice,0) subscriptionMoney,
+		p.memberName , p.headImage memberHeadImage, 
+		p.telPhone memberTelPhone
+	</sql>
+	<!--查询餐位基础字段-->
+	<sql id="dish_base_column">
+		pd.id,pd.created_time,pd.update_time,pd.dishName,pd.dishSpecificationId,
+		pd.merchantId,pd.imgId,pd.money,pd.goodComment,pd.comment,pd.badComment,
+		pd.dishTypeId,pd.imgAddress,pd.type,pd.saleNum,pd.subscriptionMoney,pd.hopeTime,
+		IFNULL(pd.count,0) count,pd.isDelete,pd.description
+	</sql>
+	<!-- 发起订单评论所涉及的字段 -->
+	<sql id="queryOrderDital_column">
+		id, status,memberId,merchantId
+	</sql>
+	
+	<!-- 列表查询  预计到店时间 订单状态 商户名称 商户图片  定金 用餐人数(暂无)-->
+	<select id="selectOrdersList" resultType="cm.ph.shopping.facade.order.vo.OrderOnlineVO" parameterType="cm.ph.shopping.facade.order.dto.QueryOrderDTO">
+		select
+			DISTINCT  <include refid="queryOrderDitals_column"/> , pmi.id pmid
+		from
+		ph_member_order_online o left join ph_merchant pm
+		on o.merchantId = pm.userId
+		left join ph_member_order_online_sku pds
+		on o.orderNo = pds.orderOnlineId
+		left join ph_merchant_image pmi
+		on pmi.merchantId = pm.id and pmi.type = 3
+		left join ph_member p
+		on o.memberId = p.id
+		<where>
+			<if test="status == 1">
+				o.status in (1,7)
+			</if>
+			<if test="status == 2">
+				o.status = 2
+			</if>
+			<if test="status == 3">
+				o.status = 3
+			</if>
+			<if test="userType == 'member'">
+				and o.memberId = #{userId}
+			</if>
+			<if test="userType == 'merchant'">
+				and o.merchantId = #{userId}
+			</if>
+		</where>
+		GROUP BY orderNo
+		ORDER BY update_time DESC
+	</select>
+	
+	<!-- 查询订单对应的餐位、菜品 -->
+	<select id="selectDishesOrSeats" resultType="cm.ph.shopping.facade.order.vo.DishDetailsVO">
+		select DISTINCT
+		pd.id,pd.merchantId,pd.dishName,pd.money columnMoney,IFNULL(pd.count,0) num,pd.hopeTime,pda.id pid,pda.address imgAddress, IFNULL(pd.subscriptionMoney,0) subscriptionMoney,IFNULL(poo.dCount,0) dCount
+		from
+		ph_member_order_online_sku poo  left join ph_dish pd
+		on pd.id = poo.dishId left join ph_dish_attachment pda
+		on pda.dishId = pd.id
+		where
+		poo.orderOnlineId = #{orderId} and poo.type = #{type}
+		group by dishName
+		order by pid desc
+	</select>
+
+	<!-- 查询单条订单记录 Orderid -->
+	<select id="selectOrderByOrderId" resultType="cm.ph.shopping.facade.order.entity.PhMemberOrderOnline">
+		select
+			<include refid="queryOrderDital_column"/>
+		from
+			ph_member_order_online
+		where
+			id = #{orderId}
+	</select>
+	
+	<!-- 查询订单详情 OderNo-->
+	<select id="selectOrderByOrderNo" resultType="cm.ph.shopping.facade.order.vo.OrderOnlineVO">
+		select  DISTINCT
+			<include refid="queryOrderDitals_column"/>,pmi.id pmid,
+			TIMESTAMPDIFF(MINUTE , hopeServiceDate , o.predictServiceDate) time
+		from
+		ph_member_order_online o left join ph_merchant pm
+			on o.merchantId = pm.userId
+		left join ph_member_order_online_sku pds
+			on o.orderNo = pds.orderOnlineId
+		left join ph_merchant_image pmi
+			on pmi.merchantId = pm.id and pmi.type = 3
+		left join ph_member p
+			on o.memberId = p.id
+		where
+			orderNo = #{orderNo}
+		GROUP BY orderNo
+	</select>
+	<!-- 更新订单评论状态 -->
+	<update id="updateOrderCommentStatus">
+		update 
+			ph_member_order_online
+		set
+			status = #{status}
+		where 
+			id = #{id}
+	</update>
+	
+	<!-- 查询订单的预定时间 -->
+	<select id="queryOrderDate" resultType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2">
+		<!-- select
+			hopeServiceDate,status,merchantId,memberId,orderNo,predictServiceDate,dishId,s.type,memberTelphone
+		from
+			ph_member_order_online  o INNER JOIN ph_member_order_online_sku  s ON o.id=s.orderOnlineId
+		where
+			orderNo = #{orderNo}  GROUP BY merchantId -->
+			SELECT o.hopeServiceDate,o.STATUS,merchantId,o.memberId,o.orderNo,o.predictServiceDate,s.dishId,s.type,bb.telPhone memberTelphone FROM
+			ph_member_order_online o
+			INNER JOIN ph_member_order_online_sku s ON o.id = s.orderOnlineId
+			INNER JOIN ph_member bb ON bb.id = o.memberId
+			WHERE orderNo = #{orderNo} AND s.type=1
+			GROUP BY merchantId
+	</select>
+	<!-- 获取门店照片 -->
+	<select id="getMerchantImg" parameterType="java.lang.Long" resultType="string">
+		SELECT
+			i.url
+		FROM
+			ph_merchant m
+		LEFT JOIN ph_merchant_image i ON i.merchantId = m.id
+		WHERE
+			merchantId = #{merchantId}
+		AND type = 3
+	</select>
+	<!-- 获取商户userId -->
+	<select id="getUserIdByMerchantId" parameterType="java.lang.Long" resultType="java.lang.Long">
+		SELECT
+			userId
+		FROM
+			ph_merchant
+		WHERE
+			id = #{merchantId}
+	</select>
+	<!-- 获取购物车信息 -->
+	<select id="getShopCart" parameterType="cm.ph.shopping.facade.order.entity.ShopCart" resultType="cm.ph.shopping.facade.order.dto.DishDTO">
+	select d.dishName,c.buyNum,d.money,d.description,d.type,d.id,d.hopetime,d.imgAddress,d.dishTypeId,d.count
+		 from 
+	 ph_dish d left join ph_shop_cart c
+	 	 on c.dishId=d.id left join
+ 	ph_merchant m on m.id=c.merchantId where c.memberId=#{memberId} and c.merchantId=#{merchantId}
+	</select>
+	<!-- 获取购物车其他信息 -->
+	<select id="getShopCartOtherMessage" parameterType="cm.ph.shopping.facade.order.entity.ShopCart" resultType="cm.ph.shopping.facade.order.dto.ShopCartDTO">
+		select me.userId,sc.id,sc.hopeTime as hopesDate,me.merchantname,me.id as merchantId from ph_shop_cart sc left join  ph_merchant me 
+		on  me.userId=sc.merchantId where  memberId=#{memberId} and merchantId=#{merchantId}
+	</select>
+	<!-- 获取期望到达时间 -->
+	<select id="getDateByDishId" parameterType="cm.ph.shopping.facade.order.entity.ShopCart" resultType="cm.ph.shopping.facade.order.entity.PhMemberOrderOnline">
+		select o.hopeServiceDate,o.predictServiceDate
+		 	from ph_member_order_online o left join
+		 	
+		 ph_member_order_online_sku s
+		  
+		 	on o.id=s.orderOnlineId where s.dishId=#{dishId}  and o.status=2
+	</select>
+	<!-- 获取营业时间和非营业时间 -->
+	<select id="getMerchantTime" parameterType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2" resultType="com.ph.shopping.facade.spm.entity.Merchant">
+		select 
+			openBeginTime,openEndTime,closeBeginTime,closeEndTime
+		from 
+			ph_merchant 
+		where userId=#{merchantId}
+	</select>
+	<!-- 查询订单表中的销量  dCount-->
+	<select id="queryOrderDcount" parameterType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2" resultType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2">
+		SELECT s.dishName,o.orderNo,s.dCount saleNum,s.dishId FROM ph_member_order_online o
+		INNER JOIN ph_member_order_online_sku s ON o.id = s.orderOnlineId
+		WHERE orderNo = #{orderNo} <!-- GROUP BY orderNo	 -->
+	</select>
+	<!--  增加dish表中的销量  saleNum  -->
+	<update id="updateDishSaleNum"  >	
+		UPDATE ph_dish SET saleNum= saleNum + #{saleNum} WHERE id =#{dishId}
+	</update>
+	<!-- 查询dish表中的销量 -->
+	<!-- <select id="findDishSaleNum"  parameterType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2" resultType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2">
+		select saleNum FROM ph_dish WHERE id=#{dishId}
+	</select> -->
+	
+	<delete id="deleteShopCartForType" >
+		DELETE FROM
+			 ph_shop_cart 
+		where memberId=#{0} and merchantId=#{1} AND type=1 <!-- 删除餐位 -->
+	</delete>
+	<!-- 查询菜品所有图片 -->
+	<select id="getDishImg" parameterType="java.lang.Long" resultType="string">
+		SELECT
+			a.address
+		FROM
+			ph_dish d
+		LEFT JOIN ph_dish_attachment a ON d.id = a.dishId
+		WHERE
+			d.id = #{id}
+	</select>
+	<select id="findMerchantName" resultType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2">
+		SELECT merchantName FROM ph_merchant WHERE userId=#{merchantId}
+	</select>
+	<select id="getMerchantForSms" resultType="com.ph.shopping.facade.spm.entity.Merchant" parameterType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2">
+		SELECT
+			telPhone,address
+		FROM
+			ph_merchant
+		WHERE
+			userId = #{merchantId}
+	</select>
+	<select id="getMemberForSms" resultType="com.ph.shopping.facade.member.entity.Member" parameterType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2">
+		SELECT
+			telPhone
+		FROM
+			ph_member
+		WHERE
+			id = #{memberId}
+	</select>
+	<!-- 获取购物车中的菜品dcount -->
+	<select id="getDcount"  parameterType="java.util.Map" resultType="java.lang.Long">
+		SELECT
+			buyNum
+		FROM
+			ph_shop_cart
+		WHERE
+			merchantId = #{merchantId}
+		AND memberId = #{memberId}
+		AND dishId = #{id}
+		AND orderId=#{orderId}
+	</select>
+<!-- 通过订单ID查询商户ID和用户ID -->
+	<select id="getMemberIdAndmerchantId" parameterType="java.lang.Long" resultType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2">
+		SELECT
+			memberId,
+			merchantId
+		FROM
+			ph_member_order_online
+		WHERE
+			id = #{orderId}
+	</select>
+	<!-- 获取订单中的菜品信息用来插入到购物车表中 -->
+	<select id="getOrderAllByorderId" parameterType="java.lang.Long" resultType="cm.ph.shopping.facade.order.entity.ShopCart">
+		SELECT
+			s.dishId,
+			s.dCount as buyNum,
+			s.type,
+			o.memberId,
+			o.merchantId,
+			o.hopeServiceDate as hopeTime
+		FROM
+			ph_member_order_online o
+		LEFT JOIN ph_member_order_online_sku s ON s.orderOnlineId = o.id
+		WHERE
+			 o.id=#{orderId}
+	</select>
+	<!-- 插入到购物车表中 -->
+	<insert id="addShopCartOnceMore" parameterType="cm.ph.shopping.facade.order.entity.ShopCart">
+		INSERT INTO ph_shop_cart (
+			buyNum,
+			dishId,
+			type,
+			memberId,
+			merchantId,
+			hopeTime,
+			created_time
+		)
+		VALUES
+			(#{buyNum},#{dishId},#{type},#{memberId},#{merchantId},#{hopeTime},now())
+	</insert>
+	<!-- 插入到购物车表中 -->
+	<insert id="addShopCartOnceMoreFor" parameterType="cm.ph.shopping.facade.order.entity.ShopCart">
+		INSERT INTO ph_shop_cart (
+		buyNum,
+		dishId,
+		type,
+		memberId,
+		merchantId,
+		hopeTime,
+		created_time,
+		orderId
+		)
+		VALUES
+		(#{buyNum},#{dishId},#{type},#{memberId},#{merchantId},#{hopeTime},now(),#{orderId})
+	</insert>
+
+	<!--商户取消订单-->
+	<update id="cancelOrder">
+		UPDATE ph_member_order_online set status = 7,update_time=now() WHERE
+		id=#{orderId}
+	</update>
+	<!--根据会员id获取会员手机号-->
+	<select id="getMemberTel" resultType="string">
+		select telPhone from ph_member where id = #{memberId}
+	</select>
+	<!--根据商户id获取商户手机号-->
+	<select id="getMerchantTel" resultType="string">
+		select telPhone from ph_merchant where userId = #{merchantId}
+	</select>
+	<!-- 推送消息增加   -->
+	<insert id="insertMessageRecord" parameterType="map">
+		INSERT INTO ph_message_push_record (messageContent, userId,createTime,status,messageType) VALUES (#{content},#{userId},now(),1,#{messageType})
+	</insert>
+	<!--获取餐位保留时间-->
+	<select id="getHopeTimeByDishId" parameterType="java.lang.Long" resultType="java.lang.Long">
+		SELECT
+			hopetime
+		FROM
+			ph_dish
+		WHERE
+			id = #{dishId}
+	</select>
+
+	<!--=============================================================快火二期========================================================================-->
+	<!--获取餐位信息-->
+	<select id="getDishsTwo" parameterType="java.lang.Long" resultType="cm.ph.shopping.facade.order.dto.DishOrder">
+		SELECT
+		  *
+		FROM
+			ph_dish
+		WHERE id =#{dishId}
+	</select>
+	<!-- 添加订单信息 -->
+	<insert id="addOnLineOrderTwo" useGeneratedKeys="true" keyProperty="id" parameterType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2">
+		INSERT into ph_member_order_online (
+			merchantId,memberId,message,created_time,
+			orderNo,status,hopeServiceDate,predictServiceDate,totalPrice
+		)
+		values(
+			#{merchantId},#{memberId},#{message},now(),
+			#{orderNo},1,#{hopeServiceDate},#{predictServiceDate},#{totalPrice}
+		)
+	</insert>
+
+	<!-- 添加订单菜品中间表 -->
+	<insert id="addOrderSkuTwo" parameterType="cm.ph.shopping.facade.order.dto.DishOrder">
+		INSERT into ph_member_order_online_sku (
+			dishId,dishName,type,created_time,update_time,orderOnlineId,dCount,money
+		)
+		values
+			(#{id},#{dishName},#{type},now(),now(),#{orderOnlineId},#{dCount1},#{money})
+	</insert>
+
+    <!--将购物车中的菜品加入到中间表中   实现再来一单功能-->
+	<insert id="addOrderSkuForShopCartTwo" parameterType="java.util.List">
+        INSERT into ph_member_order_online_sku (
+           dishId,dishName,type,created_time,orderOnlineId,dCount,money
+        )
+        values
+		<foreach collection="list" index="index" item="item" separator=",">
+            (#{item.dishId},#{item.dishName},#{item.type},now(),#{item.orderId},#{item.buyNum},#{item.money})
+        </foreach>
+	</insert>
+
+	<!--判断订单中是否有该菜品-->
+	<select id="getDishMessageForOrder" parameterType="map" resultType="long">
+		SELECT
+			id
+		FROM
+			ph_member_order_online_sku
+		WHERE
+			orderOnlineId = #{orderId}
+		AND dishId = #{id}
+	</select>
+
+	<!--修改订单中的菜品数量-->
+	<update id="updateOrderDish" parameterType="cm.ph.shopping.facade.order.dto.DishOrder">
+		UPDATE ph_member_order_online_sku
+			SET dCount = dCount+#{dCount1}
+		WHERE
+			orderOnlineId = #{orderOnlineId}
+		AND dishId = #{id}
+	</update>
+
+
+	<!--修改订单表中的totalPrice-->
+	<update id="updateOrderTotalPrice" parameterType="map">
+		UPDATE ph_member_order_online
+			SET
+			 	totalPrice=totalPrice+#{totalPrice}
+		WHERE
+				id = #{id}
+	</update>
+	<!---->
+	<select id="getShopCartForNull" parameterType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2" resultType="cm.ph.shopping.facade.order.dto.ShopCartDTO">
+			SELECT
+				c.buyNum,
+				c.dishId,
+				d.dishName,
+				d.money,
+				c.type
+			FROM
+				ph_shop_cart c
+			LEFT JOIN ph_dish d ON d.id = c.dishId
+			WHERE
+				c.memberId =  #{memberId}
+			AND c.merchantId =#{merchantId}
+			AND ISNULL(orderId)
+			AND c.type = 0
+	</select>
+    <!---->
+    <select id="deleteShopCartForNull" parameterType="cm.ph.shopping.facade.order.dto.AddMemberOrderOnlineDTO2">
+        DELETE
+          from ph_shop_cart
+        WHERE
+				memberId =  #{memberId}
+			AND merchantId =#{merchantId}
+			AND ISNULL(orderId)
+			AND type = 0
+
+    </select>
+</mapper>

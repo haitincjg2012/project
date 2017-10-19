@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.StoreManagerMapper">
+    <select id="getStoreManagerById" resultType="Map">
+SELECT pm.id,pm.telPhone,pm.memberName,pm.`status`,pm.certification FROM ph_store_manager_record pm WHERE pm.userId=#{merchantId} AND pm.`status`=0
+    </select>
+
+   <!--店面代理经理返首页数据-->
+   <select id="getMerchantByPage"  resultType="map" parameterType="com.ph.shopping.facade.member.dto.StoreManagerDTO">
+       select
+       DISTINCT s.id as id,
+       m.merchantName as merchantName,      <!--公司名字-->
+
+
+       s.telPhone as phone,                 <!--店面经理的手机号-->
+       s.memberName as name,                <!--店面经理的名字-->
+       s.idCardNo as cardNo,                <!--身份证-->
+       DATE_FORMAT(s.createTime, "%Y-%m-%d %H:%i") as date,                <!--创建的时间-->
+       s.certification as certification,    <!--认证 0审核中 1已审核 2审核失败-->
+       DATE_FORMAT(s.updateTime, "%Y-%m-%d %H:%i")  as updatedate,                <!--修改的时间-->
+       s.status as status                   <!-- 0在职 1解聘-->
+       from  ph_store_manager_record s LEFT JOIN  ph_merchant m
+       on m.userId=s.userId LEFT JOIN ph_agent a  on a.cityId=m.cityId
+       where   <include refid="getMerchantByPage_id"></include> order by date DESC
+   </select>
+    <sql id="getMerchantByPage_id">
+                    true
+                <if test="roleCode != null and roleCode !='' and roleCode !=1">
+                    and  a.telPhone = #{rolePhone}
+                </if>
+                <if test="telPhone != null and telPhone !='' ">
+                    and s.telPhone = #{telPhone}
+                </if>
+                <if test="idCardNo != null and idCardNo !='' ">
+                    and s.idCardNo like CONCAT('%',TRIM(#{idCardNo}),'%')
+                </if>
+                <if test="isFrozen != null and isFrozen != '' ">
+                    and  s.status = #{isFrozen}
+                </if>
+                <if test="status == 0 ">
+                    and  s.certification = 0
+                </if>
+                <if test="status != null and status != '' and status != 0 ">
+                    and  s.certification = #{status}
+                </if>
+                <if test="merchantName != null and merchantName !='' ">
+                    and m.merchantName like CONCAT('%',TRIM(#{merchantName}),'%')
+                </if>
+
+    </sql>
+    <update id="updateStoreManager" >
+    update ph_store_manager_record pm set pm.`status` = 1 WHERE pm.id=#{id}
+    </update>
+    <!--详情页面返回的数据-->
+    <select id="getAgentListDateil" resultType="com.ph.shopping.facade.member.vo.StoreMangerImageVO" parameterType="com.ph.shopping.facade.member.dto.StoreManagerDTO">
+        select image.url as url,            <!--图片地址-->
+        image.type as type,                 <!--图片的类型-->
+        image.id as id                      <!--图片中对应的id-->
+
+         from ph_store_manager_image as image LEFT JOIN
+         ph_store_manager_record as record
+         on image.storeManagerId=record.id
+         where record.id = #{id}
+    </select>
+    <!--编辑的基本数据-->
+    <select id="getStoreMangerBase" resultType="com.ph.shopping.facade.member.vo.StoreManagerVO" parameterType="com.ph.shopping.facade.member.dto.StoreManagerDTO">
+      select
+        DISTINCT record.id as id,
+        IFNULL(record.telPhone,"")as telPhone,              <!--经理的手机-->
+        IFNULL(record.status ,"0")as status,                <!--工作状态0在职，1解聘-->
+        m.merchantName as merchantName,                     <!--公司的名字-->
+        IFNULL(record.certification,"0") as certification,  <!--审核状态0审核中，1审核成功，2未审核通过-->
+        record.memberName as memberName   ,                 <!--代理经理名字-->
+        record.idCardNo as personIdCardNo                   <!--身份证-->
+        from
+        ph_store_manager_record as record LEFT JOIN
+        ph_merchant m on m.userId=record.userId LEFT JOIN
+        ph_agent a  on a.cityId=m.cityId
+        where record.id = #{id}
+    </select>
+
+    <!--删除图片-->
+    <select id="deleteStoreMangerImage" parameterType="long">
+        delete from ph_store_manager_image where storeManagerId =#{id}
+    </select>
+    <!--添加图片-->
+    <select id="saveStoreMangeImage" >
+        insert into ph_store_manager_image
+        (url,updateTime,createTime,storeManagerId,type,createrId,sort)
+        values(#{url},NOW(),NOW(),#{id},#{type},1,1);
+    </select>
+    <!--修改storeMange状态-->
+    <select id="updateStoreManagerType" >
+update ph_store_manager_record  ph_store_manager_record set certification =#{type},telPhone=#{phone},idCardNo=#{card},memberName=#{name},updateTime=NOW() where id=#{id}
+    </select>
+    <!--修改审核的状态-->
+    <select id="updateStoreManagerTypeById">
+           update ph_store_manager_record set certification =#{type} where id=#{id}
+    </select>
+
+
+</mapper>

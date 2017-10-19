@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ph.shopping.facade.mapper.IOnlineOrderCommentMapper">
+	<!-- 订单通用基础字段 -->
+	<sql id="orderOnlineCommentColumn">
+		created_time, update_time, content, fabulousNum, isDelete, isOne, replyNum, startNum, merchantId, memberId, orderId, parentId
+	</sql>
+	
+	<insert id="insertOrderOnlineComment">
+		insert into
+			ph_member_order_online_comment (<include refid="orderOnlineCommentColumn"/>)
+		values
+			(#{created_time},#{update_time},#{content},#{fabulousNum},#{isDelete},#{isOne},#{replyNum},#{startNum},#{merchantId},#{memberId},#{orderId},#{parentId})
+	</insert>
+	<!-- 查询单个评论信息 -->
+	<select id="getOrderCommentById" resultType="cm.ph.shopping.facade.order.entity.PhMemberOrderOnlineComment">
+		select 
+			id ,<include refid="orderOnlineCommentColumn"/> from ph_member_order_online_comment
+		where
+			id = #{commentid}
+	</select>
+	
+	<!-- 查询订单下所评论通用字段 -->
+	<sql id="orderOnlineCommentDetailColumn">
+		id , headImage , memberName , merchantName , startNum , created_time
+	</sql>
+
+	<!--查询某个订单下会员首次发起的评论内容-->
+
+	<select id="getFirstOrderCommentByOrderId" resultType="cm.ph.shopping.facade.order.vo.OrderOnlineCommentVO">
+		select
+			pc.id,pc.memberId, pc.merchantId ,pm.nikeName,pm.memberName, pm.headImage , pmc.merchantName , startNum , DATE_FORMAT(created_time,'%Y-%m-%d %H:%i:%s') created_time
+		from
+			ph_member_order_online_comment pc left join ph_member pm
+		on
+			pc.memberId = pm.id left join ph_merchant pmc
+		on
+			pc.merchantId = pmc.userId
+		where
+			orderId = #{orderId} and parentId is null
+	</select>
+	<!-- 查询某个订单下所有评论 -->
+	<select id="getOrderCommentsByOrderId" resultType="cm.ph.shopping.facade.order.vo.CommentVO">
+		select
+			pc.id,IFNULL(pc.memberId,0) memberId,IFNULL(pc.merchantId,0) merchantId, pm.nikeName,pm.memberName, pmc.merchantName , content
+		from
+			ph_member_order_online_comment pc left join ph_member pm
+		on
+			pc.memberId = pm.id left join ph_merchant pmc
+		on 
+			pc.merchantId = pmc.userId
+		where 
+			orderId = #{orderId}
+		order by created_time asc
+	</select>
+</mapper>

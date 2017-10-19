@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.CompartmentMapper">
+	<!-- 餐位展示  -->
+	<select id="findRestaurantList" resultType="cm.ph.shopping.facade.order.dto.DishDTO">
+
+		
+		select d.money,a.address,d.id,d.count,d.type,d.dishName,d.hopeTime,d.imgAddress from ph_dish_attachment a 
+		INNER JOIN ph_dish d on d.id=a.dishId 
+		WHERE  d.type=1  AND merchantId = #{merchantId}
+		GROUP BY dishId
+		
+	</select>
+	<!--区分未预定和已预订  -->
+	<select id="findRestaurantListDel"  resultType="cm.ph.shopping.facade.order.dto.findMerchantGoods">
+		select DISTINCT d.dishName,d.count,d.type,d.hopeTime,d.id,
+		o.status isChoose,
+		a.address from ph_member_order_online o
+	 	left join ph_member_order_online_sku s on o.id=s.orderOnlineId
+		left join ph_dish d on d.id=s.dishId
+		left join ph_dish_attachment a ON d.imgId = a.id
+		where s.dishId=#{0} GROUP BY d.dishName
+	</select>
+
+	<!--添加餐位    -->
+	<insert id="saveRestaurant"   useGeneratedKeys="true" keyProperty="id">
+		insert into
+		ph_dish(dishName,count,money,merchantId,type,description,hopeTime,isDelete,dishTypeId,saleNum)
+		value(#{dishName},#{count},#{money},#{merchantId},#{type},#{description},#{hopeTime},#{isDelete},#{dishTypeId},#{saleNum})
+	</insert>
+	
+	<!-- 删除餐位 -->
+	<delete id="delsRestaurant" parameterType="string">
+		delete from ph_dish where id =#{dishId}
+		<!--   <foreach item="empnoItem" collection="list" open="(" separator="," close=")">
+            #{empnoItem}
+        </foreach>  -->
+	</delete>
+	
+	<!-- 修改餐位 -->
+	<update id="updateRestaurant">
+		UPDATE ph_dish SET
+		dishName=#{dishName},count=#{count},money=#{money},imgAddress=#{imgAddress},description=#{description}
+		where id=#{id} and type=1
+	</update>
+	
+	<!-- 餐位回显 -->
+	<select id="findId"  resultType="cm.ph.shopping.facade.order.entity.Dish">
+		SELECT
+			a.address,a.id,
+			d.count,d.type,d.dishName,d.hopeTime,d.imgAddress
+		FROM
+			ph_dish d
+		INNER JOIN ph_dish_attachment a ON d.imgId = a.id WHERE d.id=#{id} AND d.type=1
+	</select>
+	
+	<!--查询餐位已被预定不可删除餐位-->
+	<select id="findDishDeleteId"  resultType="cm.ph.shopping.facade.order.dto.AddRestaurantOrSeatDTO">
+		select  o.hopeServiceDate,o.predictServiceDate,s.dishId,d.dishName,d.count,d.type,d.hopeTime,d.imgAddress,o.status
+		 	from ph_member_order_online o
+		 	left join ph_member_order_online_sku s on o.id=s.orderOnlineId
+			left join ph_dish d on d.id=s.dishId
+			left join ph_dish_attachment a ON d.imgId = a.id
+		where s.dishId=#{ids}  AND d.type=1 AND o.status=2
+	</select>
+
+	<!-- 查询餐位分类-->
+	<select id="findType" resultType="cm.ph.shopping.facade.order.vo.DishTypeVO">
+		<!-- select typeName,id from ph_dish_type where type=1  and mercahntId=4560 LIMIT 3 -->
+		<!-- select typeName,id from ph_dish_type where type=1  and merchantId=#{merchantId} -->
+		SELECT
+		t.typeName,
+		t.id
+		FROM
+		ph_dish_type t
+		WHERE
+		t.type = 1
+		<if test="merchantId != null">
+			AND t.merchantId=#{merchantId}
+		</if>
+	</select>
+
+	<!-- 查询餐位分类下的所有商品-->
+	<select id="findTypeDishName" resultType="map">
+		SELECT
+		d.dishName,
+		ROUND(d.money /10000) money,
+		a.address,
+		d.count,
+		t.typeName,
+		t.id,
+		d.hopeTime
+		FROM
+		ph_dish_type t LEFT JOIN ph_dish d on t.id=d.dishTypeId
+		LEFT JOIN  ph_dish_attachment a ON  d.id = a.dishId
+		WHERE
+		t.type = 1
+		AND t.merchantId = #{merchantId} AND d.dishTypeId=#{dishTypeId}
+	</select>
+
+	<select id="findType2" resultType="cm.ph.shopping.facade.order.vo.DishTypeVO">
+		select typeName,id from ph_dish_type where type=1  LIMIT 3
+	</select>
+	
+	
+	  <insert id="insertList">
+		INSERT INTO ph_dish_attachment(address,dishId) VALUES(#{trim},#{id})
+	</insert>  
+</mapper>

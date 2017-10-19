@@ -1,0 +1,139 @@
+html, body {
+	background: #fffae9 !important;
+	max-width: 720px;
+	min-width: 320px;
+	overflow: auto !important;
+	margin: 0 auto;
+}
+
+.topBox {
+	width: 100%;
+	height: auto;
+	position: relative;
+}
+
+.topBox img {
+	width: 100%;
+}
+
+@media screen and (max-width: 720px) {
+	.topBox span {
+		display: block;
+		position: absolute;
+		color: #ffffff;
+	}
+	.topBox span.shopping {
+		font-size: 0.44rem !important;
+		top: 2.47rem !important;
+		left: 3.96rem !important;
+	}
+	.topBox span.member {
+		font-size: 0.48rem !important;
+		top: 1.79rem !important;
+		left: 2.41rem !important;
+	}
+}
+
+.topBox span {
+	display: block;
+	position: absolute;
+	color: #ffffff;
+}
+
+.topBox span.shopping {
+	font-size: 33px;
+	top: 162px;
+	left: 277px;
+}
+
+.topBox span.member {
+	font-size: 36px;
+	top: 124px;
+	left: 177px;
+}
+
+.mainBox {
+	width: 100%;
+	height: auto;
+	padding-top: 0.5rem;
+}
+
+.mainBox .btnGoup {
+	width: 6.24rem;
+	height: auto;
+	margin: 0 auto;
+}
+
+.mainBox .btnGoup input {
+	width: 5.89rem;
+	height: 0.94rem;
+	padding-left: 0.32rem;
+	-webkit-border-radius: 0.07rem;
+	-moz-border-radius: 0.07rem;
+	border-radius: 0.07rem;
+	border: 1px solid #c6c5c5;
+	font-size: 0.32rem;
+	color: #3f3f3f;
+}
+
+.mainBox .btnGoup input:-ms-input-placeholder {
+	color: #c6c5c5;
+}
+
+.mainBox .btnGoup input:-moz-placeholder {
+	color: #c6c5c5;
+}
+
+.mainBox .btnGoup input::-webkit-input-placeholder {
+	color: #c6c5c5;
+}
+
+.mainBox .btnGoup input::-moz-placeholder {
+	color: #c6c5c5;
+}
+
+.mainBox .btnGoup input.phoneInput {
+	margin-bottom: 0.6rem;
+	margin-top: 0.6rem;
+}
+
+.mainBox .btnGoup input.recommender {
+	color: #c6c5c5;
+}
+
+.mainBox .btnGoup input.yzmInput {
+	width: 3.08rem;
+	vertical-align: middle;
+}
+
+.mainBox .btnGoup input.provingTxt {
+	margin-left: 0.4rem;
+	padding: 0.2rem;
+	font-size: 0.27rem;
+	color: #292929;
+	width: 2.28rem;
+	vertical-align: middle;
+	background: #e3e3e4;
+	border: none;
+}
+
+.mainBox .btnGoup input.downBtn {
+	margin-top: 0.35rem;
+	background: #b7151c;
+	color: #fffefe;
+}
+
+.mainBox .btnGoup a {
+	font-size: 0.37rem;
+	color: #b7151c;
+	display: block;
+	margin-top: 0.39rem;
+}
+/*去掉苹果的默认UI来渲染按钮*/
+input[type="submit"], input[type="reset"], input[type="button"], input[type="text"],
+	button, select, input {
+	-webkit-appearance: none;
+}
+.share .sharephone{
+	font-size:0.50rem
+}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台系统</title>
+    <head th:include="header::header"></head>
+    <!-- bootstrap-select  css文件 -->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+
+    <!--富文本  css文件-->
+    <!--<link rel="stylesheet" href="css/ueditor.css">-->
+</head>
+<body>
+<div class="MainContent">
+    <div class="current">当前位置：<a href="#" alt="">会员卡管理 &gt;</a><a href="/web/memberCard/memberCardListPage" alt="">会员卡列表
+        &gt;</a><span>添加会员卡</span></div>
+    <div class="MainCont ">
+        <form id="addForm">
+            <div class="mainFrom" style="margin-top: 80px;">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">IC卡号:</span>
+                </label>
+                <input type="text" class="left validate[required, maxSize[16]]" name="innerCode" placeholder=""/>
+            </div>
+
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">条形码:</span>
+                </label>
+                <input type="text" class="left validate[required, maxSize[16]]" name="outerCode" placeholder=""/>
+            </div>
+        </form>
+            <div class="PopupBtn btnLeft" style="margin-bottom: 20px;margin-top: 115px;">
+                <input class="submit addIndustry_save" id="addBtn" name="" type="button" value="保存">
+            </div>
+
+
+    </div>
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<!--属性输入框的增加和删除-->
+<script type="text/javascript" th:src="@{/static/js/common/attrbox.js}"></script>
+
+
+<script type="text/javascript" th:inline="javascript">
+
+    $(function () {
+
+        //验证初始化
+        $('#addForm').validationEngine({
+            promptPosition: 'bottomLeft:18 0'
+            , autoPositionUpdate: false
+            , addPromptClass: 'formError-text'
+            , autoHidePrompt: true
+            , autoHideDelay: 3000
+            , fadeDuration: 0.3
+        });
+
+        $("#addBtn").click(function () {
+            var flag = $("#addForm").validationEngine("validate");
+            if (!flag) {
+                return false;
+            }
+            //提交数据
+            $.ajax({
+                type: "POST",
+                url: "/web/memberCard/addMemberCard",
+                data: $("#addForm").serialize(),
+                success: function (d) {
+                    if (d.success) {
+                        layer.alert("保存成功！", {
+                            icon: 1,
+                            title: '提示',
+                            closeBtn: 0,
+                            btnAlign: 'c',
+                            btn1: function () {
+                                window.location.href = "/web/memberCard/memberCardListPage";
+                            }
+
+                        });
+
+                    } else {
+                        layer.alert(d.message, {
+                            icon: 2,
+                            title: '失败',
+                            closeBtn: 0,
+                            btnAlign: 'c'
+                        });
+                    }
+                }
+            });
+        });
+    });
+
+</script>
+
+</body>
+</html>

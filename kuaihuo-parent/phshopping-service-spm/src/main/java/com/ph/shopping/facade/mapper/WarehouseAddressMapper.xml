@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.ph.shopping.facade.mapper.WarehouseAddressMapper">
+  <resultMap id="BaseResultMap" type="com.ph.shopping.facade.spm.vo.WarehouseAddressVO" >
+	    <id column="id" property="id" jdbcType="BIGINT" />
+	    <result column="userId" property="userId" jdbcType="BIGINT" />
+	    <result column="contacts" property="contacts" jdbcType="VARCHAR" />
+	    <result column="telPhone" property="telPhone" jdbcType="VARCHAR" />
+	    <result column="phoneNo" property="phoneNo" jdbcType="VARCHAR" />
+	    <result column="address" property="address" jdbcType="VARCHAR" />
+	    <result column="isDefault" property="isDefault" jdbcType="INTEGER" />
+	    <result column="isDeliveryPoint" property="isDeliveryPoint" jdbcType="INTEGER" />
+	    <result column="createId" property="createId" jdbcType="BIGINT" />
+	    <result column="updateId" property="updateId" jdbcType="BIGINT" />
+	    <result column="provinceId" property="provinceId" jdbcType="BIGINT" />
+	    <result column="cityId" property="cityId" jdbcType="BIGINT" />
+	    <result column="areaId" property="areaId" jdbcType="BIGINT" />
+	    <result column="provinceName" property="provinceName" jdbcType="BIGINT" />
+	    <result column="cityName" property="cityName" jdbcType="BIGINT" />
+	    <result column="countyName" property="countyName" jdbcType="BIGINT" />
+  </resultMap>
+  
+  <!--主表信息  -->
+  <sql id="base_column_list" >
+	 ph.id,
+	 ph.userId,
+	 ph.contacts,
+	 ph.telPhone,
+	 ph.phoneNo,
+	 ph.isDefault,
+	 ph.isDeliveryPoint,
+	 ph.address,
+	 ph.detailAddress,
+	 ph.provinceId,
+	 ph.cityId,
+	 ph.countyId,
+	 j1.provinceName,
+	 j1.cityName,
+	 j1.countyName
+  </sql>
+  
+  <!-- 单表列表分页查询 -->
+  <select id="getWarehouseAddressVoListByPage" parameterType="com.ph.shopping.facade.spm.dto.WarehouseAddressDTO" resultType="com.ph.shopping.facade.spm.vo.WarehouseAddressVO">
+	  	select 
+	  	<include refid="base_column_list"/>
+			FROM
+				ph_user_address ph
+			LEFT JOIN ph_position j1 ON j1.id = ph.positionId
+		<trim prefix="where" prefixOverrides="and">
+			<if test="wareHouseId != null and wareHouseId != ''">
+				and ph.id=#{wareHouseId}
+			</if>
+	  		<if test="userId!=null and userId!=''">
+	  			and ph.userId =#{userId}
+	  		</if>
+	  		<!-- <if test="contacts !=null and contacts != ''">
+	  			and ph.contacts  like '%${contacts}%'
+	  		</if>
+	  		<if test="telPhone !=null and telPhone !=''">
+	  			and ph.telPhone =#{telPhone}
+	  		</if>
+	  		<if test="isable!=null and isable!=''">
+	  			and ph.isable =#{isable}
+	  		</if>
+	  		<if test="isDefault!=null and isDefault!='' and isDefault!='-1'">
+	  			and ph.isDefault =#{isDefault}
+	  		</if>
+	  		<if test="isDeliveryPoint!=null and isDeliveryPoint!='' and isDeliveryPoint!='-1'">
+	  			and ph.isDeliveryPoint =#{isDeliveryPoint}
+	  		</if>
+	  		
+            <if test="provinceId !=null and provinceId !='' "> and ph.provinceId = #{provinceId} </if>
+
+            <if test="cityId !=null and cityId !='' "> and ph.cityId = #{cityId} </if>
+
+            <if test="countyId !=null and countyId !='' "> and ph.countyId = #{countyId} </if>
+	  		
+            <if test="positionId !=null and positionId !='' "> and ph.positionId = #{positionId} </if> -->
+	  	</trim>
+	  		order by ph.createTime desc 
+  </select>
+  
+    <!-- 单表列表查询 -->
+  <select id="getWarehouseAddressVoList" parameterType="com.ph.shopping.facade.spm.entity.WarehouseAddress" resultMap="BaseResultMap">
+	  	select 
+	  	<include refid="base_column_list"/>
+			FROM
+				ph_user_address ph
+			LEFT JOIN ph_position j1 ON j1.id = ph.positionId
+			where 1=1
+		<trim>
+	  		<if test="userId!=null and userId!=''">
+	  			and ph.userId =#{userId}
+	  		</if>
+	  	</trim>
+	  	order by ph.updateTime desc
+	  		<!-- <if test="contacts !=null and contacts != ''">
+	  			and ph.contacts  like '%${contacts}%'
+	  		</if>
+	  		<if test="telPhone !=null and telPhone !=''">
+	  			and ph.telPhone =#{telPhone}
+	  		</if>
+	  		<if test="isable!=null and isable!=''">
+	  			and ph.isable =#{isable}
+	  		</if>
+	  		<if test="isDefault!=null and isDefault!='' and isDefault!='-1'">
+	  			and ph.isDefault =#{isDefault}
+	  		</if>
+	  		<if test="isDeliveryPoint!=null and isDeliveryPoint!='' and isDeliveryPoint!='-1'">
+	  			and ph.isDeliveryPoint =#{isDeliveryPoint}
+	  		</if>
+            <if test="provinceId !=null and provinceId !='' "> and ph.provinceId = #{provinceId} </if>
+            <if test="cityId !=null and cityId !='' "> and ph.cityId = #{cityId} </if>
+            <if test="areaId !=null and areaId !='' "> and ph.countyId = #{countyId} </if>
+            <if test="positionId !=null and positionId !='' "> and ph.positionId = #{positionId} </if> -->
+	  	
+  </select>
+  
+  <!-- 单条/或者多条主从查询 -->
+  <select id="getWarehouseAddressDetail" parameterType="com.ph.shopping.facade.spm.dto.WarehouseAddressDTO" resultMap="BaseResultMap">
+	  	select 
+	  	<include refid="base_column_list"/>
+			FROM
+				ph_user_address ph
+			LEFT JOIN ph_position j1 ON j1.id = ph.positionId
+		<trim prefix="where" prefixOverrides="and">
+	  		<if test="id!=null and id!=''">
+	  			and ph.id =#{id}
+	  		</if>
+	  		<if test="userId!=null and userId!=''">
+	  			and ph.userId =#{userId}
+	  		</if>
+	  		<!--<if test="contacts !=null and contacts != ''">
+	  			and ph.contacts  like '%${contacts}%'
+	  		</if>
+	  		<if test="telPhone !=null and telPhone !=''">
+	  			and ph.telPhone =#{telPhone}
+	  		</if>
+	  		 <if test="isable!=null and isable!=''">
+	  			and ph.isable =#{isable}
+	  		</if>
+	  		<if test="isDefault!=null and isDefault!='' and isDefault!='-1'">
+	  			and ph.isDefault =#{isDefault}
+	  		</if>
+	  		<if test="isDeliveryPoint!=null and isDeliveryPoint!='' and isDeliveryPoint!='-1'">
+	  			and ph.isDeliveryPoint =#{isDeliveryPoint}
+	  		</if>
+            <if test="provinceId !=null and provinceId !='' "> and ph.provinceId = #{provinceId} </if>
+            <if test="cityId !=null and cityId !='' "> and ph.cityId = #{cityId} </if>
+            <if test="areaId !=null and areaId !='' "> and ph.areaId = #{areaId} </if>
+            <if test="positionId !=null and positionId !='' "> and ph.positionId = #{positionId} </if> -->
+	  	</trim>
+	  		order by ph.updateTime desc 
+  </select>
+    
+  <!-- 设置除参数id之外的数据为非默认地址 -->
+  <update id="updateOtherNotDefault" parameterType="com.ph.shopping.facade.spm.entity.WarehouseAddress">
+		update ph_user_address set isDefault = 2 
+		<trim prefix="where" prefixOverrides="and">
+			<if test="userId!=null and userId!=''">
+		  			 and userId = #{userId}
+		  	</if>
+			<if test="id!=null and id!=''">
+		  			 and id !=#{id}
+		  	</if>
+	  	</trim>
+  </update>
+  
+      
+  <!-- 设置除参数id之外的数据为非提货点 -->
+  <update id="updateOtherNotDeliveryPoint" parameterType="com.ph.shopping.facade.spm.entity.WarehouseAddress">
+		update ph_user_address set isDeliveryPoint = 2 
+		<trim prefix="where" prefixOverrides="and">
+			<if test="userId!=null and userId!=''">
+		  			 and userId = #{userId}
+		  	</if>
+			<if test="id!=null and id!=''">
+		  			 and id !=#{id}
+		  	</if>
+	  	</trim>
+  </update>
+  
+  <!-- 批量删除仓库地址数据 -->
+  <delete id="deleteWarehouseAddress" parameterType="java.util.List">
+		update ph_user_address set isable = 2,updateTime = now() where id in
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}   
+	    </foreach> 
+  </delete>
+  
+  <select id="countIsDefault" parameterType="java.lang.Long" resultType="java.lang.Long">
+  		select IFNULL(count(0),0) from ph_user_address where userId=#{userId}
+  </select>
+  
+  <delete id="delWareHouse">
+  		delete from ph_user_address where id = #{wareHouseId}
+  </delete>
+ 
+  <select id="getTakePoint" resultType="com.ph.shopping.facade.spm.vo.OnlineTakePointVO">
+  	SELECT pm.merchantName merchantName,pua.address, pm.userId id, pua.contacts contacts, pua.telPhone telPhone, pua.phoneNo phoneNo FROM
+		ph_merchant pm ,ph_user_address pua
+	WHERE
+		pm.userId = pua.userId
+		and pua.isDeliveryPoint = 1
+		<trim>
+		<if test="provinceId != null">
+		and pm.provinceId = #{provinceId}
+		</if>
+		<if test="cityId != null">
+		and pm.cityId=#{cityId}
+		</if>
+		<if test="countyId != null">
+		and pm.countyId=#{countyId}
+		</if>
+		<if test="townId != null">
+		and pm.townId=#{townId}
+		</if>
+		<if test="userId != null">
+		and pua.userId=#{userId}
+		</if>
+		</trim>
+  </select>
+  
+  <select id="getWareHouseById" resultType="com.ph.shopping.facade.spm.vo.WareHouseVO">
+  		SELECT
+			s.supplierName,
+			u.contacts,
+			u.telPhone,
+			u.address
+		FROM
+			ph_supplier s
+		LEFT JOIN ph_user_address u ON u.userId = s.userId
+		WHERE
+			u.id = #{id}
+  </select>
+  
+</mapper>

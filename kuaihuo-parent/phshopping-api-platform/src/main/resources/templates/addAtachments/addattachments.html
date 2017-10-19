@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>轮播图列表</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--文件树插件 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/ztree/zTreeStyle.css}">
+    <style>
+        #filename{
+            width: 67px !important;
+        }
+        #SWFUpload_0{
+            width: 67px !important;
+        }
+        #filename-button{
+            background-repeat: no-repeat;
+            width: 67px !important;
+        }
+    </style>
+
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">轮播图管理</a>&nbsp;&gt;&nbsp;<span>轮播图列表</span></div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+
+        <div class="ph_subTit">
+            <h2>轮播图列表</h2>
+            <shiro:hasPermission name="roleAdd">
+                <div class="ph_snbBtn">
+                    <input class="Js_deliver" name="" type="button" value="添加轮播图">
+                    <!--<input type="button" onclick="window.location.href='/web/merchants/addOrUpdate'" value="添加商户">-->
+                </div>
+            </shiro:hasPermission>
+        </div>
+
+        <!--end 标题-->
+        <!--轮播图列表-->
+        <div class="ph_wareBox">
+            <table class="ph_wareList" id="example"></table>
+        </div>
+        <!--end 轮播图列表-->
+    </div>
+    <!--end 主体内容-->
+</div>
+
+<!--遮罩层-->
+<div class="maskBox"></div>
+<!--end 遮罩层-->
+
+<!--增加轮播图弹窗-->
+<div class="PopupBox" id="deliverBox">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <form id="addRoleForm">
+                <table class="ph_tableBox">
+                    <input id="editRoleId" name="address" type="hidden">
+                    <input id="detail_content" name="detail_content" type="hidden">
+                    <input id="id" name="id" type="hidden">
+                    <form id= "uploadForm">
+                        <p >指定文件名：</p > <input type="file" name="filename" id="filename" value= "" />
+                    </form>
+                    <tr>
+                        <th><span class="require">*</span>轮播类型：</th>
+                        <td><!--<input id="editRoleName" class="validate[required, maxSize[16]]" name="type"
+                                   type="text">-->
+                            <select name="type" id="description">
+                                <option value="1">快火开心花</option>
+                                <option value="2">快火掌柜</option>
+                                <option value="3">快火批发</option>
+                            </select>
+                        </td>
+                    </tr>
+                   <tr>
+                        <th>图片名：</th>
+                        <td><input  class="ph_txtAreaBg validate[maxSize[20]]" id="editRoleName"
+                                    name="name" cols="15"
+                                    rows="10"></td>
+                    </tr>
+
+                    <tr> 　
+                        <th>详情图片名：</th>
+                        <td>
+                            <form id= "uploadForm1">
+                                <p >指定文件名：</p > <input type="file" name="filename" id="filename001" value= "" />
+                            </form>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 增加轮播图弹窗-->
+
+<!--分配轮播图弹窗-->
+<div class="PopupBox" id="menuTreeBox">
+    <!--内容-->
+    <input id="roleId" type="hidden">
+    <div class="PopupCon">
+        <div id="rolemenu">
+            <div class="zTreeDemoBackground left">
+                <ul id="treeDemo" class="ztree"></ul>
+            </div>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 分配轮播图弹窗-->
+<!--end 分配轮播图弹窗-->
+
+<!--操作框 -->
+<div id="handle">
+</div>
+<!--end 操作框-->
+
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!--分页-->
+<script type="text/javascript" th:src="@{/static/js/plugins/pages/jquery.dataTables.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/spm/spmExtends.js}"></script>
+<!--bootstrap-select-->
+
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+
+<!--文件树插件-->
+<!--<script type="text/javascript" th:src="@{/static/js/plugins/ztree/jquery-1.4.4.min.js}"></script>-->
+<script type="text/javascript" th:src="@{/static/js/plugins/ztree/jquery.ztree.core.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/ztree/jquery.ztree.excheck.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/uploadfy/jquery.uploadify.js}"></script>
+<!--上传图片-->
+<script type="text/javascript" th:inline="javascript">
+    var tb;
+    var sessionUser = [[${session.login_back_session}]];
+
+    $(function() {                                                                     //上传图片============================================================
+        $("#filename").uploadify({
+            'buttonImage' : '/static/uploadfy/upload.png',
+            'fileObjName' : 'urlfile',
+            'auto' : true, //是否自动上传
+            'buttonText' : '选择文件',
+            'swf' : '/static/uploadfy/uploadify.swf',
+            'uploader' : '/web/attachment/upload',
+            'multi': false,
+            'simUploadLimit' : 1, //一次同步上传的文件数目
+            //'fileTypeExts': '*.jpg;*.jpeg;*.png;*.bmp;*.gif',//允许的格式
+            //'fileTypeDesc': '支持格式:jpg/jpeg/png/gif',
+            'onCancel' : function(file) {
+                //$.messager.alert("温馨提示",'取消上传 '+file.name + ' 成功');
+            },
+            'onUploadSuccess' : function(file, data, response) {
+                var json = $.parseJSON(data);
+                console.log("file:"+file);
+                console.log("data:"+data);
+                console.log("result:"+    json.data);
+                $("#editRoleId").val(json.data);
+
+            }
+        });
+
+
+        $("#filename001").uploadify({
+            'buttonImage' : '/static/uploadfy/upload.png',
+            'fileObjName' : 'urlfile',
+            'auto' : true, //是否自动上传
+            'buttonText' : '选择文件',
+            'swf' : '/static/uploadfy/uploadify.swf',
+            'uploader' : '/web/attachment/upload',
+            'multi': false,
+            'simUploadLimit' : 1, //一次同步上传的文件数目
+            //'fileTypeExts': '*.jpg;*.jpeg;*.png;*.bmp;*.gif',//允许的格式
+            //'fileTypeDesc': '支持格式:jpg/jpeg/png/gif',
+            'onCancel' : function(file) {
+                //$.messager.alert("温馨提示",'取消上传 '+file.name + ' 成功');
+            },
+            'onInit':function(){
+                $("#filename001").attr("style","height: 26px;width: 67px;overflow: hidden;")
+            },
+            'onUploadSuccess' : function(file, data, response) {
+                var json = $.parseJSON(data);
+                console.log("file:"+file);
+                console.log("data:"+data);
+                console.log("result:"+    json.data);
+                $("#detail_content").val(json.data);
+
+            }
+        });
+
+    });
+    //================================================================================================================================================================
+    $('.ph_wareBox').on('click', '.Js_menuTree', function () {
+        layer.open({
+            type: 1,
+            title: '分配权限',
+            closeBtn: 0,
+            area: ['600px', '450px'],
+            btn: ['保存', '取消'],
+            btnAlign: 'c',
+            content: $('#menuTreeBox')
+        });
+    });
+
+    //===========================================================================================================上传数据============================================
+    $('.ph_snbBtn').on('click', '.Js_deliver', function () {
+        $("#filename").show();
+        $("#filename").prev().show();
+        layer.open({
+            type: 1,
+            title: '添加轮播图',
+            closeBtn: 0,
+            area: ['442px', '312px'],
+            btn: ['保存', '取消'],
+            btnAlign: 'c',
+            content: $('#deliverBox'),
+            btn1: function (index) {
+                var flag = $("#addRoleForm").validationEngine("validate");
+                if (!flag) {
+                    return false;
+                }
+                //提交数据
+                $.ajax({
+                    type: "POST",
+                    url: "/web/attachments/addAdAttachment",
+                    data: $("#addRoleForm").serialize(),
+                    success: function (d) {
+                        console.log(d);
+                        if (d.success) {
+                            layer.alert("保存成功！", {
+                                icon: 1,
+                                title: '提示',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                            tb.draw();
+                        } else {
+                            layer.alert(d.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+                //清空表单
+                $('#addRoleForm')[0].reset()
+                layer.close(index);
+            }
+        });
+    });
+
+    $(function () {
+        var Popupe = new PopupBase();
+        Popupe.show('.ph_wareBox', '.Js_btn', '.maskBox,.DeterBox');
+        Popupe.showHide('.subQuemit', '.refundBox,.deliverBox,.menuTreeBox', '.SucBox');
+        Popupe.show('.ph_snbBtn,.ph_wareBox', '.Js_deliver', '.maskBox,.deliverBox');
+        Popupe.show('.ph_wareBox', '.Js_menuTree', '.maskBox,.menuTreeBox');
+        Popupe.hide('.close', '.maskBox,.DeterBox,.SucBox,.deliverBox,.menuTreeBox');
+        tb = $('#example').DataTable({
+            "lengthChange": false,
+            "ordering": false,
+            "searching": false,
+            "bServerSide": true,
+            "autoWidth": false,
+            "sPaginationType": "full_numbers",
+            "bJQueryUI": true,
+            "sDom": '<"">t<"F"ip>',
+            "sAjaxSource": "/web/attachments/getdataAtattachmentlist", //ajax调用接口===============================调用接口=====================================
+            "aoColumnDefs": [{sDefaultContent: '', aTargets: ['_all']}],
+            "aoColumns": [
+                {"sWidth": "50px", "sTitle": "序号", "mData": "id", "title": "id"},
+                {"sTitle": "时间", "mData": "time", "class": "sClass"},
+                {"sTitle": "图片名", "mData": "name", "class": "sClass"},
+                {"sTitle": "图片展示", "mData": "address", "class": "sClass"},
+               /* {"sTitle": "轮播类型", "mData": "type", "class": "sClass"},*/
+                { "sTitle": "轮播类型", "mData": "type", "class": "sClass" ,"mRender":function(data, type, full){
+                    var text;
+                    if(full.type==1){
+                        text="<font color='#C7C7C7'>快火开心花</font>";
+                    }else if(full.type==2){
+                        text="<font>快火掌柜</font>";
+                    }else if(full.type==3){
+                        text="<font color='#C7C7C7'>快火批发</font>";
+                    }
+                    return text;
+                }
+                },
+                { "sTitle" : "图片","mData": "address","class":"sClass" ,"mRender":function(data,type,full) {
+                    if (full.address) {
+                        return  '<img class="show-img zoom-img" src="' + full.address + '" alt="">';
+                    }
+                    return '';
+                }
+                },
+                {
+                    "sWidth": "110px",
+                    "sTitle": "操作",
+                    "mData": "id",
+                    "sClass": "ph_tableShow",
+                    "mRender": function (data, type, full) {
+                        var text = '<div class="ph_operateBox"><input class="ph_operate" name="" type="button" value="操作选项">';
+                        text = text + '<ul class="ph_operateList hide" role="menu">';
+                        if (full.status == '1') {
+                            if ([[${session.roleStart}]]) {
+                                text += '<li ><a href="#" onclick="enableById(\'' + full.id + '\');">启用</a> </li>';
+                            }
+                        } else {
+                            if ([[${session.roleFrozen}]]) {
+                                text += '<li><a href="#" onclick="disableById(\'' + full.id + '\');">删除</a> </li>';
+                            }
+                        }
+                        if ([[${session.roleUpdate}]]) {
+                            text += '<li><a href="javascript:void(0);" onclick="editRole(\'' + full.id + '\',\'' + full.name + '\',\'' + full.type + '\');">编辑</a></li>';
+                        }
+                        /*  if (full.roleCode == 1 && full.id != 1 && full.id != 7 && full.id != 8) {
+                         if ([[${session.roleDelete}]]) {
+                         text += '<li><a href="javascript:void(0);" onclick="deleteById(\'' + full.id + '\');">删除</a> </li>';
+                         }
+
+                         }*/
+                        /* if ([[${session.roleUpdateRoleMenu}]]) {
+                         text += '<li><a href="javascript:void(0);"  onclick="updateRoleMenu(\'' + full.id + '\',\'' + full.roleName + '\');">分配权限</a> </li>';
+                         }*/
+                        text = text + '</ul></div>';
+                        return text;
+                    }
+                }
+            ],
+            "oLanguage": {
+                "sProcessing": "数据加载中······",
+                "sLengthMenu": "显示 _MENU_ 条记录",
+                "sZeroRecords": "没有您要搜索的内容！",
+                "sEmptyTable": "列表中无数据存在！",
+                "sInfo": "当前显示 _START_ 到 _END_ 条数据，共 _TOTAL_ 条数据",
+                "sInfoEmpty": "显示 0 到 0 条记录",
+                "sInfoFiltered": "数据列表中共  _MAX_ 条记录",
+                "oPaginate": {
+                    "sFirst": "首页",
+                    "sPrevious": "上一页",
+                    "sNext": "下一页",
+                    "sLast": "末页"
+                }
+            },
+            "fnServerData": function (sSource, aoData, fnCallback, oSettings) {
+                oSettings.jqXHR = $.ajax({
+                    "dataType": 'json',
+                    "type": "GET",
+                    "async": 'false',
+                    "url": sSource,
+                    "data": {
+                        'pageNum': (aoData[3].value / aoData[4].value) + 1,
+                        'pageSize': aoData[4].value,
+                        'id': $("#id").val(),
+                        'roleName': $("#roleName").val(),
+                        'status': $('#selectStatus').val()
+                    },
+                    "success": fnCallback
+                });
+            },
+            "fnDrawCallback": function () {
+                var api = this.api();
+                var startIndex = api.context[0]._iDisplayStart;//获取到本页开始的条数
+                api.column(0).nodes().each(function (cell, i) {
+                    cell.innerHTML = startIndex + i + 1;
+                });
+
+            }
+        });
+
+        //验证初始化
+        $('#addRoleForm').validationEngine({
+            promptPosition: 'bottomLeft'
+            , autoPositionUpdate: false
+            , addPromptClass: 'formError-text'
+            , autoHidePrompt: true
+            , autoHideDelay: 3000
+            , fadeDuration: 0.3
+        });
+
+
+        /*$('.ph_snbBtn').on('click', '.Js_deliver', function () {
+         layer.open({
+         type: 1,
+         title: '添加轮播图',
+         closeBtn: 0,
+         area: ['442px', '312px'],
+         btn: ['保存', '取消'],
+         btnAlign: 'c',
+         content: $('#deliverBox'),
+         btn1: function (index) {
+         var flag = $("#addRoleForm").validationEngine("validate");
+         if (!flag) {
+         return false;
+         }
+         //提交数据
+         $.ajax({
+         type: "POST",
+         url: "/web/permission/role/add",
+         data: $("#addRoleForm").serialize(),
+         success: function (d) {
+         console.log(d);
+         if (d.success) {
+         layer.alert("保存成功！", {
+         icon: 1,
+         title: '提示',
+         closeBtn: 0,
+         btnAlign: 'c'
+         });
+         tb.draw();
+         } else {
+         layer.alert(d.message, {
+         icon: 2,
+         title: '失败',
+         closeBtn: 0,
+         btnAlign: 'c'
+         });
+         }
+         }
+         });
+         //清空表单
+         $('#addRoleForm')[0].reset()
+         layer.close(index);
+         }
+         });
+         });*/
+        $('.ph_wareBox').on('click', '.Js_menuTree', function () {
+            layer.open({
+                type: 1,
+                title: '分配权限',
+                closeBtn: 0,
+                area: ['600px', '450px'],
+                btn: ['保存', '取消'],
+                btnAlign: 'c',
+                content: $('#menuTreeBox')
+            });
+        });
+    });
+
+    function reset() {
+        $("#selectStatus").selectpicker('val', "");
+        $("#selectForm")[0].reset();
+
+    }
+    //条件查询重新加载数据
+    function query() {
+        tb.draw();
+    }
+
+    function editRole(id, roleName, type) {
+        console.log("id数据："+id)
+        console.log("roleName数据："+roleName);
+        $("#filename").hide();
+        $("#filename").prev().hide();
+        //给表单赋值
+        $("#id").val(id);
+        $("#editRoleName").val(roleName);
+        if(type==1){
+            $("#description").val("1");
+        }
+        if(type==2){
+            $("#description").val("2");
+        }
+        if(type==3){
+            $("#description").val("3");
+        }
+
+
+        layer.open({
+            type: 1,
+            title: '编辑轮播图',
+            closeBtn: 0,
+            area: ['442px', '312px'],
+            btn: ['保存', '取消'],
+            btnAlign: 'c',
+            content: $('#deliverBox'),
+            btn1: function (index) {
+                var flag = $("#addRoleForm").validationEngine("validate");
+                if (!flag) {
+                    return false;
+                }
+                $.ajax({
+//              async       : false,
+                    type: "POST",
+                    url: "/web/attachments/editAttachment",
+                    data: $("#addRoleForm").serialize(),
+                    success: function (d) {
+                        console.log(d);
+                        if (d.success) {
+                            tb.draw(false);
+                            layer.alert("保存成功！", {
+                                icon: 1,
+                                title: '提示',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        } else {
+                            layer.alert(d.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+                $('#addRoleForm')[0].reset()
+                layer.close(index);
+
+            },
+            btn2: function (index) {
+                //清空表单
+                $('#addRoleForm')[0].reset()
+                layer.close(index);
+            }
+        });
+    }
+
+    //删除方法
+    function deleteById(roleId) {
+        layer.confirm('是否删除？', {
+            icon: 3,
+            btn: ['是', '否'], //按钮
+            btn1: function (index) {
+                $.ajax({
+                    async: false,
+                    url: "/web/permission/role/delete",
+                    data: {id: roleId},
+                    type: "POST",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.code == "200") {
+                            tb.draw(false);
+                            layer.alert("删除成功！", {
+                                icon: 1,
+                                title: '提示',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        } else {
+                            layer.alert(data.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+                layer.close(index);
+            },
+
+        });
+    }
+
+    //启用轮播图
+    function enableById(roleId) {
+        layer.confirm('是否启用轮播图？', {
+            icon: 3,
+            btn: ['是', '否'], //按钮
+            btn1: function (index) {
+                $.ajax({
+                    async: false,
+                    url: "/web/permission/role/enable",
+                    data: {id: roleId},
+                    type: "POST",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.code == "200") {
+                            tb.draw(false);
+                            layer.alert("启用成功！", {
+                                icon: 1,
+                                title: '提示',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        } else {
+                            layer.alert(data.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+                layer.close(index);
+            }
+        });
+    }
+    //删除
+    function disableById(roleId) {
+        console.log("选中的id:"+roleId);
+        layer.confirm('是否禁用轮播图？', {
+            icon: 3,
+            btn: ['是', '否'],//按钮
+            btn1: function (index) {
+                $.ajax({
+                    async: false,
+                    url: "/web/attachments/deleteAttachment",
+                    data: {id: roleId},
+                    type: "POST",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.code == "200") {
+                            tb.draw(false);
+                            layer.alert("已禁用！", {
+                                icon: 1,
+                                title: '提示',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        } else {
+                            layer.alert(data.message, {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                        }
+                    }
+                });
+                layer.close(index);
+            }
+        });
+    }
+
+
+    //============================以下为分配权限==============================/
+    var setting = {
+        check: {
+            enable: true
+        },
+        data: {
+            simpleData: {
+                enable: true,
+
+            }
+        },
+        callback: {
+            onCheck: onCheck
+        }
+    };
+
+    //Mr.Shu 2017.5.13
+    var menuTreeVOS = new Array();
+    function onCheck(event, treeId, treeNode) {
+        var treeObj = $.fn.zTree.getZTreeObj("treeDemo"),
+                nodes = treeObj.getCheckedNodes(true);
+        var newTree = new Array();
+        for (var i = 0; i < nodes.length; i++) {
+            var MenuTreeVO = {}
+            MenuTreeVO.id = nodes[i].id;
+            MenuTreeVO.pId = nodes[i].pId;
+            MenuTreeVO.btnId = nodes[i].btnId;
+            console.info(MenuTreeVO);
+            newTree.push(MenuTreeVO);
+            //v[i] = nodes[i].id;
+        }
+        //$('#menuIds').val(v.join(","));
+        menuTreeVOS = newTree;
+    }
+    ;
+    var zNodes;
+
+    function updateRoleMenu(id, roleName) {
+        $("#roleId").val(id);
+        //获取轮播图数据
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "/web/permission/role/getRoleMenu",
+            data: {roleId: id},
+            success: function (data) {
+
+                console.info(data.data)
+                if (data.data) {
+                    zNodes = data.data;
+                    var old = new Array();
+                    var ii = 0;
+                    if (zNodes) {
+                        for (var i = 0; i < zNodes.length; i++) {
+                            if (zNodes[i].checked) {
+
+                                //Mr.Shu 2017.5.13
+                                var MenuTreeVO = {}
+                                MenuTreeVO.id = zNodes[i].id;
+                                MenuTreeVO.pId = zNodes[i].pId;
+                                MenuTreeVO.btnId = zNodes[i].btnId;
+                                console.info(MenuTreeVO);
+                                old.push(MenuTreeVO);
+
+                                //old[ii] = zNodes[i].id;
+                                //ii++;
+                            }
+                        }
+                        menuTreeVOS = old;
+                        //$('#menuIds').val(old.join(","));
+                    }
+
+                    var tree = $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+                    tree.expandAll(false);
+                    layer.open({
+                        type: 1,
+                        title: '对【' + roleName + '】分配权限',
+                        closeBtn: 0,
+                        area: ['500px', '600px'],
+                        btn: ['保存', '取消'],
+                        btnAlign: 'c',
+                        content: $('#menuTreeBox'),
+                        btn1: function (index) {
+                            //Mr.Shu 2017.5.13
+                            var json = {
+                                'menuTreeVOS': menuTreeVOS,
+                                'roleId': $("#roleId").val()
+                            };
+                            var data = JSON.stringify(json);
+                            console.info(data);
+
+                            //提交数据
+                            $.ajax({
+                                async: false,
+                                type: "POST",
+                                dataType: "json", //Mr.Shu 2017.5.13
+                                contentType: 'application/json;charset=utf-8', //设置请求头信息 //Mr.Shu 2017.5.13
+                                url: "/web/permission/role/updateRoleMenu",
+                                data: data,
+                                success: function (d) {
+                                    if (d.code == "200") {
+                                        layer.alert("权限修改成功,该轮播图的所有用户将重新登录！", {
+                                            icon: 1,
+                                            title: '提示',
+                                            closeBtn: 0,
+                                            btnAlign: 'c',
+                                            btn1: function (index) {
+
+                                                var isDraw = true;
+
+                                                if (sessionUser.sessionRoleVo) {
+                                                    for (var i = 0; i < sessionUser.sessionRoleVo.length; i++) {
+                                                        if (id == sessionUser.sessionRoleVo[i].id) {
+                                                            isDraw = false;
+                                                            window.location.href = '/web/permission/role/listPage'
+                                                        }
+                                                    }
+                                                }
+
+                                                if (isDraw) {
+                                                    tb.draw(false);
+                                                }
+
+                                                layer.close(index);
+                                            }
+                                        });
+
+                                    } else {
+                                        layer.alert(data.message, {
+                                            icon: 2,
+                                            title: '失败',
+                                            closeBtn: 0,
+                                            btnAlign: 'c'
+                                        });
+                                    }
+                                }
+                            });
+                            layer.close(index);
+                        }
+                    });
+                } else {
+                    layer.alert("该轮播图没有基础菜单!", {
+                        icon: 2,
+                        title: '失败',
+                        closeBtn: 0,
+                        btnAlign: 'c'
+                    });
+                    return;
+                }
+            }
+
+        });
+
+    }
+
+</script>
+</body>
+</html>

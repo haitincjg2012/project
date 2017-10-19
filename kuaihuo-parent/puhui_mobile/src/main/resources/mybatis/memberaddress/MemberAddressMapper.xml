@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.memberaddress.MemberAddressDao">
+
+	<resultMap type="com.alqsoft.entity.memberaddress.MemberAddress" id="MemberAddressMap">
+		<id column="id" property="id" />
+		<association  property="member" autoMapping="true" foreignColumn="id"  column="member_id" javaType="com.alqsoft.entity.member.Member" select="getMemberById" />
+    	<association  property="proArea" autoMapping="true" foreignColumn="id"  column="pro_area_id" javaType="com.alqsoft.entity.area.Area" select="getProAreaById" />
+    	<association  property="cityArea" autoMapping="true" foreignColumn="id"  column="city_area_id" javaType="com.alqsoft.entity.area.Area" select="getCityAreaById" />
+	</resultMap>
+
+    <resultMap id="BaseResultMap" type="com.alqsoft.entity.memberaddress.MemberAddress" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="create_user" property="createUser" jdbcType="VARCHAR" />
+        <result column="created_ip" property="createdIp" jdbcType="VARCHAR" />
+        <result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="code" property="code" jdbcType="VARCHAR" />
+        <result column="detail_address" property="detailAddress" jdbcType="VARCHAR" />
+        <result column="is_default" property="isDefault" jdbcType="INTEGER" />
+        <result column="is_delete" property="isDelete" jdbcType="INTEGER" />
+        <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+        <result column="user_name" property="userName" jdbcType="VARCHAR" />
+        <result column="city_area_id" property="cityAreaId" jdbcType="BIGINT" />
+        <result column="member_id" property="memberId" jdbcType="BIGINT" />
+        <result column="pro_area_id" property="proAreaId" jdbcType="BIGINT" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, create_user, created_ip, created_time, update_time, code, detail_address, is_default,
+        is_delete, mobile, user_name, city_area_id, member_id, pro_area_id
+    </sql>
+
+
+    <resultMap id="VO_member_address_result" type="com.alqsoft.vo.MemberAddressVO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="is_default" property="isDefault" jdbcType="INTEGER" />
+        <!--<result column="is_delete" property="isDelete" jdbcType="INTEGER" />-->
+        <result column="detail_address" property="detailAddress" jdbcType="VARCHAR" />
+        <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+        <result column="user_name" property="userName" jdbcType="VARCHAR" />
+        <result column="member_id" property="memberId" jdbcType="BIGINT" />
+        <result column="pname" property="pname" jdbcType="VARCHAR" />
+        <result column="cname" property="cname" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="VO_Column_List">
+     id, is_default, detail_address,mobile ,user_name,member_id,pname, cname
+    </sql>
+
+    <select id="getAddressList" parameterType="java.util.Map" resultMap="VO_member_address_result">
+     select ma.code,ma.id,ma.is_default,ma.mobile,
+      (select pa.id from alq_area pa where pa.id=ma.pro_area_id) pid,
+    (SELECT ca.id FROM alq_area ca WHERE ca.id=ma.city_area_id)cid ,
+     (select pa.name from alq_area pa where pa.id=ma.pro_area_id) pname,
+    (SELECT ca.name FROM alq_area ca WHERE ca.id=ma.city_area_id)cname ,
+    ma.user_name,ma.member_id,ma.detail_address from alq_member_address ma
+     where ma.member_id =#{uid,jdbcType=BIGINT} and ma.is_delete = 0
+     order by ma.is_default DESC
+    </select>
+
+
+
+    <!--获取默认地址-->
+    <select id="getDefaultAddress" resultType="com.alqsoft.vo.MemberAddressVO" parameterType="java.util.Map">
+        select ma.code,ma.id,ma.is_default,ma.mobile,
+      (select pa.name from alq_area pa where pa.id=ma.pro_area_id) pname,
+    (SELECT ca.name FROM alq_area ca WHERE ca.id=ma.city_area_id)cname ,
+    (select pa.id from alq_area pa where pa.id=ma.pro_area_id) pid,
+    (SELECT ca.id FROM alq_area ca WHERE ca.id=ma.city_area_id) cid ,
+    ma.user_name,ma.member_id,ma.detail_address from alq_member_address ma
+     where ma.member_id =#{uid,jdbcType=BIGINT}  and ma.is_delete = 0
+        and ma.is_default = 1
+
+    </select>
+
+
+	<select id="findAddressById" resultMap="MemberAddressMap" parameterType="Long">
+		SELECT * FROM alq_member_address WHERE id = #{id} AND is_delete=0
+	</select>
+	
+	<select id="getDefAddByMid" resultType="map" parameterType="Long">
+		SELECT ma.id, ma.detail_address,ma.mobile, ma.user_name, a.`name` AS proName, a1.`name` AS cityName FROM alq_member_address AS ma, alq_area AS a, alq_area AS a1 WHERE ma.pro_area_id=a.id AND ma.city_area_id=a1.id AND member_id = #{id} AND is_delete=0 AND is_default=1
+	</select>
+
+	<select id="getMemberById" resultType="com.alqsoft.entity.member.Member" parameterType="Long">
+		SELECT * FROM alq_member WHERE id = #{member_id}
+	</select>
+	<select id="getProAreaById" resultType="com.alqsoft.entity.area.Area" parameterType="Long">
+		SELECT * FROM alq_area WHERE id = #{pro_area_id}
+	</select>
+	<select id="getCityAreaById" resultType="com.alqsoft.entity.area.Area" parameterType="Long">
+		SELECT * FROM alq_area WHERE id = #{city_area_id}
+	</select>
+</mapper>

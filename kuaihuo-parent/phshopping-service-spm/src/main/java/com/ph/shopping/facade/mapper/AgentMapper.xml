@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.AgentMapper" >
+  <resultMap id="baseResultMap" type="com.ph.shopping.facade.spm.vo.AgentVO" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="agentLevelId" property="agentLevelId" jdbcType="BIGINT" />
+    <result column="agentName" property="agentName" jdbcType="VARCHAR" />
+    <result column="personName" property="personName" jdbcType="VARCHAR" />
+    <result column="telPhone" property="telPhone" jdbcType="VARCHAR" />
+    <result column="partnersNumber" property="partnersNumber" jdbcType="INTEGER" />
+    <result column="provinceId" property="provinceId" jdbcType="BIGINT" />
+    <result column="cityId" property="cityId" jdbcType="BIGINT" />
+    <result column="countyId" property="countyId" jdbcType="BIGINT" />
+    <result column="townId" property="townId" jdbcType="BIGINT" />
+    <result column="businessNo" property="businessNo" jdbcType="VARCHAR" />
+    <result column="personIdCardNo" property="personIdCardNo" jdbcType="VARCHAR" />
+    <result column="positionId" property="positionId" jdbcType="BIGINT" />
+    <result column="contactPositionId" property="contactPositionId" jdbcType="INTEGER" />
+    <result column="address" property="address" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="parentId" property="parentId" jdbcType="BIGINT" />
+    <result column="promoterId" property="promoterId" jdbcType="BIGINT" />
+    <result column="createTime" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="createrId" property="createrId" jdbcType="BIGINT" />
+    <result column="updaterId" property="updaterId" jdbcType="BIGINT" />
+    <result column="isDelete" property="isDelete" jdbcType="TINYINT" />
+    <result column="isFrozen" property="isFrozen" jdbcType="TINYINT" />
+    <result column="statusLevel" property="statusLevel" jdbcType="TINYINT" />
+    <result column="userId" property="userId" jdbcType="BIGINT" />
+  </resultMap>
+  <!-- 代理商图片返回字段定义  图片与代理商  多对一关系 -->
+  <resultMap  id="agentResultMap" type="com.ph.shopping.facade.spm.vo.AgentVO" extends="baseResultMap">
+	  <result column="promoterTelPhone" property="promoterTelPhone" jdbcType="VARCHAR"/>
+	  <result column="promoterMemberName" property="promoterMemberName" jdbcType="VARCHAR"/>
+	  <result column="contactProvinceId" property="contactProvinceId" jdbcType="BIGINT"/>
+	  <result column="contactCityId" property="contactCityId" jdbcType="BIGINT"/>
+	  <result column="contactCountyId" property="contactCountyId" jdbcType="BIGINT"/>
+      <collection property="agentImageVOList" ofType="com.ph.shopping.facade.spm.vo.AgentImageVO">
+  		<id column="image_id" property="id" jdbcType="BIGINT" />
+	    <result column="image_url" property="url" jdbcType="VARCHAR" />
+	    <result column="image_sort" property="sort" jdbcType="INTEGER" />
+	    <result column="image_type" property="type" jdbcType="INTEGER" />
+	    <result column="image_agentId" property="agentId" jdbcType="BIGINT" />
+	    <result column="image_updateTime" property="updateTime" jdbcType="TIMESTAMP" />
+	    <result column="image_createTime" property="createTime" jdbcType="TIMESTAMP" />
+  	</collection>
+  </resultMap>
+  <!-- 扩展返回字段 -->
+  <resultMap  id="extendsResultMap" type="com.ph.shopping.facade.spm.vo.AgentVO" extends="baseResultMap">
+ 		 <result column="addressName" property="addressName" jdbcType="VARCHAR" />
+ 		 <result column="parentName" property="parentName" jdbcType="VARCHAR" />
+ 		 <result column="levelName" property="levelName" jdbcType="VARCHAR" />
+  </resultMap>
+  <!-- 通用 查询条件-->
+  <sql id="where_general">
+  		<if test="id != null">
+				and agent.id = #{id}
+			</if>
+			<if test="agentLevelId != null">
+				and agent.agentLevelId = #{agentLevelId}
+			</if>
+			<if test="telPhone != null and telPhone !='' ">
+				and agent.telPhone like CONCAT('%',TRIM(#{telPhone}),'%')
+			</if>
+			<if test="agentName != null and agentName !='' ">
+				and agent.agentName like CONCAT('%',TRIM(#{agentName}),'%')
+			</if>
+			<if test="personName != null and personName !='' ">
+				and agent.personName like CONCAT('%',TRIM(#{personName}),'%')
+			</if>
+			<if test="provinceId != null">
+				and agent.provinceId = #{provinceId}
+			</if>
+			<if test="cityId != null">
+				and agent.cityId = #{cityId}
+			</if>
+			<if test="countyId != null">
+				and agent.countyId = #{countyId}
+			</if>
+			<if test="townId != null">
+				and agent.townId = #{townId}
+			</if>
+			<if test="status != null ">
+				and agent.status = #{status} 
+			</if>
+			<if test="isDelete != null ">
+				and agent.isDelete = #{isDelete} 
+			</if>
+			<if test="isFrozen != null ">
+				and agent.isFrozen = #{isFrozen} 
+			</if>
+			<if test="userId != null ">
+				and agent.userId = #{userId} 
+			</if>
+			<if test="positionId != null ">
+				and agent.positionId = #{positionId}
+			</if>
+			<!-- 列表区域查询 -->
+			<if test="positionExtendsId != null and positionExtendsId != '' ">
+				and ( agent.provinceId = #{positionExtendsId} 
+				OR agent.cityId = #{positionExtendsId}  
+				OR agent.countyId = #{positionExtendsId} 
+				OR agent.townId = #{positionExtendsId})
+			</if>
+			<if test="isFrozens != null ">
+				<if test="isFrozens.size() > 0">
+			  		and agent.isFrozen in 
+					<foreach collection="isFrozens" item="id" open="(" close=")" separator=",">
+						#{id}
+					</foreach>
+				</if>
+			</if>
+			<if test="ids != null ">
+				<if test="ids.size() > 0">
+			  		and agent.id in 
+					<foreach collection="ids" item="id" open="(" close=")" separator=",">
+						#{id}
+					</foreach>
+				</if>
+			</if>
+			
+  </sql>
+  <!-- 查询条件 -->
+  <sql id="where_clause" >
+  		<trim prefix="where" prefixOverrides="and">
+			<include refid="where_general"/>
+		</trim>
+  </sql>
+  
+   <!-- 普通详情查询 -->
+  <sql id="where_base_detail_clause" >
+  		<trim prefix="where" prefixOverrides="and">
+			<if test="parentId != null ">
+				and agent.parentId = #{parentId} 
+			</if>
+			<include refid="where_general"/>
+		</trim>
+  </sql>
+   <!-- 普通查询 -->
+  <sql id="where_base_clause" >
+  		<trim prefix="where" prefixOverrides="and">
+			<if test="isFormSystem != null ">
+				and agent.isFormSystem = #{isFormSystem}
+			</if>
+			<if test="parentId != null ">
+				and agent.parentId = #{parentId} 
+			</if>
+				<if test="parentName != null and parentName !='' ">
+				and parent.agentName like CONCAT('%',TRIM(#{parentName}),'%')
+			</if>
+			<include refid="where_general"/>
+		</trim>
+  </sql>
+  <!-- 父级查询条件 -->
+  <sql id="where_parent_clause" >
+  		<trim prefix="where" prefixOverrides="and">
+			<if test="parentId != null ">
+				and p.parentId = #{parentId} 
+			</if>
+			<include refid="where_general"/>
+		</trim>
+  </sql>
+  <!-- 根据商户来查找当前的市代理  -->
+  <sql id="where_getAgentByMerchantList" >
+  		<trim prefix="where" prefixOverrides="and">
+			<if test="userId != null and userId !=  '' ">
+				and merchart.userId = #{userId} 
+			</if>
+		</trim>
+  </sql>
+  <!-- 子级查询条件 -->
+  <sql id="where_chiled_clause" >
+  		<trim prefix="where" prefixOverrides="and">
+			<if test="parentId != null ">
+				and agent.parentId = #{parentId} 
+			</if>
+			<include refid="where_general"/>
+		</trim>
+  </sql>
+   <!-- 根据区域来查找上级的代理商 -->
+  <sql id="where_position_clause" >
+  		<trim prefix="where" prefixOverrides="and">
+  			<if test="status != null ">
+				and agent.status = #{status} 
+			</if>
+			<if test="isDelete != null ">
+				and agent.isDelete = #{isDelete} 
+			</if>
+			<if test="isFrozen != null ">
+				and agent.isFrozen != #{isFrozen}
+			</if>
+			<if test="isFormSystem != null ">
+				and agent.isFormSystem = #{isFormSystem}
+			</if>
+  			<if test="provinceId != null and cityId != null">
+				and agent.provinceId = #{provinceId} AND agent.cityId = #{cityId} AND agent.countyId IS NULL AND agent.townId IS NULL
+				<if test="countyId != null and countyId != ''">
+					OR (agent.provinceId = #{provinceId} AND agent.cityId = #{cityId} AND agent.countyId =#{countyId} AND agent.townId IS NULL
+					<if test="status != null ">
+						and agent.status = #{status} 
+					</if>
+					<if test="isDelete != null ">
+						and agent.isDelete = #{isDelete} 
+					</if>
+					<if test="isFrozen != null ">
+						and agent.isFrozen != #{isFrozen} 
+					</if>
+					)
+				</if>
+				<if test="townId != null and townId != ''">
+					OR (agent.provinceId = #{provinceId} AND agent.cityId = #{cityId} AND agent.countyId =#{countyId} AND agent.townId= #{townId}
+					<if test="status != null ">
+						and agent.status = #{status} 
+					</if>
+					<if test="isDelete != null ">
+						and agent.isDelete = #{isDelete} 
+					</if>
+					<if test="isFrozen != null ">
+						and agent.isFrozen != #{isFrozen} 
+					</if>
+					)
+				</if>
+			</if>
+		</trim>
+  </sql>
+  
+  <!-- 根据区域来查找所有的代理商 -->
+  <sql id="where_position_all_clause" >
+  		<trim prefix="where" prefixOverrides="and">
+  			<if test="status != null ">
+				and agent.status = #{status} 
+			</if>
+			<if test="isDelete != null ">
+				and agent.isDelete = #{isDelete} 
+			</if>
+			<if test="isFrozen != null ">
+				and agent.isFrozen = #{isFrozen} 
+			</if>
+  			<if test="provinceId != null and cityId != null">
+  				and agent.provinceId = #{provinceId} AND agent.cityId = #{cityId} 
+				<if test="countyId != null">
+					AND agent.countyId IS NULL AND agent.townId IS NULL
+					OR (agent.provinceId = #{provinceId} AND agent.cityId = #{cityId} AND agent.countyId =#{countyId} AND agent.townId IS NULL
+					<if test="status != null ">
+						and agent.status = #{status} 
+					</if>
+					<if test="isDelete != null ">
+						and agent.isDelete = #{isDelete} 
+					</if>
+					<if test="isFrozen != null ">
+						and agent.isFrozen = #{isFrozen} 
+					</if>
+					)
+					OR (agent.provinceId = #{provinceId} AND agent.cityId = #{cityId} AND agent.countyId =#{countyId} AND agent.townId IS NOT NULL
+					<if test="townId != null ">
+						AND agent.townId= #{townId}
+					</if>
+					<if test="status != null ">
+						AND agent.status = #{status} 
+					</if>
+					<if test="isDelete != null ">
+						and agent.isDelete = #{isDelete} 
+					</if>
+					<if test="isFrozen != null ">
+						and agent.isFrozen = #{isFrozen} 
+					</if>
+					)
+				</if>
+				
+			</if>
+		</trim>
+  </sql>
+  
+   <!-- 根据区域来查找下级的代理商 -->
+  <sql id="where_position_next_clause" >
+  		<trim prefix="where" prefixOverrides="and">
+  			<if test="status != null ">
+				and agent.status = #{status} 
+			</if>
+  			<if test="statusLevel != null ">
+				and agent.statusLevel = #{statusLevel} 
+			</if>
+			<if test="isDelete != null ">
+				and agent.isDelete = #{isDelete} 
+			</if>
+			<if test="isFrozen != null ">
+				and agent.isFrozen = #{isFrozen} 
+			</if>
+  			<if test="provinceId != null and cityId != null">
+  				and agent.provinceId = #{provinceId} AND agent.cityId = #{cityId} 
+				<if test="countyId != null and townId== null or townId==''">
+					AND agent.countyId =#{countyId}
+					OR( agent.townId IS NOT NULL		
+					<if test="status != null ">
+						and agent.status = #{status} 
+					</if>
+					<if test="isDelete != null ">
+						and agent.isDelete = #{isDelete} 
+					</if>
+					<if test="isFrozen != null ">
+						and agent.isFrozen = #{isFrozen} 
+					</if>
+					)
+				</if>
+					<if test="townId != null and countyId != null">
+						AND agent.townId= #{townId}
+					</if>
+				
+			</if>
+		</trim>
+  </sql>
+  <!-- 代理商返回字段 -->
+  <sql id="base_column_list" >
+	    agent.id, agent.agentLevelId, agent.agentName, agent.personName, agent.telPhone, agent.partnersNumber, agent.provinceId, agent.cityId, 
+	    agent.countyId, agent.townId, agent.businessNo, agent.personIdCardNo, agent.positionId, agent.contactPositionId, agent.address, 
+	    agent.status, agent.parentId, agent.promoterId, agent.createTime, agent.updateTime, agent.createrId, agent.updaterId, agent.isDelete, 
+	    agent.isFrozen,agent.userId,agent.statusLevel,agent.isFormSystem
+  </sql>
+	<!-- 代理推广师扩展字段 -->
+	<sql id="member_column1_list">
+		,pm.telPhone promoterTelPhone,pm.memberName promoterMemberName
+	</sql>
+	<!-- 代理商联系人区域扩展字段 -->
+	<sql id="contact_position_column1_list">
+		,contact_position.countyId contactCountyId,contact_position.cityId contactCityId,contact_position.provinceId contactProvinceId
+	</sql>
+  <!--查询返回代理商图片字段  -->
+  <sql id="image_column_list" >
+	    ,image.id image_id, image.url image_url, image.sort image_sort, image.type image_type, image.agentId image_agentId, image.updateTime image_updateTime, image.createTime image_createTime
+  </sql>
+  <!-- 扩展字段 -->
+  <sql id="base_extends_list" >
+      ,CASE WHEN agent.agentLevelId = 1 THEN CONCAT(p.provinceName,p.cityName)
+      WHEN agent.agentLevelId = 2 THEN CONCAT(p.provinceName,p.cityName,IFNULL(p.countyName,''))
+      WHEN agent.agentLevelId = 3 THEN CONCAT(p.provinceName,p.cityName,IFNULL(p.countyName,''),IFNULL(p.townName,''))
+	ELSE '-' END addressName
+    ,parent.agentName parentName
+    ,leve.levelName 
+  </sql>
+  <!-- 查询详情 -->
+	<select id="getAgentListDateil" resultMap="agentResultMap" parameterType="com.ph.shopping.facade.spm.dto.AgentDTO">
+    SELECT
+	    <include refid="base_column_list"/>
+		<include refid="member_column1_list"/>
+	    <include refid="image_column_list"/>
+		<include refid="contact_position_column1_list"/>
+		FROM ph_agent agent LEFT JOIN ph_agent_image image ON agent.id = image.agentId
+		LEFT JOIN ph_member pm ON agent.promoterId = pm.id
+		LEFT JOIN ph_position contact_position ON agent.contactPositionId = contact_position.id
+    <include refid="where_base_detail_clause"/>
+  </select>
+  
+  <!-- 查询列表 -->
+  <select id="getAgentList" resultMap="extendsResultMap" parameterType="com.ph.shopping.facade.spm.dto.AgentDTO" >
+    SELECT
+	    <include refid="base_column_list"/>
+	    <include refid="base_extends_list"/>
+      FROM ph_agent agent
+      LEFT JOIN ph_position p ON p.id = agent.positionId
+    LEFT JOIN ph_agent parent ON agent.parentId = parent.id
+    LEFT JOIN ph_agent_level leve ON agent.agentLevelId = leve.id
+    <include refid="where_base_clause"/>
+    GROUP BY agent.id 
+    ORDER BY agent.createTime DESC
+  </select>
+	<!--供应商查询列表@author WUDI-->
+	<select id="getAgentListMap" resultType="Map" parameterType="com.ph.shopping.facade.spm.dto.AgentDTO">
+		select agent.id ,                             <!--供应商的id-->
+		agent.nickname as companyName,                <!--供应商的公司名-->
+		agent.province_name as provinceName,          <!--供应商的省-->
+		agent.city_name as cityName,                  <!--供应商的市-->
+		agent.detail as detail,                       <!--供应商的地址详情-->
+		agent.ph_province_id as provnceId ,           <!--供应商的省的标识-->
+		agent.ph_city_id as cityId,                   <!--供应商的市的标识-->
+		IFNULL(mm.is_frozen,0) as frozen,             <!--供应商的冻结状态，0（未冻结）,1（冻结）,2（暂冻结）-->
+		agent.position_level as level,                <!--供应商的时省还是市，省（2），市（1）-->
+		mm.phone as phone
+		from alq_hunter agent LEFT JOIN alq_member as mm on mm.hunter_id = agent.id
+	</select>
+  <!-- 父级查询 -->
+  <select id="getAgentParentList" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.spm.dto.AgentDTO" >
+    SELECT
+	    <include refid="base_column_list"/>
+		FROM ph_agent agent 
+		LEFT JOIN ph_agent p ON agent.id = p.parentId
+    <include refid="where_parent_clause"/>
+  </select>
+  
+  <!-- 子级查询 -->
+  <select id="getAgentChildList" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.spm.dto.AgentDTO" >
+    SELECT
+	    <include refid="base_column_list"/>
+		FROM ph_agent agent 
+		LEFT JOIN ph_agent p ON agent.parentId = p.id
+    <include refid="where_chiled_clause"/>
+  </select>
+  
+   <!-- 根据商户来查找当前的市代理 -->
+  <select id="getAgentByMerchantList" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.spm.dto.AgentDTO" >
+    SELECT
+	    <include refid="base_column_list"/>
+		FROM ph_agent agent 
+		LEFT JOIN ph_merchant merchart ON agent.provinceId = merchart.provinceId AND agent.cityId = merchart.cityId 
+		<if test="agentLevelId != null and agentLevelId !=  '' ">
+			<if test="agentLevelId != 1">
+				AND agent.countyId = merchart.countyId
+			</if>
+			<if test="agentLevelId == 3">
+				 AND agent.townId = merchart.townId
+			</if>
+			AND agent.agentLevelId = #{agentLevelId}
+		</if>
+    <include refid="where_getAgentByMerchantList"/>
+  </select>
+
+	<!-- 根据区域来查找所有匹配的代理 -->
+	<select id="getAgentVoByPosition" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.spm.dto.AgentDTO">
+		SELECT
+		<include refid="base_column_list"/>
+        FROM
+        `ph_agent` agent
+		WHERE
+		(
+		(agent.cityId = #{cityId} and agent.agentLevelId =1)
+		OR (agent.countyId = #{countyId} and agent.agentLevelId =2)
+		OR (agent.townId = #{townId} and agent.agentLevelId =3)
+		)
+        AND agent.STATUS = 1
+        AND agent.isFrozen = 0
+        AND agent.isDelete = 0
+		AND agent.isFormSystem = #{isFormSystem}
+		ORDER BY
+        agent.agentLevelId DESC
+	</select>
+	
+	<select id="getAgentById" resultType="com.ph.shopping.facade.spm.entity.Agent" parameterType="long">
+		SELECT * FROM ph_agent WHERE id=#{id} AND isFormSystem=0
+	</select>
+	
+		<!-- 根据区域来查找上级匹配的代理 -->
+	<select id="getPositionGetAgentList" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.spm.dto.AgentDTO">
+		SELECT
+		 <include refid="base_column_list"/>
+        FROM
+        ph_agent agent
+        <include refid="where_position_clause"/>
+	</select>
+	
+		<!-- 根据区域来查找所有匹配的代理 -->
+	<select id="getPositionGetAllAgentList" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.spm.dto.AgentDTO">
+		SELECT
+		 <include refid="base_column_list"/>
+        FROM
+        ph_agent agent
+        <include refid="where_position_all_clause"/>
+	</select>
+	
+		<!-- 根据区域来查找下级匹配的代理 -->
+	<select id="getPositionGetNextAgentList" resultMap="baseResultMap" parameterType="com.ph.shopping.facade.spm.dto.AgentDTO">
+		SELECT
+		 <include refid="base_column_list"/>
+        FROM
+        ph_agent agent
+        <include refid="where_position_next_clause"/>
+	</select>
+	<!-- 修改当前所有子级的父id -->
+  <update id="updateAgentChildByParent" parameterType="com.ph.shopping.facade.spm.dto.AgentDTO">
+		<if test="parentIds != null ">
+		<if test="parentIds.size() > 0">
+	  		update ph_agent set parentId = #{parentId} where id in 
+			<foreach collection="parentIds" item="id" open="(" close=")" separator=",">
+				#{id}
+			</foreach>
+		</if>
+		</if>
+  </update>
+</mapper>

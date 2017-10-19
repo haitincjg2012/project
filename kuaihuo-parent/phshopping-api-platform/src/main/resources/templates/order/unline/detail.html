@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>订单信息</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--弹窗 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/layer/layer.css}">
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">订单管理</a>&nbsp;&gt;&nbsp;<a href="#">线下订单</a>&nbsp;&gt;&nbsp;<span>订单信息</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit no_border">
+            <h2>订单信息</h2>
+        </div>
+        <!--end 标题-->
+        <!--订单信息状态-->
+        <div class="ph_infoFlow">
+            <p class="ph_infoLine" th:if="${unlineOrder.data.status != 3}">
+                <span th:if="unlineOrder.data.doneTime ==null" class="ph_fault"></span>
+                <span th:if="unlineOrder.data.doneTime !=null" class="ph_fault ph_green"></span>
+            </p>
+            <p class="ph_infoLine" th:if="${unlineOrder.data.status == 3}">
+                <span th:if="unlineOrder.data.cancelTime ==null" class="ph_fault"></span>
+                <span th:if="unlineOrder.data.cancelTime !=null" class="ph_fault ph_green"></span>
+            </p>
+
+            <ul class="ph_infoList">
+                <li>
+                    <i th:if="${unlineOrder.data.createTime != null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${unlineOrder.data.createTime == null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">提交订单</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(unlineOrder.data.createTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+                <li th:if="${unlineOrder.data.status != 3}">
+                    <i th:if="${unlineOrder.data.doneTime != null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${unlineOrder.data.doneTime == null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">交易完成</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(unlineOrder.data.doneTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+                <li th:if="${unlineOrder.data.status == 3}">
+                    <i th:if="${unlineOrder.data.cancelTime != null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${unlineOrder.data.cancelTime == null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">交易取消</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(unlineOrder.data.cancelTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+            </ul>
+        </div>
+        <!--end 订单信息状态-->
+        <!--订单角色信息-->
+        <div class=" ph_infoCon">
+             <p class="ph_infoHome">
+                 <span>会员手机号：<span th:text="${unlineOrder.data.memberPhone}"></span</span>
+                 <span>会员IC卡号：<span th:text="${unlineOrder.data.outerCode}"></span</span>
+             </p>
+        </div>
+        <div class="ph_infoCon">
+            <p class="ph_infoHome">
+                <span>企业名称：<span th:text="${unlineOrder.data.merchantName}"></span></span>
+                <span>联系电话：<span th:text="${unlineOrder.data.merchantPhone}"></span></span>
+            </p>
+        </div>
+        <!--end 订单角色信息-->
+        <!--商品信息-->
+        <div class="ph_wareBox ph_infoWare">
+            <p class="ph_infoTotal ph_infoLarge">付款方式：
+                <span class="require">
+                    <span th:if="${unlineOrder.data.payType==0}" th:text="现金支付"></span>
+                    <span th:if="${unlineOrder.data.payType==1}" th:text="积分支付"></span>
+                    <span th:if="${unlineOrder.data.payType==2}" th:text="支付宝支付"></span>
+                    <span th:if="${unlineOrder.data.payType==3}" th:text="微信支付"></span>
+                </span>
+            </p>
+            <p class="ph_infoTotal ph_infoLarge">订单总额：
+                <span class="require">
+                    <span th:text="${#numbers.formatDecimal(unlineOrder.data.orderMoney/10000, 1, 2)}"></span>元
+                </span>
+            </p>
+            <p class="ph_infoTotal ph_infoLarge">服务费：
+                <span class="require">
+                    <span th:text="${#numbers.formatDecimal(unlineOrder.data.serviceCost/10000, 1, 2)}"></span>元
+                </span>
+            </p>
+        </div>
+        <!--end 商品信息-->
+        <!--返回按钮-->
+        <div class="PopupBtn">
+            <input name="" type="button" value="返回" th:onclick="'toPageList();'">
+        </div>
+        <!--end 返回按钮-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript">
+    /**
+     * 返回到列表页面
+     */
+    function toPageList() {
+        window.location.href="/web/orderUnline/toListPage";
+    }
+</script>
+</body>
+</html>

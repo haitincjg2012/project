@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.industryassociation.IndustryAssociationDao">
+<resultMap type="industryassociation" id="industryassociationMap">
+	<result column="id" property="id"/>
+	<result column="phone" property="phone"/>
+	<result column="password" property="password"/>
+	<result column="payname" property="payname"/>
+	<result column="card" property="card"/>
+</resultMap>
+
+	
+	<!-- 所属协会列表接口 -->
+	<select id="findIndustryAssociationList" resultType="Map">
+		SELECT a.`id`,a.`name` FROM alq_industry_association AS a 
+	</select>
+</mapper>

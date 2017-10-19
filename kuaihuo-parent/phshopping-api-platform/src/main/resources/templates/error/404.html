@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<meta charset="UTF-8">
+	<title>快火后台系统</title>
+	<link rel="stylesheet" type="text/css"
+	th:href="@{/static/css/common/models.css}">
+</head>
+<body>
+	<div class="MainContent">
+		<div class="MainCont MainWelError">
+			<div class="ph_errorBox">
+				<p class="errorTxt">很抱歉，您访问的页面不存在！</p>
+				<p class="errorImg"><img th:src="@{/static/images/404.png}" alt="" width="100%"></p>
+				<div class="PopupBtn">
+					<input id="indexPage" name="" type="button" value="返回首页">
+					<!-- <a th:href="@{/index}">返回首页</a>  -->
+					<!-- <a th:href="@{<a href="javascript :history.back(-1)}">返回上一页</a> -->
+					<!-- <input name="" type="button" value="返回上一页"> -->
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+
+<script>
+$(function() {
+	$('#indexPage').on("click", function() {
+		parent.location.reload();
+	})
+});
+</script>
+</html>

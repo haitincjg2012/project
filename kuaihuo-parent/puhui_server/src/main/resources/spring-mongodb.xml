@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-4.1.xsd 
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-4.1.xsd 
+	http://www.springframework.org/schema/data/mongo 
+	http://www.springframework.org/schema/data/mongo/spring-mongo-1.7.xsd"
+	default-lazy-init="true">
+	<description>mongodb配置 </description>
+	<!-- 如果需要集群只需要加上,继续加数据库即可 -->
+	<mongo:mongo id="mongo" replica-set="${mongo.host}">
+		<mongo:options connections-per-host="${mongo.connectionsPerHost}"
+			threads-allowed-to-block-for-connection-multiplier="${mongo.threadsAllowedToBlockForConnectionMultiplier}"
+			connect-timeout="${mongo.connectTimeout}" max-wait-time="${mongo.maxWaitTime}"
+			auto-connect-retry="${mongo.autoConnectRetry}" socket-keep-alive="${mongo.socketKeepAlive}"
+			socket-timeout="${mongo.socketTimeout}" slave-ok="${mongo.slaveOk}"
+			write-number="1" write-timeout="0" write-fsync="true" />
+	</mongo:mongo>
+
+	<!--数据库名称 -->
+	<mongo:db-factory dbname="alqsoft" mongo-ref="mongo"  />
+
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+	</bean>
+
+	<!-- 数据库仓库接口的指定 -->
+	<mongo:repositories base-package="com.alqsoft.mongo.dao"></mongo:repositories>
+	
+		<!-- 如果需要集群只需要加上,继续加数据库即可 -->
+<!-- 	<mongo:mongo id="mongo" replica-set="${mongo.host}">
+		<mongo:options connections-per-host="${mongo.connectionsPerHost}"
+			threads-allowed-to-block-for-connection-multiplier="${mongo.threadsAllowedToBlockForConnectionMultiplier}"
+			connect-timeout="${mongo.connectTimeout}" max-wait-time="${mongo.maxWaitTime}"
+			auto-connect-retry="${mongo.autoConnectRetry}" socket-keep-alive="${mongo.socketKeepAlive}"
+			socket-timeout="${mongo.socketTimeout}" slave-ok="${mongo.slaveOk}"
+			write-number="1" write-timeout="0" write-fsync="true" />
+	</mongo:mongo> -->
+
+	<!--数据库名称 -->
+<!-- 	<mongo:db-factory dbname="alqsoft" mongo-ref="mongo" />
+
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+	    <constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+	</bean>
+	<bean id="mongoDbFactory" class="org.springframework.data.mongodb.core.SimpleMongoDbFactory">
+	    <constructor-arg name="mongo" ref="mongo" />
+	    <constructor-arg name="databaseName" value="alqsoft" />
+	    <constructor-arg name="credentials" ref="userCredentials" />
+	    <constructor-arg name="authenticationDatabaseName" value="admin" />
+	</bean>
+	<bean id="userCredentials" class="org.springframework.data.authentication.UserCredentials">
+	    <constructor-arg name="username" value="shenhuiyuan" />
+	    <constructor-arg name="password" value="yst@315shy" />
+	</bean> -->
+
+	<!-- 数据库仓库接口的指定 -->
+	<!-- <mongo:repositories base-package="com.alqsoft.mongo.dao"></mongo:repositories> -->
+
+</beans>

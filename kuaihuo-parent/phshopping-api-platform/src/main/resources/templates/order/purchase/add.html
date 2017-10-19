@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>提交订单</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--bootstrap-select  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+    <!--日期  css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/datepicker/css/bootstrap-datepicker.css}">
+    <!--弹窗 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/layer/layer.css}">
+    <style>
+        #addressDiv span{
+            line-height: 40px;
+            font-size: 16px;
+            color: #555555;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">订单管理</a>&nbsp;&gt;&nbsp;<a href="#">进货订单</a>&nbsp;&gt;&nbsp;<span>提交订单</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit">
+            <h2>请确定收货信息</h2>
+            <div class="ph_snbBtn"><input class="Js_addLinkman" th:onclick="'addAddress();'" name="" type="button" value="新增联系信息"></div>
+        </div>
+        <!--end 标题-->
+        <!--收货地址-->
+        <div id="addressDiv" class="ph_methodBox ph_collect" >
+            <p th:each="address:${addressList}" >
+                <input name="radio" type="radio" th:value="${address.id}" th:checked="${address.isDefault == 1} ? 'true' : 'false'">
+                <span th:text="${address.contacts}"></span>&nbsp;&nbsp;
+                <span th:text="${address.address}"></span>&nbsp;&nbsp;
+                <span th:text="${address.telPhone}"></span>
+            </p>
+        </div>
+        <!--end 收货地址-->
+
+        <div class="order" th:each="products,productsStat:${productList}">
+            <!--标题-->
+            <div class="ph_subTit ph_subMarTop no_border">
+                <h2 th:text="${products.supplierName}">供应商</h2>
+                <input type="hidden" class="supplierId"  th:value="${products.supplierId}">
+            </div>
+            <!--end 标题-->
+            <!--商品列表-->
+            <div class="ph_wareBox ph_infoWare">
+                <table class="ph_wareList product">
+                    <thead>
+                    <tr>
+                        <th width="50">序号</th>
+                        <th>商品名称</th>
+                        <th>商品条码</th>
+                        <th>总数量</th>
+                        <th>总金额（元）</th>
+                        <th>规格</th>
+                        <th width="110">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody >
+                    <tr th:each="product,productStat:${products.productVOList}">
+                        <td th:class="${product.id}" th:text="${productStat.count}"></td>
+                        <td class="productName" th:title="${product.productName}" th:text="${product.productName}"></td>
+                        <td class="barCode" th:title="${product.barCode}" th:text="${product.barCode}"></td>
+                        <td class="num" th:text="0"></td>
+                        <td class="totalMoney" th:text="0"></td>
+                        <td th:text="''"></td>
+                        <!--商品基本信息-->
+                        <td class="skuId" hidden="hidden"></td>
+                        <td class="productId" th:text="${product.id}" hidden="hidden"></td>
+                        <td class="productSnapId" th:text="${product.productSnapId}" hidden="hidden"></td>
+                        <td class="money" hidden="hidden"></td>
+                        <td class="freight" hidden="hidden"></td>
+                        <td class="skuNum" hidden="hidden"></td>
+                        <td><a class="lookBtn ph_lookBtn"  th:onclick="'getSku(this,\''+ ${product.id} + '\', \''+${product.productName}+'\');'">编辑</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!--end 商品列表-->
+        </div>
+        <div class="ph_wareBox ph_infoWare">
+            <p class="ph_infoTotal">订单总金额：<span class="require" id="orderTotalCost">0.00</span>元</p>
+            <p class="ph_infoTotal">物流总费用：<span class="require" id="orderTotalFreightCost">0.00</span>元</p>
+        </div>
+        <!--按钮-->
+        <div class="PopupBtn">
+            <input class="submit" name="" type="button" th:onclick="'orderSubmit();'" value="提交">
+            <input class="cancel" name="" type="button" th:onclick="'returnList();'" value="取消">
+        </div>
+        <!--end 按钮-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<!--添加联系人弹窗-->
+<div class="PopupBox" id="addLinkmanBox">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="ph_subPoCon ph_screen">
+            <form class="form-inline" id="addWareForm">
+                <table class="ph_tableBox">
+                    <tr>
+                        <th><span class="require">*</span>联系人：</th>
+                        <td><input id="contacts" name="contacts" type="text" class="validate[required,custom[special]]"></td>
+                    </tr>
+                    <tr>
+                        <th><span class="require">*</span>手机号：</th>
+                        <td><input id="telPhone" name="telPhone" type="text" class="validate[required,custom[phone]]"></td>
+                    </tr>
+                    <tr>
+                        <th>座机号：</th>
+                        <td><input id="phoneNo" name="phoneNo" type="text" class="validate[custom[phone]]"></td>
+                    </tr>
+                    <tr>
+                        <th><span class="require">*</span>区域：</th>
+                        <td>
+                            <div class="ph_distpicker" id="distpicker">
+                                <input id="positionId" name="positionId" hidden="hidden">
+                                <select class="validate[required] ph_dist" id="provinceId" name="provinceId" onchange="Area.getCityies('provinceId', 'cityId','countyId');">
+                                    <option value="">请选择</option>
+                                </select>
+                                <input id="provinceName" name="provinceName" hidden="hidden">
+                                <select class="validate[required] ph_dist" id="cityId" name="cityId" onchange="Area.getCounties('cityId', 'countyId');">
+                                    <option value="">请选择</option>
+                                </select>
+                                <input id="cityName" name="cityName" hidden="hidden">
+                                <select class="validate[required] ph_dist" id="countyId" name="countyId">
+                                    <option value="">请选择</option>
+                                </select>
+                                <input id="countyName" name="countyName" hidden="hidden">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><span class="require">*</span>详细地址：</th>
+                        <td><input id="detailAddress" name="detailAddress" type="text" class="validate[required,custom[special]]"></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+    <!--end 内容-->
+</div>
+<!--end 添加联系人弹窗-->
+<!--编辑商品弹窗-->
+<div class="PopupBox" id="ph_lookBox">
+    <!--内容-->
+    <div class="PopupCon">
+        <div class="lookCon ph_wareBox">
+            <table class="ph_wareList" id="sku">
+                <thead>
+                <tr>
+                    <th width="50"><input class="check-all" name="" type="checkbox"></th>
+                    <th>规格</th>
+                    <th>单价（元）</th>
+                    <th width="120">数量</th>
+                    <th>商品金额（元）</th>
+                    <th>物流费用（元）</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <p class="ph_lookTxt">
+            商品总量：<span class="require" id="totalNum">0</span>&nbsp;&nbsp;
+            商品总额：<span class="require" id="totalProduct">0.00</span>元&nbsp;&nbsp;
+            物流总费：<span class="require" id="totalFreight">0.00</span>元&nbsp;&nbsp;
+            总金额：<span class="require" id="totalCost">0.00</span>元
+        </p>
+    </div>
+    <!--end 内容-->
+</div>
+
+<input type="hidden" id="roleCode" th:value="${roleCode}">
+
+<!--end 编辑商品弹窗-->
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<!--弹窗-->
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<!--地址三级联动-->
+<script type="text/javascript" th:src="@{/static/js/common/area.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<!--验证-->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+
+<script type="text/javascript"  th:src="@{/static/js/common/number.js}"></script>
+
+<script type="text/javascript">
+
+    //将提交的表单数据转换成json数据格式
+    (function($){
+        $.fn.serializeJson=function(){
+            var serializeObj={};
+            var array=this.serializeArray();
+            var str=this.serialize();
+            $(array).each(function(){
+                if(serializeObj[this.name]){
+                    if($.isArray(serializeObj[this.name])){
+                        serializeObj[this.name].push(this.value);
+                    }else{
+                        serializeObj[this.name]=[serializeObj[this.name],this.value];
+                    }
+                }else{
+                    serializeObj[this.name]=this.value;
+                }
+            });
+            return serializeObj;
+        };
+    })(jQuery);
+
+
+    $(function () {
+        $("#addWareForm").validationEngine({
+            addPromptClass: 'formError-text',
+            showArrow: false,
+            promptPosition: 'bottomLeft'
+        });
+    });
+
+    //新增地址
+    function addAddress() {
+        var length=$("#addressDiv").find("p").length;
+        if(length>20){
+            layer.alert('最多可以添加20个收货地址', {icon: 2,closeBtn: 0});
+        }
+        layer.open({
+            type : 1,
+            title : '添加联系地址',
+            closeBtn : 0,
+            area : [ '600px', '380px' ],
+            btn : [ '确定', '取消' ],
+            btnAlign : 'c',
+            content : $('#addLinkmanBox'),
+            yes : function(index, layero) {
+                var flag = $("#addWareForm").validationEngine("validate");
+                if(!flag){
+                    return false;
+                }
+                setValue();
+                var params = $("#addWareForm").serializeJson();
+                $.ajax({
+                    url : '/web/warehouseaddress/add',
+                    type : 'post',
+                    data : params,
+                    dataType : 'json',
+                    success : function(data) {
+                        if(data.success){
+                            appendAddress(data.data);
+                            layer.close(index);
+                            clearData("addWareForm");
+                            layer.alert(data.message, {icon: 1,btnAlign: 'c', closeBtn : 0});
+                        }else{
+                            layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                        }
+                    }
+                })
+            }
+
+        });
+    }
+    //添加成功 追加新的地址
+    function appendAddress(data){
+        var html="<p>";
+        html+="<input name='radio' checked='checked' type='radio' value='" + data.id +"' />";
+        html+="<span>" + data.contacts +"</span>&nbsp;&nbsp;";
+        html+="<span>" + data.address + "</span>&nbsp;&nbsp;";
+        html+="<span>" + data.telPhone+" </span>";
+        html+="</p>";
+        $("#addressDiv").append(html);
+    }
+
+    function setValue() {
+        //设置区域id
+        Area.setPositionId("countyId", "positionId");
+        var provinceId = $("#provinceId").val();
+        var provinceName =  $("#provinceId").find("option:selected").text();
+        $("#provinceName").val(provinceName);
+        var cityId = $("#cityId").val();
+        var cityName = $("#cityId").find("option:selected").text();
+        $("#cityName").val(cityName);
+        var countyId = $("#countyId").val();
+        var countyName = $("#countyId").find("option:selected").text();
+        $("#countyName").val(countyName);
+    }
+
+    function clearData(id) {
+        $("#" + id)[0].reset();
+    }
+
+    //全选
+    $('.ph_wareBox').on('click','.check-all',function(){
+        $('.ids').prop('checked',this.checked);
+        if($('.ids:disabled').prop('disabled')){
+            $('.ids:disabled').prop('checked',false);
+        }
+        getTotalPrice();
+    });
+    //全选/全不选
+    var flag=true;
+    $('.PopupBtn').on('click','.mitAll',function () {
+        if(flag==true){
+            $('.ids').prop('checked', true);
+            $('.check-all').prop('checked', true);
+            $('input.mitAll').val('全不选');
+            flag=false;
+        }else {
+            $('.ids').prop('checked', false);
+            $('.check-all').prop('checked', false);
+            $('input.mitAll').val('全选');
+            flag=true;
+        }
+        if ($('.ids:disabled').prop('disabled')) {
+            $('.ids:disabled').prop('checked', false);
+        }
+        getTotalPrice();
+    });
+
+
+    //查看sku信息
+    function getSku(This,productId,productName) {
+        var roleCode = $('#roleCode').val();
+        $.ajax({
+            async:false,
+            url:"/web/order/purchase/productSku",
+            data:{productId:productId},
+            type:"POST",
+            dataType:"json",
+            success:function(data){
+                if(data.length > 0){
+                    getSkuHtml(roleCode,data);
+                    var productId = data[0].productId;
+                    layer.open({
+                        type: 1,
+                        title: productName,
+                        closeBtn : 0,
+                        area: ['800px','440px'],
+                        btn:['确认', '取消'],
+                        btnAlign: 'c',
+                        content: $('#ph_lookBox'),
+                        yes:function (index,layero) {
+                            var checkedInput =  $('.ids:checked');
+                            if (checkedInput.length > 0) {
+                                var tr = $('.'+productId).parent();
+                                var tds = tr.find("td");
+                                tds.eq(3).text($('#totalNum').text());
+                                tds.eq(4).text($('#totalCost').text());
+                                var count = 0,
+                                    sku = "",
+                                    skuName = [],
+                                    skuId = [],
+                                    skuNum = [];
+                                checkedInput.each(function () {
+                                    var parent =$(this).parent().parent();
+                                    count += parseFloat(parent.find(".ph_spinner").val());
+                                    sku = parent.find(".skuName").text() +"X" + parent.find(".ph_spinner").val();
+                                    skuName.push(sku);
+                                    skuId.push($(this).val())
+                                    skuNum.push(parent.find(".ph_spinner").val());
+                                });
+                                tds.eq(5).attr("title",skuName.join());
+                                tds.eq(5).text(skuName.join());
+                                tds.eq(6).text(skuId.join());
+                                tds.eq(6).text(skuId.join());
+                                //当前商品的价格
+                                var oldProduct = tr.find(".money").text() == "" ? 0 : tr.find(".money").text();
+                                oldProduct = parseFloat(oldProduct);
+                                var oldProductFreight = tr.find(".freight").text() == "" ? 0 : tr.find(".freight").text();
+                                oldProductFreight = parseFloat(oldProductFreight);
+                                tr.find(".money").text($('#totalProduct').text());
+                                tr.find(".freight").text($('#totalFreight').text());
+                                tr.find(".skuNum").text(skuNum.join());
+                                //总价格修改
+                                var oldCost = $('#orderTotalCost').text() == "" ? 0 : $('#orderTotalCost').text();
+                                oldCost = parseFloat(oldCost);
+                                var oldFreight = $('#orderTotalFreightCost').text() == "" ? 0 : $('#orderTotalFreightCost').text();
+                                oldFreight = parseFloat(oldFreight);
+                                var newCost = oldCost - oldProduct - oldProductFreight + parseFloat($('#totalCost').text());
+                                var newFreight = oldFreight - oldProductFreight + parseFloat($('#totalFreight').text());
+                                $('#orderTotalCost').text(toDecimal(newCost));
+                                $('#orderTotalFreightCost').text(toDecimal(newFreight));
+                                closeSku(index,layero);
+                            } else {
+                                layer.alert("请选择规格", {icon: 2,btnAlign: 'c', closeBtn : 0});
+                            }
+                        },btn2:function (index,layero) {
+                            closeSku(index,layero);
+                        }
+                    });
+                }else{
+                    layer.alert("暂无商品规格数据", {icon: 2,btnAlign: 'c', closeBtn : 0});
+                }
+            }
+        });
+    }
+    
+    function closeSku(index,layero) {
+        $('.ids').prop('checked', false);
+        $('.check-all').prop('checked', false);
+        $('#sku').find('tbody').html('');
+        $('#totalNum').text(0);
+        $('#totalProduct').text(0.00);
+        $('#totalFreight').text(0.00);
+        $('#totalCost').text(0.00);
+        layer.close(index);
+    }
+    
+    function getSkuHtml(roleCode,data) {
+        var html = '',
+            price,
+            num;
+        $.each(data,function (i,item) {
+            html += '<tr>';
+            html += '<td><input onclick="getTotalPrice();" class="ids" type="checkbox" id="id' + i + '"  value="' + item.id +'"></td>'
+            html += '<td class="skuName" title="' + item.skuName + '" width="200">' + item.skuName + '</td>';
+            price = 0;
+            num = 0;
+            if (roleCode == 6) {
+                //商户进货
+                price = item.purchasePrice;
+                num = item.sellerbAtchQuantity;
+            } else if (roleCode == 3) {
+                //市级代理进货
+                price = item.settlementPrice;
+                num = item.municipalBatchQuantity;
+            }
+            //默认买一个
+            if (!num || num == 0) {
+                num = 1;
+            }
+            html += '<td>' + price + '</td>';
+            html += '<td><div class="ph_spinnerBox">';
+            var freightPrice = "freight" + i;
+            var productPrice = "price" + i;
+            var remove = 'removeCount(\'' + num + '\', \'' + price +'\',\'' + item.freight + '\',\'' + i +'\',\'' + item.numberOfPackages +'\');';
+            html += '<button class="decrease" onclick="'+ remove +'">-</button>';
+            var onchange = 'validateCount(this,\'' +price + '\',\'' + item.freight + '\',\''+ item.skuCount +'\',\'' + num + '\',\'' + i + '\',\'' + item.numberOfPackages +'\');';
+            var onkeyup = 'if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,\'\')}else{this.value=this.value.replace(\/\\D/g,\'\')}';
+            var onAfterPaste = 'if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,\'0\')}else{this.value=this.value.replace(\/\\D/g,\'\')}';
+            html += '<input name="" type="text" class="ph_spinner  count'+ i +'" value="' + num +'" onchange="' + onchange + '"  onkeyup="'+ onkeyup +'" onafterpaste="'+ onAfterPaste +'">';
+            var addCount = 'addCount(\'' + item.skuCount + '\', \'' + price +'\',\'' + item.freight + '\',\'' + i + '\',\'' + item.numberOfPackages +'\')';
+            html += '<button class="increase" onclick="'+ addCount +'">+</button>';
+            html += '</div></td>';
+            html += '<td class="price" id="' + productPrice +'">' + toDecimal(price * num) +'</td>';
+            var freight = item.freight;
+            if (item.numberOfPackages &&　num >= item.numberOfPackages) {
+                freight = 0;
+            }
+            html += '<td class="freight" id= "' + freightPrice +'">' + toDecimal(freight * num) + '</td>';
+            html += '</tr>';
+        });
+        $('#sku').find('tbody').html(html);
+    }
+
+    //新增数量
+    function addCount(max,price,freight,i,freeFreightNum) {
+        var input = '.count' + i;
+        var currentCountInput = $(input);
+        var currentCount = parseInt(currentCountInput.val());
+        var count = currentCount + 1;
+        if (count >  max) {
+            return;
+        }
+        currentCountInput.val(count);
+        var priceText = '#freight' + i;
+        if (freeFreightNum &&　count >= freeFreightNum) {
+            //达到数量包邮
+            $(priceText).text(toDecimal(0));
+        } else {
+            $(priceText).text(toDecimal(count*freight));
+        }
+        priceText = '#price' + i;
+        $(priceText).text(toDecimal(count*price));
+        //计算商品总价
+        getTotalPrice();
+    }
+
+    //删除数量
+    function removeCount(min,price,freight,i,freeFreightNum) {
+        var input = ".count" + i;
+        var currentCountInput = $(input);
+        var currentCount = parseInt(currentCountInput.val());
+        var count = currentCount-1;
+        if (count < min) {
+            return;
+        }
+        currentCountInput.val(count);
+        var priceText = '#freight' + i;
+        var priceText = '#freight' + i;
+        if (freeFreightNum &&　count >= freeFreightNum) {
+            $(priceText).text(toDecimal(0));
+        } else {
+            $(priceText).text(toDecimal(count*freight));
+        }
+        priceText = '#price' + i;
+        $(priceText).text(toDecimal(count*price));
+        //计算商品总价
+        getTotalPrice();
+    }
+
+    //校验数量
+    function validateCount(This,price,freight,max,min,i,freeFreightNum) {
+        var currentCount = parseInt($(This).val());
+        if (currentCount > max) {
+            currentCount = max;
+            $(This).val(max);
+        }
+        if (!currentCount || currentCount < min) {
+            currentCount = min;
+            $(This).val(min);
+        }
+        var priceText = '#freight' + i;
+        var priceText = '#freight' + i;
+        if (freeFreightNum &&　currentCount >= freeFreightNum) {
+            $(priceText).text(toDecimal(0));
+        } else {
+            $(priceText).text(toDecimal(currentCount*freight));
+        }
+        priceText = '#price' + i;
+        $(priceText).text(toDecimal(currentCount*price));
+        //计算商品总价
+        getTotalPrice();
+    }
+
+    //计算商品总价
+    function getTotalPrice() {
+        var price =0.00,
+            freight = 0.00,
+            num = 0,
+            total = 0.00;
+        $('.ids:checked').each(function () {
+            var parent =$(this).parent().parent();
+            price += parseFloat(parent.find(".price").text());
+            freight += parseFloat(parent.find(".freight").text());
+            num += parseInt(parent.find(".ph_spinner").val());
+        });
+        $('#totalNum').text(num);
+        $('#totalProduct').text(toDecimal(price));
+        $('#totalFreight').text(toDecimal(freight));
+        total = price + freight;
+        $('#totalCost').text(toDecimal(total));
+    }
+
+    function addDisable(cls) {
+        $("." + cls).attr("disabled","disabled");
+    }
+    
+    function removeDisable(cls) {
+        $("." + cls).removeAttr('disabled');
+    }
+
+    //提交订单校验
+    function validateSubmit() {
+        var addressLabel = $("input[type='radio']:checked");
+        if (addressLabel.length <= 0) {
+            layer.alert("请选择收货地址", {icon: 2,btnAlign: 'c', closeBtn : 0});
+            return false;
+        }
+        var flag = true;
+        $(".product tbody").each(function(i,item) {
+            $(item).find("tr" ).each(function () {
+                var skuIds = $(this).find(".skuId").text().trim();
+                if (!skuIds || skuIds.length <= 0) {
+                    layer.alert("请选择商品的规格", {icon: 2,btnAlign: 'c', closeBtn : 0});
+                    flag = false;
+                    return flag;
+                }
+            });
+        });
+        return flag;
+    }
+
+    //订单提交
+    function orderSubmit() {
+        addDisable("submit");
+        //提交订单校验
+        var flag = validateSubmit();
+        if (!flag) {
+            removeDisable("submit");
+            return;
+        }
+        var addressLabel = $("input[type='radio']:checked");
+        var spans = addressLabel.siblings('span');
+        //地址id
+        var shippingAddressId = addressLabel.val().trim();
+        //联系人
+        var contacts = spans.eq(0).text().trim();
+        //详细地址
+        var address = spans.eq(1).text().trim();
+        //联系电话
+        var telPhone = spans.eq(2).text().trim();
+
+        //订单信息
+        var purchaseOrderDTOArray = new Array();
+        var supplierIds = $('.order').find('.supplierId');
+        $(".product").each(function(i,item) {
+            var purchaseOrderDTO = {};
+            purchaseOrderDTO.address = address;
+            purchaseOrderDTO.shippingAddressId = shippingAddressId;
+            purchaseOrderDTO.contacts = contacts;
+            purchaseOrderDTO.telPhone = telPhone;
+            //供应商id
+            purchaseOrderDTO.supplerId = supplierIds[i].value;
+            var purchaseProductArray = new Array();
+            var totalProductMoney = parseFloat(0),
+                totalFreightMoney = parseFloat(0),
+                totalSubOrderMoney = parseFloat(0);
+            $(item).find("tbody tr" ).each(function() {
+                //商品信息
+                var purchaseProductDTO = {};
+                purchaseProductDTO.productId = $(this).find(".productId").text().trim();
+                purchaseProductDTO.productSnapId = $(this).find('.productSnapId').text().trim();
+                purchaseProductDTO.productName = $(this).find('.productName').text().trim();
+                purchaseProductDTO.productCode = $(this).find('.barCode').text().trim();
+                purchaseProductDTO.totalMoney = $(this).find('.money').text().trim();
+                purchaseProductDTO.productNum = $(this).find('.num').text().trim();
+                purchaseProductDTO.totalFreight = $(this).find('.freight').text().trim();
+                var total1 = parseFloat(purchaseProductDTO.totalMoney * 100);
+                var total2 = parseFloat(purchaseProductDTO.totalFreight* 100);
+                var total3 = parseFloat($(this).find('.totalMoney').text() * 100);
+                totalProductMoney +=  total1;
+                totalFreightMoney += total2;
+                totalSubOrderMoney += total3;
+                //商品对应的sku集合
+                var skuIds = $(this).find(".skuId").text().split(",");
+                var skuNums =$(this).find(".skuNum").text().split(",");
+                var purchaseProductSkuArray = new Array();
+                for (var j = 0,length = skuIds.length; j < length; j++) {
+                    var purchaseProductSkuDTO = {};
+                    purchaseProductSkuDTO.skuNum = skuNums[j];
+                    purchaseProductSkuDTO.skuId = skuIds[j];
+                    purchaseProductSkuArray.push(purchaseProductSkuDTO);
+                }
+                purchaseProductDTO.purchaseProductSkuList = purchaseProductSkuArray;
+                purchaseProductArray.push(purchaseProductDTO);
+            });
+            purchaseOrderDTO.money = totalProductMoney/100;
+            purchaseOrderDTO.freight = totalFreightMoney/100;
+            purchaseOrderDTO.totalCost = totalSubOrderMoney/100;
+            purchaseOrderDTO.purchaseProductList = purchaseProductArray;
+            purchaseOrderDTOArray.push(purchaseOrderDTO);
+        });
+        add(purchaseOrderDTOArray);
+    }
+
+    function add(purchaseOrderDTOArray) {
+        var json={
+            'purchaseOrderDTO':purchaseOrderDTOArray
+        };
+        var data=JSON.stringify(json);
+        console.info(data);
+        $.ajax({
+            async:false,
+            url:"/web/order/purchase/add",
+            data:data,
+            type:"POST",
+            dataType:"json",
+            contentType : 'application/json;charset=utf-8', //设置请求头信息
+            success:function(data){
+                removeDisable("submit");
+                if(data.success){
+                    layer.alert(data.message, {icon: 1,btnAlign: 'c', closeBtn : 0});
+                    //跳转到预支付页面
+                    HtmlHelper.generateAutoSubmitForm({
+                        url: "/web/order/purchase/toPay",
+                        method:"POST",
+                        data: {
+                            orderId : data.data.id,
+                            totalCost : data.data.totalCost,
+                            orderNo : data.data.orderNo,
+                            type : 1
+                        }
+                    });
+                }else{
+                    layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                }
+            },
+            error:function (data) {
+                removeDisable("submit");
+                layer.alert("系统繁忙，请重试！", {icon: 2,btnAlign: 'c', closeBtn : 0});
+            }
+        });
+    }
+
+
+    function returnList() {
+        window.location.href = "/web/order/purchase/toListPage";
+    }
+
+</script>
+</body>
+</html>

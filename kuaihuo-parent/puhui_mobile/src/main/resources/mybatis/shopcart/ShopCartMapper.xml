@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.shopcart.ShopCartDao">
+    <resultMap id="BaseResultMap" type="com.alqsoft.entity.shopcart.ShopCart" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="create_user" property="createUser" jdbcType="VARCHAR" />
+        <result column="created_ip" property="createdIp" jdbcType="VARCHAR" />
+        <result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="buy_num" property="buyNum" jdbcType="BIGINT" />
+        <result column="member_id" property="memberId" jdbcType="BIGINT" />
+        <result column="product_specification_id" property="productSpecificationId" jdbcType="BIGINT" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, create_user, created_ip, created_time, update_time, buy_num, member_id, product_specification_id
+    </sql>
+
+    <!--VO-->
+    <resultMap id="BaseVoResult" type="com.alqsoft.vo.ShopCartVO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="buy_num" property="buyNum" jdbcType="BIGINT" />
+       <!-- <result column="member_id" property="memberId" jdbcType="BIGINT" />-->
+        <result column="product_specification_id" property="productSpecificationId" jdbcType="BIGINT" />
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="product_specification" property="productSpecification" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+       <!-- <result column="nickname" property="nickname" jdbcType="VARCHAR"/>-->
+        <!--<result column="is_subscription" property="isSubscription" jdbcType="INTEGER"/>-->
+       <!-- <result column="subscription_money" property="subscriptionMoney" jdbcType="BIGINT"/>-->
+        <!--<result column="hunterId" property="hunterId" jdbcType="BIGINT" />-->
+        <result column="price" property="price" jdbcType="DECIMAL" />
+        <result column="num" property="num" jdbcType="BIGINT"/>
+        <result column="productStatus" property="productStatus" jdbcType="INTEGER"/>
+        <result column="start_num" property="startNum" jdbcType="INTEGER"  /> 
+    </resultMap>
+
+
+
+    <!--查询列表-->
+    <select id="getShopCartList" resultMap="BaseVoResult" parameterType="java.util.Map">
+        SELECT cart.id,cart.buy_num,cart.member_id,hunter.nickname,p.id productId,p.start_num startNum,p.name,p.is_subscription,
+        p.subscription_money,hunter.id hunterId
+         ,ps.content product_specification ,ps.id product_specification_id,
+          ROUND(ps.sale_price/100,2) price,p.imageurl address,ifnull(ps.num,0)num,
+          IFNULL(p.status,0) productStatus
+        FROM alq_shop_cart cart ,alq_member m ,
+        alq_product_specification ps ,alq_product p ,
+        alq_hunter hunter
+        WHERE cart.product_specification_id=ps.id
+        AND cart.member_id=m.id
+        AND ps.product_id=p.id
+        AND hunter.id=p.hunter_id and ifnull(hunter.state,1)=1
+        and m.id=#{uid,jdbcType=BIGINT}
+        <if test="hid != null">
+            and hunter.id = #{hid,jdbcType=BIGINT}
+        </if>
+         and ifnull(p.status,0)=#{status,jdbcType=INTEGER}
+    </select>
+    <!--获取用户所有店铺信息-->
+    <select id="getShopCartListByMemberId" resultMap="BaseVoResult" parameterType="java.lang.Long">
+     SELECT DISTINCT hunter.nickname,hunter.id hunterId
+        FROM alq_shop_cart cart ,
+        alq_product_specification ps ,alq_product p ,
+        alq_hunter hunter
+        WHERE cart.product_specification_id=ps.id
+        AND ps.product_id=p.id and p.status = 1 and ifnull(hunter.state,1)=1
+        AND hunter.id=p.hunter_id AND cart.member_id =#{uid,jdbcType=BIGINT}
+    </select>
+
+     <!--获取购物车信息-->
+    <select id="getShopCart" resultMap="BaseVoResult" parameterType="java.util.Map" >
+        SELECT id,buy_num,member_id ,product_specification_id
+        FROM alq_shop_cart
+        WHERE member_id=#{uid,jdbcType=BIGINT}  AND   product_specification_id= #{spid,jdbcType=BIGINT}
+    </select>
+
+    <!--获取购物车信息-->
+    <select id="getShopCartById" resultMap="BaseVoResult" parameterType="java.util.Map" >
+        SELECT id,buy_num,member_id ,product_specification_id
+        FROM alq_shop_cart
+        WHERE member_id = #{uid,jdbcType=BIGINT} AND id = #{cid,jdbcType=BIGINT}
+    </select>
+
+    <select id="getShopCartCountByMemberId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT  count(1) FROM alq_shop_cart ct WHERE ct.member_id= #{mid,jdbcType=BIGINT}
+    </select>
+
+
+    <select id="getShopCartListByHunterAndMember" resultType="java.util.Map">
+        SELECT cart.id,cart.buy_num,cart.member_id,p.id productId,p.name,hunter.id hunterId,
+        ps.content product_specification ,ps.id product_specification_id,
+        ROUND(ps.sale_price/100,2) price,ifnull(ps.num,0)num,IFNULL(p.status,0) productStatus,
+        ps.product_type_id as product_type_id
+        FROM alq_shop_cart cart ,alq_member m ,
+        alq_product_specification ps ,alq_product p ,
+        alq_hunter hunter
+        WHERE cart.product_specification_id=ps.id
+        AND cart.member_id=m.id
+        AND ps.product_id=p.id
+        AND hunter.id=p.hunter_id and ifnull(hunter.state,1)=1
+        and m.id=#{uid,jdbcType=BIGINT}
+        and hunter.id = #{hid,jdbcType=BIGINT}
+
+    </select>
+
+    <select id="getShopCartBuyNum"  resultType="java.lang.Long">
+        SELECT  buy_num FROM  alq_shop_cart s,alq_member m
+         WHERE m.phone=#{phone} AND m.uuid=#{uuid} AND s.member_id=m.id  AND s.product_specification_id = #{specificationId}
+    </select>
+
+    <select id="getTotalPriceByMember" resultType="java.lang.Long">
+      select sum(ifnull(cart.buy_num*ps.price,0)) as price from alq_shop_cart cart ,alq_product_specification ps where cart.product_specification_id = ps.id
+      and cart.member_id = #{uid}
+    </select>
+</mapper>

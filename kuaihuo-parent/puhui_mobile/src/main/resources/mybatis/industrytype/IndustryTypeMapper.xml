@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alqsoft.dao.industrytype.IndustryTypeDao">
+
+    <resultMap id="BaseResultMap" type="com.alqsoft.vo.IndustryTypeVO" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+       <!-- <result column="create_user" property="createUser" jdbcType="VARCHAR" />
+        <result column="created_ip" property="createdIp" jdbcType="VARCHAR" />
+        <result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />-->
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="address" property="address" jdbcType="VARCHAR" />
+        <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, name, parent_id
+    </sql>
+
+    <select id="getIndustryTypeList" resultMap="BaseResultMap"  parameterType="java.util.Map">
+        SELECT it.id,it.name,a.address,it.parent_id FROM alq_industry_type it LEFT JOIN alq_attachment a on it.attachment_id= a.id
+
+        <where>
+            <if test="pid != null">
+               and it.parent_id = #{pid,jdbcType=BIGINT} and IFNULL(it.is_delete,0)=0
+            </if>
+
+            <if test="pid == null">
+                and it.parent_id is  null and IFNULL(it.is_delete,0)=0
+            </if>
+
+
+        </where>
+   
+    </select>
+      <!-- 获取一级分类 -->
+	 <select id="getAllIndustryTypeFirst" resultType="Map" >
+	 
+		 SELECT indust.name ,indust.id,indust.is_delete
+		 
+		 FROM alq_industry_type AS indust
+		 
+		 WHERE indust.parent_id is null and (indust.is_delete = 0 or is_delete is null) 
+	     
+	 </select>
+ 
+ <!-- 获取二级分类 -->
+	 <select id="getAllIndustryTypeSecond" resultType="Map" parameterType="Integer">
+		 
+		 SELECT indust.name ,indust.id
+		 
+		 FROM alq_industry_type AS indust
+		 
+		 WHERE indust.parent_id=#{id} AND (indust.is_delete = 0 or is_delete is null) 
+	 
+	 </select>
+ 
+ <!-- 根据行业分类id查询 -->
+	 <select id="getIndustryTypeById" resultType="Map" parameterType="Long">
+	 	SELECT * FROM alq_industry_type t WHERE t.`id`=#{id} AND (t.`is_delete`=0 or t.`is_delete` is null)
+	 
+	 </select>
+ 
+  <!--获取所有未禁用的一级行业分类 -->
+	 <select id="findAllIndustryType" resultType="Map">
+		SELECT it.name AS fistName,it.id AS fistTypeId 
+	 	FROM alq_industry_type AS it 
+	 	WHERE it.parent_id IS NULL AND (it.is_delete = 0 OR it.is_delete IS NULL) 
+	 	ORDER BY it.created_time DESC 
+	 </select> 
+ 
+ <!--根据一级分类获取所有未禁用的二级分类 -->
+	 <!-- <select id="findSecondIndustryType" resultType="Map"   parameterType="Map">
+		 SELECT it.name AS secondName,it.id AS secondTypeId 
+	 	 FROM alq_industry_type AS it
+	 	 WHERE it.parent_id=#{parentId} AND (it.is_delete = 0 OR it.is_delete IS NULL) 
+	 	 ORDER BY it.created_time DESC LIMIT #{startIndex},#{endIndex}
+	 </select> -->
+ <!--根据一级分类获取所有未禁用的二级分类 加排序-->
+	 <select id="findSecondIndustryType" resultType="Map"   parameterType="Map">
+		 SELECT it.name AS secondName,it.id AS secondTypeId,it.`parent_id`,
+		   	    IFNULL((SELECT count(*) FROM alq_hunter_industry_type WHERE it.id=industry_type_id),0) AS num
+	 	 FROM alq_industry_type AS it
+	   	 LEFT JOIN alq_hunter_industry_type AS hit ON it.id=hit.industry_type_id
+	 	 WHERE 
+	 	 	it.parent_id=#{parentId} AND
+	 	  (it.is_delete = 0 OR it.is_delete IS NULL) 
+		 GROUP BY it.id
+	 	 ORDER BY  it.sortnumtime DESC,it.sortnum DESC,num DESC,it.created_time DESC LIMIT #{startIndex},#{endIndex}
+	 </select> 
+ <!--查询全部分类下的所有二级分类 -->
+ 	<!-- <select id="findAllSecondIndustryType" resultType="Map">
+		 SELECT it.name AS secondName,it.id AS secondTypeId,it.`parent_id`
+	 	 FROM alq_industry_type AS it,alq_industry_type AS p 
+	 	 WHERE !ISNULL(it.parent_id) AND (it.is_delete = 0 OR ISNULL(it.is_delete)) AND it.`parent_id`=p.`id` AND p.`is_delete`=0
+	 	 ORDER BY it.created_time DESC LIMIT #{startIndex},#{endIndex}
+ 	</select>  -->
+ <!--查询全部分类下的所有二级分类 加排序 -->
+ 	<select id="findAllSecondIndustryType" resultType="Map" parameterType="Map">
+		 SELECT it.name AS secondName,it.id AS secondTypeId,it.`parent_id`,
+			  IFNULL((SELECT count(*) FROM alq_hunter_industry_type WHERE it.id=industry_type_id),0) AS num
+	 	 FROM alq_industry_type AS it
+		 LEFT JOIN alq_industry_type AS p ON it.`parent_id`=p.`id` 
+		 LEFT JOIN alq_hunter_industry_type AS hit ON it.id=hit.industry_type_id
+	 	 WHERE !ISNULL(it.parent_id) AND (it.is_delete = 0 OR ISNULL(it.is_delete)) AND it.`parent_id`=p.`id` AND p.`is_delete`=0
+	 	 GROUP BY it.id
+	 	 ORDER BY  it.sortnumtime DESC,it.sortnum DESC,num DESC,it.created_time DESC LIMIT #{startIndex},#{endIndex}
+ 	</select>  
+ 	<!-- 获取行业分类最多16级 --> 
+ 	<select id="getIndustryTypeFirstLimit" resultType="Map" parameterType="int">
+	  SELECT
+		indust. NAME,
+		indust.id,
+		indust.is_delete,
+	    att.address
+		FROM
+			alq_industry_type AS indust LEFT JOIN alq_attachment as att on att.id=indust.attachment_id
+		WHERE
+			indust.parent_id IS NULL
+		AND (
+			indust.is_delete = 0
+			OR is_delete IS NULL
+		)
+		AND is_top = 1
+		ORDER BY
+		top_date DESC
+
+		 LIMIT #{page},#{rows}
+ 	</select>
+</mapper>

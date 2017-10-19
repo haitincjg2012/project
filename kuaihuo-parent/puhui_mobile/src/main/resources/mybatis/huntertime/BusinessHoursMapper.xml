@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.dao.huntertime.BusinessHoursDao">
+
+    <!--查找商户的营业时间-->
+    <select id="selectHunterByHunterId" resultType="com.alqsoft.entity.hunter.Hunter" parameterType="java.lang.Long">
+        select agree_start_time agreeStartTime,
+         agree_end_time agreeEndTime,
+         send_start_time sendStartTime,
+         send_end_time sendEndTime,
+         start_money startMoney,
+         bei_huo_time beiHuoTime,
+         close_start_time closeStartTime,
+         close_end_time closeEndTime from alq_hunter where id = #{id};
+    </select>
+
+</mapper>

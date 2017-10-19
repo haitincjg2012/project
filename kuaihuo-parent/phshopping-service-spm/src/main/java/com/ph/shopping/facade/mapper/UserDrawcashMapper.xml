@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ph.shopping.facade.mapper.UserDrawcashMapper" >
+	<select id="getUserDrawCashBlalance" parameterType="java.lang.Long" resultType="java.lang.Long">
+		select score from ph_user_balance where id = #{userId}
+	</select>
+	
+	<update id="audit" parameterType="com.ph.shopping.facade.spm.dto.AuditDTO">
+	UPDATE ph_user_drawcash_record r
+	SET
+	<trim>
+		<if test="">
+			r.auditState = #{auditState},
+		</if> 
+		r.updateTime =NOW(), 
+		<if test="">
+			r.updaterId =#{updaterId},
+		</if> 
+		<if test="">
+			r.operatorCheckId =#{operatorCheckId},
+			r.operatorCheckTime=NOW(),
+		</if>
+		 <if test="">
+		 	r.treasurerCheckId =#{treasurerCheckId},
+		 	r.treasurerCheckTime = NOW()
+		 </if>
+			
+		WHERE r.id=#{id}
+	
+	</trim> 
+	</update>
+	
+	<select id="getCashMoney" parameterType="long" resultType="long">
+		SELECT SUM(p.handingCharge+p.score) FROM ph_user_drawcash_record p WHERE p.userId = #{userId} AND DATE(p.createTime) = DATE(now())
+	</select>
+</mapper>

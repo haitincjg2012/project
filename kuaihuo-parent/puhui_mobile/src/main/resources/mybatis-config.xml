@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<!DOCTYPE configuration    
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"    
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+  <settings>
+    <!-- 只设置需要的,其他使用默认值 -->
+    <!-- 开启缓存,默认就是开启的,2层开关,需要在Mapper文件中也指定 cache 标签才会真正使用缓存 -->
+<!--     <setting name="cacheEnabled" value="true"/> -->
+    <!-- 在null时也调用 setter,适应于返回Map,3.2版本以上可用 -->
+      <setting name="callSettersOnNulls" value="true"/>
+       <!-- mybatis开启数据库字段自动映射驼峰命名规则java属性   -->
+	  <setting name="mapUnderscoreToCamelCase" value="true"/>
+  </settings>
+	<!-- 自动扫描entity目录, 省掉Configuration.xml里的手工配置 -->
+	<typeAliases>
+		<package name="com.alqsoft.entity" />
+	</typeAliases>
+	
+<!-- sql拦截器 -->
+	<plugins>
+		<!-- 引用分页工具类 -->
+		<plugin interceptor="org.alqframework.orm.mybatis.page.PageHelper">
+        <property name="dialect" value="mysql"/><!-- 使用的数据库方言 -->
+        <!-- 该参数默认为false -->
+        <!-- 设置为true时，会将RowBounds第一个参数offset当成pageNum页码使用 -->
+        <!-- 和startPage中的pageNum效果一样-->
+        <property name="offsetAsPageNum" value="true"/>
+        <!-- 该参数默认为false -->
+        <!-- 设置为true时，使用RowBounds分页会进行count查询 -->
+        <property name="rowBoundsWithCount" value="true"/>
+    </plugin>
+</plugins>
+
+</configuration>   

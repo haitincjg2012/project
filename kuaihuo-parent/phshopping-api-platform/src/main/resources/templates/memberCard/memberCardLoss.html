@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>快火后台系统</title>
+    <head th:include="header::header"></head>
+    <!-- bootstrap-select  css文件 -->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/bootstrapselect/css/bootstrap-select.css}"/>
+
+    <!--富文本  css文件-->
+    <!--<link rel="stylesheet" href="css/ueditor.css">-->
+</head>
+<body>
+<div class="MainContent">
+    <div class="current">当前位置：<a href="#" alt="">会员卡管理 &gt;</a><a href="/web/memberCard/memberCardSendListPage" alt="">已发卡列表
+        &gt;</a><span>会员卡挂失</span></div>
+    <div class="MainCont ">
+        <form id="lossForm">
+            <div class="ph_subConTit">
+                <h2>会员卡挂失</h2>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">会员账号:</span>
+                </label>
+                <input type="text" id="telPhone" name="telPhone"
+                       class="left validate[required, maxSize[11],custom[phone]]" onblur="validateMemberCard()"
+                       placeholder=""/>
+            </div>
+            <div class="mainFrom">
+                <label class="left">
+                    <span class="require">*</span>
+                    <span class="">会员姓名:</span>
+                </label>
+                <input type="text" id="memberName" name="memberName" class="left validate[required, maxSize[16]]"
+                       placeholder="自动获取" disabled/>
+            </div>
+            <div class="mainFrom">
+                <label class="yzmlabel left">
+                    <span class="require">*</span>
+                    <span>验证码:</span>
+                </label>
+                <div class="yzmTxt card_issuing">
+                    <input class="proving validate[required]" id="msgCode" name="msgCode" type="text"
+                           placeholder="请输入验证码">
+                    <p class="provingImg"><input class="provingTxt realNameCode" type="button" id="smsBtn"
+                                                 value="获取验证码"/></p>
+                </div>
+
+            </div>
+        </form>
+
+        <div class="PopupBtn btnLeft" style="margin-bottom: 20px;padding-left: 104px;">
+            <input class="submit addMerchant_save" id="lossBtn" onclick="lossMemberCard()" name="" type="button"
+                   value="挂失">
+
+        </div>
+        <!--商品规格组结束-->
+        <!--规格展示表格-->
+
+    </div>
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<!--<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>-->
+<script type="text/javascript" th:src="@{/static/js/common/htmlHelper.js}"></script>
+<!--bootstrap-select-->
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/bootstrapselect/select.js}"></script>
+<!-- 验证 -->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<!--属性输入框的增加和删除-->
+<script type="text/javascript" th:src="@{/static/js/common/attrbox.js}"></script>
+<!--弹窗-->
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+
+    var cardInfo;
+    function validateMemberCard() {
+        var phone = $("#telPhone").val();
+        var re = new RegExp(/^1(3|4|5|7|8)\d{9}$/);
+        var isPhone = phone.match(re);
+        if (isPhone) {
+            $.ajax({
+                type: 'post',
+                url: "/web/memberCard/getMemberCardByPhone",
+                data: {"phone": phone},
+                dataType: 'json',
+                error: function () {
+                    layer.alert("未获取到会员卡信息,请检查输入");
+                    $("#memberName").val("");
+                    return false;
+                },
+                success: function (data) {
+                    if (data.code == "200") {
+                        cardInfo = data.data;
+                        if (cardInfo) {
+                            var status = cardInfo.status;
+                            if (cardInfo.isDelete == 2) {
+                                layer.alert("该会员卡已冻结", {
+                                    icon: 2,
+                                    title: '失败',
+                                    closeBtn: 0,
+                                    btnAlign: 'c'
+                                });
+                                $("#memberName").val(cardInfo.memberName);
+                                return false;
+                            } else if (status == 1) {
+                                layer.alert("该会员卡已挂失", {
+                                    icon: 2,
+                                    title: '失败',
+                                    closeBtn: 0,
+                                    btnAlign: 'c'
+                                });
+                                $("#memberName").val(cardInfo.memberName);
+                                return false;
+                            } else {
+                                $("#memberName").val(cardInfo.memberName);
+                                return true;
+                            }
+                        } else {
+                            layer.alert("该账户没有会员卡绑定信息", {
+                                icon: 2,
+                                title: '失败',
+                                closeBtn: 0,
+                                btnAlign: 'c'
+                            });
+                            return false;
+                        }
+                    }
+                }
+            });
+        } else {
+            $("#memberName").val("");
+            return false;
+        }
+
+    }
+
+    $(function () {
+        //验证初始化
+        $('#lossForm').validationEngine({
+            promptPosition: 'bottomLeft:18 0'
+            , autoPositionUpdate: false
+            , addPromptClass: 'formError-text'
+            , autoHidePrompt: true
+            , autoHideDelay: 3000
+            , fadeDuration: 0.3
+        });
+
+        $("#telPhone").val(null);
+        $("#memberName").val(null);
+
+        //获取短信验证码
+        var validCode = true;
+        $("#smsBtn").click(function () {
+            var phone = $("#telPhone").val();
+            var re = new RegExp(/^1(3|4|5|7|8)\d{9}$/);
+            var isPhone = phone.match(re);
+            if (!phone) {
+                layer.alert("请先填写会员账号！", {
+                    icon: 2,
+                    title: '失败',
+                    closeBtn: 0,
+                    btnAlign: 'c'
+                });
+                return false;
+            }
+            if (!isPhone) {
+                layer.alert("无效的电话号码！", {
+                    icon: 2,
+                    title: '失败',
+                    closeBtn: 0,
+                    btnAlign: 'c'
+                });
+                return false;
+            }
+            if (cardInfo) {
+                var status = cardInfo.status;
+                if (cardInfo.isDelete == 2) {
+                    layer.alert("该会员卡已冻结", {
+                        icon: 2,
+                        title: '失败',
+                        closeBtn: 0,
+                        btnAlign: 'c'
+                    });
+                    return false;
+                } else if (status == 1) {
+                    layer.alert("该会员卡已挂失", {
+                        icon: 2,
+                        title: '失败',
+                        closeBtn: 0,
+                        btnAlign: 'c'
+                    });
+                    return false;
+                } else {
+                    var time = 60;
+                    var $this = $(this);
+                    if (validCode) {
+                        validCode = false;
+                        //获取验证码
+                        $.ajax({
+                        	 url : "/web/sms/sendSmsHaveCode",
+	           				 data : {
+	           						"telPhone" : $('#telPhone').val(),
+	           						"smsCodeTypeCode":"PH20170108",//挂失会员卡
+	           						"sourceCode":"0"//会员
+	           				},
+                            type: "GET",
+                            dataType: "json",
+                            error: function () {
+                                layer.alert("系统繁忙，请稍后再试！");
+                            },
+                            success: function (data) {
+                                if (data.code == "200") {
+                                    layer.alert("验证码已发送！", {icon: 1});
+                                    $this.attr('disabled', true);
+                                    var t = setInterval(function () {
+                                        time--;
+                                        $this.val(time + "秒");
+                                        if (time == 0) {
+                                            clearInterval(t);
+                                            $("#smsBtn").val("重新获取");
+                                            validCode = true;
+                                            $this.attr('disabled', false);
+                                        }
+                                    }, 1000)
+                                } else {
+                                    validCode = true;
+                                    layer.alert(data.message, {
+                                        icon: 2,
+                                        title: '失败',
+                                        closeBtn: 0,
+                                        btnAlign: 'c'
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            } else {
+                layer.alert("该账户没有会员卡绑定信息", {
+                    icon: 2,
+                    title: '失败',
+                    closeBtn: 0,
+                    btnAlign: 'c'
+                });
+                return false;
+            }
+
+        });
+    });
+
+
+    //挂失
+    function lossMemberCard() {
+
+        var flag = $("#lossForm").validationEngine("validate");
+        if (!flag) {
+            return false;
+        }
+        //提交数据
+        $.ajax({
+            type: "POST", 
+            url : "/web/memberCard/lossMemberCard",
+			data : {
+					"telPhone" : $('#telPhone').val(),
+					"msgCode":$('#msgCode').val(),
+					"isSms":"0"
+			},
+            success: function (d) {
+                console.log(d);
+                if (d.success) {
+                    layer.alert("挂失成功！", {
+                        icon: 1,
+                        title: '提示',
+                        closeBtn: 0,
+                        btnAlign: 'c',
+                        btn1: function () {
+                            window.location.href = "/web/memberCard/memberCardSendListPage";
+                        }
+
+                    });
+                } else {
+                    layer.alert(d.message, {
+                        icon: 2,
+                        title: '失败',
+                        closeBtn: 0,
+                        btnAlign: 'c'
+                    });
+                }
+            }
+        });
+    }
+
+</script>
+</body>
+</html>
+
+

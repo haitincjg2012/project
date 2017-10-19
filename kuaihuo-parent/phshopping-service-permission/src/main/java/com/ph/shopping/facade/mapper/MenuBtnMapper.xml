@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MenuBtnMapper">
+
+    <!--刪除菜单对应的按钮-->
+    <delete id="deleteBtnByMenuIdAndRoleId">
+      DELETE FROM ph_permission_menu_btn WHERE menuId = #{menuId} and roleId = #{roleId}
+  </delete>
+
+    <!--批量新增菜单对应的按钮-->
+    <insert id="insertMenuBtn">
+        INSERT INTO ph_permission_menu_btn (menuId,btnId,createrId,createTime,roleId) VALUES
+        <foreach collection="btnIds" item="btnId" separator=",">
+            (#{menuId},#{btnId},#{createrId},now(),#{roleId})
+        </foreach>
+    </insert>
+
+    <!--通过菜单id和角色Id查询菜单对应的按钮-->
+    <select id="selectMenuBtnByMenuIdAndRoleId" resultType="long">
+    select btnId from ph_permission_menu_btn where menuId = #{menuId} and roleId = #{roleId};
+  </select>
+</mapper>

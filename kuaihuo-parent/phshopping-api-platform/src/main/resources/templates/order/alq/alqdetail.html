@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>订单信息</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+    <!--弹窗 css文件-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/js/plugins/layer/layer.css}">
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">订单管理</a>&nbsp;&gt;&nbsp;<a href="#">线上订单</a>&nbsp;&gt;&nbsp;<span>订单信息</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit no_border">
+            <h2>订单信息</h2>
+        </div>
+        <!--end 标题-->
+        <!--订单信息状态-->
+        <!--<div class="ph_infoFlow">
+            <p class="ph_infoLine" th:if="${alqOrder.data.status ==8}">
+                <span th:if="unlineOrder.data.doneTime ==null" class="ph_fault"></span>
+                <span th:if="unlineOrder.data.doneTime !=null" class="ph_fault ph_green"></span>
+            </p>
+            <p class="ph_infoLine" th:if="${alqOrder.data.status == 8}">
+                <span th:if="unlineOrder.data.cancelTime ==null" class="ph_fault"></span>
+                <span th:if="unlineOrder.data.cancelTime !=null" class="ph_fault ph_green"></span>
+            </p>
+
+            <ul class="ph_infoList">
+                <li>
+                    <i th:if="${alqOrder.data.createTime != null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${alqOrder.data.createTime == null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">提交订单</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(alqOrder.data.createTime, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </li>
+                <li th:if="${alqOrder.data.status == 8}">
+                    <i th:if="${alqOrder.data.doneTime != null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${alqOrder.data.doneTime == null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">交易完成</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(alqOrder.data.receiveTime, 'yyyy-MM-dd HH:mm')}"></p>
+                </li>
+                <li th:if="${alqOrder.data.status == 8}">
+                    <i th:if="${alqOrder.data.cancelTime != null}" class="ph_infoIco ph_infoPos"></i>
+                    <i th:if="${alqOrder.data.cancelTime == null}" class="ph_infoIco"></i>
+                    <p class="ph_infoTit">交易取消</p>
+                    <p class="ph_infoDay" th:text="${#dates.format(alqOrder.data.receiveTime, 'yyyy-MM-dd HH:mm')}"></p>
+                </li>
+            </ul>
+        </div>-->
+        <!--end 订单信息状态-->
+        <!--订单角色信息-->
+        <div class="ph_infoCon">
+            <p class="ph_infoHome"><span>卖家名称：</span><span th:text="${alqOrder.hunterName}"></span></p>
+            <p class="ph_infoDel">
+                <span>卖家账号：<span th:text="${alqOrder.hunterPhone}"></span></span>
+                <span>买家账号：<span th:text="${alqOrder.memberPhone}"></span></span>
+
+                <span th:if="${alqOrder.status} == 0">订单状态：<span th:text="代付款"></span></span>
+                <span th:if="${alqOrder.status}==1">订单状态：<span th:text="已付定金"></span></span>
+                <span th:if="${alqOrder.status}==2">订单状态：<span th:text="待发货"></span></span>
+                <span th:if="${alqOrder.status}==3">订单状态：<span th:text="待收货"></span></span>
+                <span th:if="${alqOrder.status}==4">订单状态：<span th:text="已评价"></span></span>
+                <span th:if="${alqOrder.status}==5">订单状态：<span th:text="申请退款"></span></span>
+                <span th:if="${alqOrder.status}==6">订单状态：<span th:text="已退款"></span></span>
+                <span th:if="${alqOrder.status}==7">订单状态：<span th:text="已收货"></span></span>
+
+                <span th:if="${alqOrder.payTime2} != null">订单支付时间：<span th:text="${alqOrder.payTime2}"></span></span>
+                <span th:if="${alqOrder.agreeTime} != null">接单时间：<span th:text="${alqOrder.agreeTime}"></span></span>
+                <span th:if="${alqOrder.sendTime2} != null">发货时间：<span th:text="${alqOrder.sendTime2}"></span></span>
+                <span th:if="${alqOrder.receiveTime} != null">尾款支付时间：<span th:text="${alqOrder.receiveTime}"></span></span>
+            </p>
+        </div>
+        <!--end 订单角色信息-->
+        <!--商品信息-->
+        <!--<div class="ph_wareBox ph_infoWare">
+            <p class="ph_infoTotal ph_infoLarge">订单总额：
+                <span class="require">
+                    <span th:text="${#numbers.formatDecimal(alqOrder.totalPrice/10000, 1, 2)}"></span>元
+                </span>
+            </p>
+        </div>-->
+        <!--end 商品信息-->
+        <!--返回按钮-->
+        <div class="PopupBtn">
+            <input name="" type="button" value="返回" th:onclick="'toPageList();'">
+        </div>
+        <!--end 返回按钮-->
+    </div>
+    <!--end 主体内容-->
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/index.js}"></script>
+<script type="text/javascript">
+    /**
+     * 返回到列表页面
+     */
+    function toPageList() {
+        window.location.href="/web/order/alq//toAlqPfListPage";
+    }
+</script>
+</body>
+
+</html>

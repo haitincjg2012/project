@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.IOrderUnlineMapper">
+	<resultMap id="BaseResultMap"
+		type="cm.ph.shopping.facade.order.entity.PhMemberOrderUnline">
+
+		<id column="id" jdbcType="BIGINT" property="id" />
+	</resultMap>
+	<!-- 线下订单Vo -->
+	<select id="getUnlineOrderVoList" parameterType="cm.ph.shopping.facade.order.dto.PhMemberOrderUnlineDTO"
+		resultType="cm.ph.shopping.facade.order.vo.PhMemberOrderUnlineVO">
+		SELECT
+		p.id,
+		p.serviceCost/10000 serviceCost,
+		p.orderNo,
+		p.payType,
+		ph.merchantName,
+		DATE_FORMAT(p.createTime,'%Y-%m-%d %H:%i:%s') createTime,
+		ph.personName,
+		ph.telPhone merchantTelPhone,
+		p.orderMoney/10000 orderMoney,
+		pmm.memberName,
+		pmm.telPhone memberTelPhone,
+		p.`status`,
+		p.isProfit,
+		p.isSettle
+		FROM
+		ph_member_order_unline p,ph_merchant ph,ph_member pmm
+		where
+		ph.userId = p.merchantId and pmm.id = p.memberId
+		<if test="id !=null and id !='' ">
+			and p.id = #{id}
+		</if>
+		<if test="status !=null ">
+			and p.status = #{status}
+		</if>
+		<if test="orderNo !=null and orderNo !='' ">
+			and p.orderNo = #{orderNo}
+		</if>
+		<if test="merchantId !=null and merchantId !='' ">
+			and p.merchantId=#{merchantId}
+		</if>
+		<if test="memberId !=null and memberId !='' ">
+			and p.memberId=#{memberId}
+		</if>
+		
+		<if test="provinceId !=null and provinceId !='' ">
+		 	and ph.provinceId = #{provinceId}
+		</if>
+		<if test="cityId !=null and cityId !='' ">
+			 	and ph.cityId = #{cityId}
+		</if>
+		<if test="countyId !=null and countyId !='' ">
+			 	and ph.countyId = #{countyId}
+		</if>
+		<if test="townId !=null and townId !='' ">
+			 	and ph.townId = #{townId}
+		</if>
+
+		<if test="starTime != null and starTime != ''">
+			AND  p.createTime &gt;=#{starTime}
+		</if>
+
+		<if test="endTime != null and endTime != ''">
+			AND  p.createTime &lt;=#{endTime}
+		</if>
+		<if test="memberPhone!=null and memberPhone != ''">
+			and pmm.telPhone = #{memberPhone}
+		</if>
+		ORDER BY p.id desc
+	</select>
+
+	<!-- 更新订单信息 -->
+	<update id="updateUnlineOrder">
+		UPDATE ph_member_order_unline p
+		<set>
+			<if test="payType != null and payType != ''">
+				p.payType = #{payType}
+			</if>
+			<if test="remark != null and remark != ''">
+				p.remark = #{remark}
+			</if>
+			<if test="isSettle != null and isSettle != ''">
+				p.isSettle = #{isSettle}
+			</if>
+			<if test="isBackScore != null and isBackScore != ''">
+				p.isBackScore = #{isBackScore}
+			</if>
+			<if test="status !=null and status != ''">
+				p.STATUS = #{status}
+			</if>
+			<if test="updaterId !=null and updaterId != ''">
+				p.updaterId = #{updaterId}
+			</if>
+			<if test="weChatAccount !=null and weChatAccount !=''">
+				p.weChatAccount = #{weChatAccount}
+			</if>
+			<if test="cancelTime !=null and cancelTime !=''">
+				p.cancelTime = #{cancelTime}
+			</if>
+			<if test="cancelReason !=null and cancelReason !=''">
+				p.cancelReason = #{cancelReason}
+			</if>
+		</set>
+		WHERE
+		p.id = #{id}
+	</update>
+
+	<!-- 商户线上订单（即会员选择自提方式时的订单对应的商户的订单） -->
+	<select id="getOnlineOrderVoList"
+		parameterType="cm.ph.shopping.facade.order.dto.QueryMerchantOrderTakeDTO"
+		resultType="cm.ph.shopping.facade.order.vo.QueryMerchantOrderTakeVO">
+		SELECT
+		p1.id,
+		p1.orderNo,
+		p3.supplierName,
+		p4.productName,
+		p1.deliveryDate,
+		p5.memberName,
+		p5.memberPhone,
+		(P1.price * p1.num) commodityAmount1,
+		p1.postage postage1,
+		p1.payMoney payMoney1,
+		p1.status
+		FROM
+		ph_order_online p1
+		LEFT JOIN ph_manager_order_address p2 ON p1.addrId = p2.id
+		LEFT JOIN
+		ph_supplier p3 ON p1.supplyerId = p3.id
+		LEFT JOIN ph_product p4 ON
+		p1.productId = p4.id
+		LEFT JOIN ph_member p5 ON p1.memberId = p5.id
+		WHERE
+		1=1
+		AND p1.deliveryType = 2
+		AND (p1. STATUS = 2 OR p1. STATUS = 4)
+		<if test="merchantId !=null and merchantId !='' ">
+			AND p1.merchantId = #{merchantId}
+		</if>
+		<if test="productName !=null and productName !='' ">
+			and p4.productName like '%${productName}%'
+		</if>
+		<if test="status !=null and status !='' ">
+			and p1.status = #{status}
+		</if>
+	</select>
+	
+		<!-- 根据二维码标识得到订单状态 -->
+	<select id = "selectOrderSatusByBarcode" resultType="int">
+		select 
+			status 
+		from 
+			ph_member_order_unline 
+		where 
+			barcodeMark = #{barcodeMark}
+	</select>
+
+
+	<select id="selectTotalOrerMoneyByPhone" parameterType="java.lang.Long" resultType="java.lang.Long">
+
+		select count(orderMoney) from ph_member_order_unline
+		where memberId = #{memberId}
+
+	</select>
+	<!--获取分享人信息-->
+	<select id="getMemberProInfo" parameterType="string" resultType="com.ph.shopping.facade.member.entity.Member">
+		select telPhone,id from ph_member where telPhone=#{memberPhone}
+	</select>
+
+	<!--如果该商户已经绑定分享人但是没有订单则修改改分享人的ID-->
+	<update id="updateMemberPro">
+		update ph_member set promoterId=#{0} where id=#{1}
+	</update>
+
+	<!--如果不存在插入分享关系中间表-->
+	<insert id="insertMemberRecord" parameterType="map">
+		insert into ph_member_share_record (telPhone,userId,toTelPhone,type,createTime) values(#{telPhone},#{userId},#{toTelPhone},0,now())
+	</insert>
+
+	<!--如果该商户已经有分享人则修改分享关系中间表-->
+	<update id="updateMemberRecord"  parameterType="map">
+		update ph_member_share_record set telPhone=#{telPhone},userId=#{userId} where toTelPhone=#{toTelPhone}
+	</update>
+
+
+</mapper>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.MemberBankCardBindMapper">
+
+    <!--会员银行卡绑定-->
+    <sql id="member_bank_card_bind_base_column">
+        mbcb.id bindCardId,
+        mbcb.bankCardInfoId,
+        mbcb.userId,
+        mbcb.bindStatus
+    </sql>
+    <!--会员银行卡绑定扩展信息-->
+    <sql id="member_bank_card_bind_extend_column">
+        ,mbcb.createTime bindCardCreateTime,
+        mbcb.createrId bindCardCreaterId,
+        mbcb.updaterId bindCardUpdaterId,
+        mbcb.updateTime bindCardUpdateTime
+    </sql>
+    <!-- 基础查询条件 -->
+    <sql id="where_bind_card">
+        <if test="userId != null and userId != ''">
+            and mbcb.userId = #{userId}
+        </if>
+        <if test="bindStatus != null and bindStatus != ''">
+            and mbcb.bindStatus = #{bindStatus}
+        </if>
+    </sql>
+    <!--会员银行卡-->
+    <sql id="member_bank_card_info_base_column">
+        ,mbci.id bankCardId,
+        mbci.bankCardNo,
+        mbci.bindPhone,
+        mbci.bankCodenameDataId,
+        mbci.ownerName,
+        mbci.idCardNo,
+        mbci.isDelete
+    </sql>
+    <!--会员银行卡扩展信息-->
+    <sql id="member_bank_card_info_extend_column">
+        ,mbci.createTime bankCreateTime,
+        mbci.createrId bankCardCreaterId,
+        mbci.createIp bankCreateIp
+    </sql>
+    <!--银行卡基础信息-->
+    <sql id="bank_codename_data_base_column">
+        ,bcd.id bankCodenameDataId,
+        bcd.bankName
+    </sql>
+    <!--银行卡扩展信息-->
+    <sql id="bank_codename_data_extend_column">
+        ,bcd.createTime bankCodenameDataId
+    </sql>
+
+    <!-- 绑定银行卡详情 -->
+    <select id="selectBindCardDetail" resultType="com.ph.shopping.facade.member.vo.MemberBankCardBindInfoVO"
+            parameterType="com.ph.shopping.facade.member.dto.MemberBankCardBindDTO">
+        SELECT
+        <include refid="member_bank_card_bind_base_column"/>
+        <include refid="member_bank_card_info_base_column"/>
+        <include refid="bank_codename_data_base_column"/>
+        FROM ph_member_bank_card_bind mbcb
+        LEFT JOIN ph_member_bank_card_info mbci ON mbci.id = mbcb.bankCardInfoId
+        LEFT JOIN ph_bank_codename_data bcd ON mbci.bankCodenameDataId = bcd.id
+        WHERE isDelete=2
+        <include refid="where_bind_card"/>
+        limit 1
+    </select>
+
+</mapper>

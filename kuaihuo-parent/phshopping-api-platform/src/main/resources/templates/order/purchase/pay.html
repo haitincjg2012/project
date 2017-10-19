@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>订单支付</title>
+    <link rel="stylesheet" th:href="@{/static/css/common/models.css}">
+</head>
+<body>
+<div class="MainContent">
+    <!--面包屑-->
+    <div class="current">当前位置：<a href="#">订单管理</a>&nbsp;&gt;&nbsp;<a href="#">进货订单</a>&nbsp;&gt;&nbsp;<span>订单支付</span> </div>
+    <!--end 面包屑-->
+    <!--主体内容-->
+    <div class="MainCont">
+        <!--标题-->
+        <div class="ph_subTit no_border">
+            <h2>付款总额</h2>
+        </div>
+        <!--end 标题-->
+        <!--付款金额-->
+        <div class="ph_payment">
+            <p class="require ph_paymentTxt">¥<span id="cost" th:text="${totalCost}">80000.00</span></p>
+            <p class="require">温馨提示：请尽快付款，以便订单及时处理</p>
+        </div>
+
+
+        <!--end 付款金额-->
+        <!--标题-->
+        <div class="ph_subTit no_border">
+            <h2>支付方式</h2>
+        </div>
+        <!--end 标题-->
+        <form action="" id="validateForm">
+            <div class="ph_methodBox">
+                <p><input class="Js_radio" name="radio" type="radio" value="0" checked>余额支付 <span>可用余额：¥<span th:text="${balance}">100000.00</span></span></p>
+                <p><input class="Js_radio" name="radio" type="radio" value="1">三方支付-银联支付</p>
+                <input type="hidden" id="balance" th:value="${balance}">
+                <p class="ph_methPass">
+                    <label for="password">支付密码：</label>
+                    <input name="" type="password" id="password" class="validate[required]">
+                    <span class="provingImg">
+                        <a th:href="'/web/safemanage/tosafemanagepage'">设置密码</a>
+                    </span>
+                </p>
+            </div>
+        </form>
+        <!--按钮-->
+        <div class="PopupBtn btnLeft">
+            <input class="submit" name="" type="button" th:onclick="'submitPay();'" value="立即支付">
+            <input class="cancel" name="" type="button" th:onclick="'cancelPay();'" value="取消">
+        </div>
+        <!--end 按钮-->
+    </div>
+    <!--end 主体内容-->
+    <form th:action="${pay}" method="POST" id="thirdPayForm" target="_blank">
+        <!--订单号-->
+        <input type="hidden" name="orderNum" id="orderNo" th:value="${orderNo}">
+        <input type="hidden" name="amount" th:value="${totalCost}">
+        <input type="hidden" name="description" th:value="${description}">
+    </form>
+
+</div>
+<script type="text/javascript" th:src="@{/static/js/common/jquery-1.11.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/common/jquery.md5.js}"></script>
+<!--验证-->
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/validat/jquery.validationEngine-zh_CN.js}"></script>
+<!--弹窗-->
+<script type="text/javascript" th:src="@{/static/js/plugins/layer/layer.js}"></script>
+<script type="text/javascript">
+    $(function(){
+        $('.ph_methodBox .Js_radio').on('click',function(){
+            var radioNm = $(this).val();
+            if(radioNm == '0'){
+                $(this).parents('.ph_methodBox').find('.ph_methPass').removeClass('hide');
+            }else{
+                $(this).parents('.ph_methodBox').find('.ph_methPass').addClass('hide');
+            }
+        });
+        $("#validateForm").validationEngine({
+            addPromptClass: 'formError-text',
+            showArrow: false,
+            promptPosition: 'bottomLeft:20 0'
+
+        });
+    });
+    
+    function cancelPay() {
+        window.location.href = "/web/order/purchase/toListPage";
+    }
+
+    function submitPay() {
+        var checkedValue = $('input[name="radio"]:checked').val();
+
+        if(checkedValue == null){
+            layer.alert("请选择支付方式", {icon: 2,btnAlign: 'c', closeBtn : 0});
+            return false;
+        }
+        if (checkedValue == 0) {
+            var cost = parseFloat($('#cost').text());
+            var balance = parseFloat($("#balance").val());
+            if((balance - cost) < 0){
+                layer.msg("账户余额不足",{icon: 2,btnAlign: 'c', closeBtn : 0});
+                return false;
+            }
+            //余额支付
+            var flag = $("#validateForm").validationEngine("validate");
+            if(!flag){
+                return false;
+            }
+            //余额支付
+            $.ajax({
+                async:false,
+                url:"/web/order/purchase/pay",
+                data: {
+                    orderNo:$('#orderNo').val(),
+                    password : $.md5($('#password').val())
+                },
+                type:"POST",
+                dataType:"json",
+                success:function(data){
+                    if(data.success){
+                        window.location.href = "/web/order/purchase/toListPage";
+                        layer.alert(data.message, {icon: 1,btnAlign: 'c', closeBtn : 0});
+                    }else{
+                        layer.alert(data.message, {icon: 2,btnAlign: 'c', closeBtn : 0});
+                    }
+                }
+            });
+        } else if (checkedValue == 1){
+            //第三方支付
+            $('#thirdPayForm').submit();
+        }
+
+    }
+
+</script>
+</body>
+</html>

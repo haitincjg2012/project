@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.AdAttachmentMapper">
+	<!-- 获取首页轮播图 -->
+	<select id="getDataCarousel" resultType="Map">
+		SELECT
+		address,
+		id,
+		header   ,
+		detail_content ,
+		name
+		FROM
+		alq_ad_attachment
+		WHERE
+		type = 1
+		ORDER BY
+		created_time DESC
+		LIMIT 0,
+		4
+	</select>
+	<!-- 第一级分类 -->
+	<select id="getDataFirstIndustry" resultType="Map">
+
+		select indu.id as id,                        <!-- 行业的id -->
+		indu.icon as address,                        <!-- 行业的图片 -->
+		indu.merchantTypeName as name               <!-- 行业的name -->
+		from ph_merchant_type as indu
+		where
+		indu.isDelete !=1 and
+		indu.parentId =0 ORDER BY createTime DESC
+	</select>
+
+	<!-- 获取二级分类  ghfghfgfdfsfsd -->
+	<select id="getDataSecondIndustry" resultType="Map">
+		select indu.id as id,indu.icon as address, indu.merchantTypeName as name ,parentId
+		from ph_merchant_type as indu
+		where
+		indu.isDelete !=1 and
+		indu.parentId =1 ORDER BY sort ASC
+	</select>
+	<!--首页商店 10张图片-->
+	<select id="getDataAttachmentPicture" resultType="Map" >
+		select DISTINCT ph.id,ph.merchantName as merchantName ,ph.merchantName as name,(dnDistance (
+		#{longitude},
+		#{latitude},
+		ph.longitude,
+		ph.latitude
+		) * 1
+		) AS distance ,ph.address as address,
+		(select imge.url as url from ph_merchant_image as imge where imge.type= 3 and imge.merchantId=ph.id limit 0,1)
+		as addressurl ,
+		IFNULL(ph.costMoney,"") as costMoney
+		from ph_merchant as ph LEFT JOIN ph_merchant_merchant_type as mer on mer.merchantId=ph.id
+		LEFT JOIN ph_merchant_type as mtype on mtype.id=mer.secondMerchantTypeId
+		where ph.isCdKey=1 and ph.isFrozen=0 order by distance ASC
+	</select>
+	<!-- 通过一级id获取二级分类 -->
+	<select id="getSecondById" resultType="Map" >
+		select indu.id,(select att.address from alq_attachment as att)as address, indu.name
+		from alq_industry_type as indu
+		where
+		indu.is_delete !=1 and
+		indu.parent_id =#{id} ORDER BY indu.top_date,created_time
+	</select>
+	<!--附近商品-->
+	<!-- 通过展示10张 -->
+	<select id="getDataAttachmentPictureById" resultType="Map" >
+		select DISTINCT ph.id,ph.merchantName as merchantName ,ph.merchantName as name,(dnDistance (
+		#{longitude},
+		#{latitude},
+		ph.longitude,
+		ph.latitude
+		) * 1
+		) AS distance ,ph.address as address,
+		(select imge.url as url from ph_merchant_image as imge where imge.type= 3 and imge.merchantId=ph.id limit 0,1) as addressurl
+		,IFNULL(ph.costMoney,"") as costMoney
+		from ph_merchant as ph
+		LEFT JOIN ph_merchant_merchant_type as mer on mer.merchantId=ph.id
+		LEFT JOIN ph_merchant_type as mtype on mtype.id=mer.secondMerchantTypeId
+		where true <include refid="picture_id"></include> and ph.isCdKey=1 and ph.isFrozen=0 order by distance ASC Limit #{page},#{pagesize}
+	</select>
+	<sql id="picture_id">
+		<if test="industry1 !=null and industry1>0 ">
+			and  mer.firstMerchantTypeId=#{industry1}
+		</if>
+		<if test="industry2 !=null and industry2>0">
+			and  mer.secondMerchantTypeId=#{industry2}
+		</if>
+	</sql>
+	<!-- 获取一级分类 -->
+	<select id="getAllFirst" resultType="Map">
+		select id , merchantTypeName as name from ph_merchant_type where parentId=0  and isdelete !=1 ORDER BY createTime DESC
+	</select>
+
+	<!-- 获取二级分类 -->
+	<select id="getAllSecond" resultType="Map">
+		select id ,parentId,
+		merchantTypeName as name
+		from ph_merchant_type where parentId=#{parentId}  and isdelete !=1
+		ORDER BY createTime DESC
+
+	</select>
+
+	<!--搜索数据-->
+	<select id="findData" resultType="Map">
+		select DISTINCT ph.id,ph.merchantName as merchantName ,ph.merchantName as name,
+		(dnDistance (
+		#{longitude},
+		#{latitude},
+		ph.longitude,
+		ph.latitude
+		) * 1
+		) AS distance ,ph.address as address,
+		(select imge.url as url from ph_merchant_image as imge where imge.type= 3 and imge.merchantId=ph.id limit 0,1) as addressurl
+		,IFNULL(ph.costMoney,"") as costMoney
+		from ph_merchant as ph
+		LEFT JOIN ph_merchant_merchant_type as mer on mer.merchantId=ph.id
+	    LEFT JOIN ph_merchant_type as mtype on mtype.id=mer.secondMerchantTypeId
+		where true and ph.merchantName like <![CDATA[#{datas}]]> and ph.isCdKey=1 and ph.isFrozen=0
+		 order by distance ASC LIMIT #{page},#{pagesize}
+
+	</select>
+
+	<!--通过用户id查询行业分类得名称-->
+	<select id="getIndustryNameById" resultType="map" parameterType="Long">
+		select DISTINCT chant.merchantTypeName from ph_merchant_type as chant
+       left Join ph_merchant_merchant_type as mer on mer.secondMerchantTypeId = chant.id
+       where mer.merchantId=#{id}
+
+	</select>
+
+	<!--通过省市获取标识直辖市-->
+	<select id="getCItyProvince" resultType="map">
+    select DISTINCT provinceId                <!--直辖市的标识-->
+    from ph_position where provinceName like <![CDATA[#{province}]]> limit 0,1
+	</select>
+
+	<!--通过省市获取标识省市-->
+	<select id="getCItyProvinceAndCity" resultType="map">
+		select DISTINCT provinceId ,         <!--省的标识-->
+		cityId from ph_position            <!--市的标识-->
+		where provinceName like <![CDATA[#{province}]]> and cityName like <![CDATA[#{city}]]> limit 0,1
+	</select>
+
+	<!--获取市基本信息置顶-->
+	<select id="getCItyProvinceList" resultType="map">
+		 select DISTINCT ph.id,ph.merchantName as merchantName ,ph.merchantName as name,(dnDistance (
+		#{longitude},
+		#{latitude},
+		ph.longitude,
+		ph.latitude
+		) * 1
+		) AS distance ,ph.address as address,
+		(select imge.url as url from ph_merchant_image as imge where imge.type= 3 and imge.merchantId=ph.id limit 0,1)
+		as addressurl ,
+		IFNULL(ph.costMoney,"") as costMoney
+		from ph_merchant as ph
+        LEFT JOIN ph_merchant_merchant_type as mer on mer.merchantId=ph.id
+		LEFT JOIN ph_merchant_type as mtype on mtype.id=mer.secondMerchantTypeId
+		where ph.isCdKey=1 and ph.isFrozen=0 and ph.isRecommendType=#{isRecommendType}
+		<if test="isRecommendType !=null and isRecommendType=2">
+			and ph.provinceId=#{provinceId} and ph.isRecommend is not null ORDER BY ph.isRecommend ASC
+		</if>
+		<if test="isRecommendType !=null and isRecommendType=1">
+			and ph.recommendManager is not null ORDER BY ph.recommendManager ASC
+		</if>
+	    LIMIT #{page},#{pagesize}
+	</select>
+
+	<!--市未置顶-->
+	<select id="getCItyProvinceListIsNull" resultType="map">
+		 select DISTINCT ph.id,ph.merchantName as merchantName ,ph.merchantName as name,(dnDistance (
+		#{longitude},
+		#{latitude},
+		ph.longitude,
+		ph.latitude
+		) * 1
+		) AS distance ,ph.address as address,
+		(select imge.url as url from ph_merchant_image as imge where imge.type= 3 and imge.merchantId=ph.id limit 0,1)
+		as addressurl ,
+		IFNULL(ph.costMoney,"") as costMoney
+		from ph_merchant as ph
+        LEFT JOIN ph_merchant_merchant_type as mer on mer.merchantId=ph.id
+		LEFT JOIN ph_merchant_type as mtype on mtype.id=mer.secondMerchantTypeId
+		where ph.isCdKey=1 and ph.isFrozen=0 and ph.isRecommendType=#{isRecommendType}
+		and ph.provinceId=#{provinceId} and ph.isRecommend is  null ORDER BY ph.isRecommend ASC
+	    LIMIT #{page},#{pagesize}
+	</select>
+	<!--省获取的数据置顶-->
+	<select id="getCItyANdProvinceListById" resultType="map">
+		 select DISTINCT ph.id,ph.merchantName as merchantName ,ph.merchantName as name,(dnDistance (
+		#{longitude},
+		#{latitude},
+		ph.longitude,
+		ph.latitude
+		) * 1
+		) AS distance ,ph.address as address,
+		(select imge.url as url from ph_merchant_image as imge where imge.type= 3 and imge.merchantId=ph.id limit 0,1)
+		as addressurl ,
+		IFNULL(ph.costMoney,"") as costMoney
+		from ph_merchant as ph
+        LEFT JOIN ph_merchant_merchant_type as mer on mer.merchantId=ph.id
+		LEFT JOIN ph_merchant_type as mtype on mtype.id=mer.secondMerchantTypeId
+		where ph.isCdKey=1 and ph.isFrozen=0 and ph.isRecommendType=#{isRecommendType}
+		<if test="isRecommendType !=null and isRecommendType=2">
+			and ph.provinceId=#{provinceId} and ph.isRecommend is not null ORDER BY ph.isRecommend ASC
+		</if>
+		<if test="isRecommendType !=null and isRecommendType=1">
+			and ph.recommendManager is not null ORDER BY ph.recommendManager ASC
+		</if>
+		/*and ph.provinceId=#{provinceId} AND  ph.cityId=#{cityId}
+		and ph.isRecommend is not null ORDER BY ph.isRecommend ASC*/
+	    LIMIT #{page},#{pagesize}
+
+	</select>
+	<!--省获取未置顶-->
+	<select id="getCItyANdProvinceListByIdIsNull" resultType="map">
+			 select DISTINCT ph.id,ph.merchantName as merchantName ,ph.merchantName as name,(dnDistance (
+		#{longitude},
+		#{latitude},
+		ph.longitude,
+		ph.latitude
+		) * 1
+		) AS distance ,ph.address as address,
+		(select imge.url as url from ph_merchant_image as imge where imge.type= 3 and imge.merchantId=ph.id limit 0,1)
+		as addressurl ,
+		IFNULL(ph.costMoney,"") as costMoney
+		from ph_merchant as ph
+        LEFT JOIN ph_merchant_merchant_type as mer on mer.merchantId=ph.id
+		LEFT JOIN ph_merchant_type as mtype on mtype.id=mer.secondMerchantTypeId
+		where ph.isCdKey=1 and ph.isFrozen=0 and ph.isRecommendType=#{isRecommendType}
+		and ph.provinceId=#{provinceId} AND  ph.cityId=#{cityId}
+		and ph.isRecommend is  null ORDER BY ph.isRecommend ASC
+	    LIMIT #{page},#{pagesize}
+	</select>
+	<!--通过查询行业分类id进行查询-->
+	<select id="getIndustryNameByIndustryId" resultType="map">
+     select DISTINCT chant.merchantTypeName from ph_merchant_type as chant
+       left Join ph_merchant_merchant_type as mer on mer.secondMerchantTypeId = chant.id
+       where mer.merchantId=#{id} <include refid="picture_id"></include>
+	</select>
+
+	<!--手机更新版本状态-->
+	<select id="getAppVersion" resultType="map">
+
+		select ver.is_must_to_update as udpate ,ver.version as version,att.address as address from alq_app_version as ver
+        LEFT JOIN alq_attachment as att  on att.id=ver.attachment_id where ver.type=#{type} and ver.client_type=#{client_type}
+
+	</select>
+</mapper>

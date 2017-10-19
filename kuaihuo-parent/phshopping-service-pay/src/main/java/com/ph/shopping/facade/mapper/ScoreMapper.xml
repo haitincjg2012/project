@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.ScoreMapper">
+
+	<!--修改会员积分-->
+	<update id="updateMemberScore">
+		update ph_member_score
+		<set>
+			<if test="standbyScore != 0">
+				standbyScore = standbyScore + #{standbyScore},
+			</if>
+			<if test="enableScore != 0">
+				enableScore = enableScore + #{enableScore},
+			</if>
+			<if test="drawcashScore != 0">
+				drawcashScore = drawcashScore + #{drawcashScore},
+			</if>
+			<if test="1==1">
+				updateTime = sysdate(),
+			</if>
+		</set>
+		where memberId= #{memberId}
+	</update>
+
+
+	<!-- 记入总流水 -->
+	<insert id="insertMemberTrade"
+			parameterType="com.ph.shopping.facade.score.entity.PhScoreTotalTrade">
+		<selectKey resultType="java.lang.Long" keyProperty="id">
+			SELECT
+			LAST_INSERT_ID() as id
+		</selectKey>
+		insert into ph_score_total_trade (memberId, transCode,
+		score,
+		createTime, updateTime, orderNo, handingCharge)
+		values
+		(#{memberId,jdbcType=BIGINT},
+		#{transCode,jdbcType=INTEGER},
+		#{score,jdbcType=DECIMAL},
+		SYSDATE(),SYSDATE(),#{orderNo,jdbcType=VARCHAR},#{handingCharge}
+		)
+	</insert>
+
+	<!--新增支出流水-->
+	<insert id="insertCostTrade">
+		insert into ph_score_cost_trade (memberId, transCode,
+		score, setId,createTime, updateTime,orderNo,handingCharge
+		)
+		values
+		(#{memberId,jdbcType=BIGINT}, #{transCode,jdbcType=INTEGER},
+		#{score,jdbcType=DECIMAL},
+		#{setId,jdbcType=BIGINT},
+		SYSDATE(),SYSDATE(),#{orderNo,jdbcType=VARCHAR},#{handingCharge}
+		)
+	</insert>
+
+	<insert id="insertIncomeTrade">
+		insert into ph_score_income_trade (memberId,
+		transCode,
+		score, setId,createTime,
+		updateTime,orderNo,handingCharge
+		)
+		values
+		(#{memberId,jdbcType=BIGINT},
+		#{transCode,jdbcType=INTEGER},
+		#{score,jdbcType=DECIMAL},
+		#{setId,jdbcType=BIGINT},
+		SYSDATE(),SYSDATE(),#{orderNo,jdbcType=VARCHAR},#{handingCharge}
+		)
+	</insert>
+</mapper>

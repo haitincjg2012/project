@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ph.shopping.facade.mapper.AlqOrderMapper">
+	<!--获取批发订单列表-->
+	<select id="getAlqList" resultType="cm.ph.shopping.facade.order.vo.AlqOrderVO" parameterType="cm.ph.shopping.facade.order.vo.AlqOrderVO">
+		  SELECT
+			o.id as id,
+			o.order_no as orderNo,
+			DATE_FORMAT(o.created_time,'%Y-%m-%d %H:%i') as createdTime,
+			IFNULL(h. NAME,'未知') as hunterName,
+			IFNULL(h. phone,'未知') as hunterPhone,
+			IFNULL(m. NAME,'未知') as memberName,
+			IFNULL(m. phone,'未知') as memberPhone,
+			IFNULL(o.subscription_money,0) as subscriptionMoney,
+			IFNULL(o.negotiate_price,0) as negotiatePrice,
+			IFNULL(o.total_price,0) as totalPrice,
+			DATE_FORMAT(o.subscription_time,'%Y-%m-%d %H:%i') as subscriptionTime,
+			DATE_FORMAT(o.receive_time,'%Y-%m-%d %H:%i') as receiveTime,
+			o. STATUS as status
+		FROM
+			alq_order o
+		LEFT JOIN alq_hunter h ON h.id = o.hunter_id
+		LEFT JOIN alq_member m ON m.id = o.member_id
+		WHERE
+			order_no LIKE CONCAT(CONCAT('%', #{orderNo}),'%')
+		AND DATE_FORMAT(o.created_time,'%Y-%m-%d') LIKE CONCAT(CONCAT('%', #{createdTime}),'%')
+		<if test="status!=10000">
+			AND o.status = #{status}
+		</if>
+		<!--<if test="createdTime !=null || createdTime!=''">
+			AND DATE_FORMAT(o.created_time,'%Y-%m-%d')#{createdTime}
+		</if>-->
+		order by o.created_time Desc
+	</select>
+
+	<!--获得订单的总价格-->
+	<select id="getOrderTotalPrice" resultType="java.lang.Long">
+		SELECT sum(total_price) totalPrice FROM alq_order WHERE order_no LIKE CONCAT(CONCAT('%', #{orderNo}),'%')
+	</select>
+
+	<!--批发代理订单-->
+	<select id="getAlqPfList" resultType="cm.ph.shopping.facade.order.vo.AlqOrderVO" parameterType="cm.ph.shopping.facade.order.vo.AlqOrderVO">
+		SELECT
+		o.id as id,
+		o.order_no as orderNo,
+		DATE_FORMAT(o.created_time,'%Y-%m-%d %H:%i') as createdTime,
+		IFNULL(h. NAME,'未知') as hunterName,
+        IFNULL(m1.phone,'未知') as hunterPhone,
+		IFNULL(m. NAME,'未知') as memberName,
+		IFNULL(m. phone,'未知') as memberPhone,
+		IFNULL(o.subscription_money,0) as subscriptionMoney,
+		IFNULL(o.negotiate_price,0) as negotiatePrice,
+		IFNULL(o.total_price,0) as totalPrice,
+		DATE_FORMAT(o.subscription_time,'%Y-%m-%d %H:%i') as subscriptionTime,
+		DATE_FORMAT(o.receive_time,'%Y-%m-%d %H:%i') as receiveTime,
+		o. STATUS as status
+		FROM
+		alq_order o
+		LEFT JOIN alq_hunter h ON h.id = o.hunter_id
+		LEFT JOIN alq_member m ON m.id = o.member_id
+        LEFT JOIN alq_member m1 ON h.id = m1.hunter_id
+
+        WHERE
+		order_no LIKE CONCAT(CONCAT('%', #{orderNo}),'%')
+		AND o.created_time LIKE CONCAT(CONCAT('%', #{createdTime}), '%')
+		AND
+		<if test="status!=10000">
+			AND o.status = #{status}
+		</if>
+		<if test="level ==1 ">
+			h.position_level =1
+			AND
+			h.ph_city_id =#{cityId}
+		</if>
+		<if test="level ==2">
+			h.position_level =2
+			AND  h.ph_county_id =#{countyId}
+		</if>
+        GROUP  BY o.order_no
+	</select>
+
+
+
+	<!--批发代理订单-->
+	<select id="getAlqPfListCount" resultType="int" parameterType="cm.ph.shopping.facade.order.vo.AlqOrderVO">
+		select count(*)  from (
+		SELECT
+		o.order_no
+		FROM
+		alq_order o
+		LEFT JOIN alq_hunter h ON h.id = o.hunter_id
+		LEFT JOIN alq_member m ON m.id = o.member_id
+		LEFT JOIN alq_member m1 ON h.id = m1.hunter_id
+
+		WHERE
+		order_no LIKE CONCAT(CONCAT('%', #{orderNo}),'%')
+		AND o.created_time LIKE CONCAT(CONCAT('%', #{createdTime}), '%')
+		AND
+		<if test="status!=10000">
+			AND o.status = #{status}
+		</if>
+		<if test="level ==1 ">
+			h.position_level =1
+			AND
+			h.ph_city_id =#{cityId}
+		</if>
+		<if test="level ==2">
+			h.position_level =2
+			AND  h.ph_county_id =#{countyId}
+		</if>
+		GROUP  BY o.order_no
+		) ceshi
+	</select>
+
+
+	<!--获取订单详情-->
+	<select id="getAlqDetail" parameterType="long" resultType="cm.ph.shopping.facade.order.vo.AlqOrderVO">
+		SELECT
+			DATE_FORMAT(
+
+				o.created_time,
+				'%Y-%m-%d %H:%i'
+			) AS createdTime,
+			o.`status`,
+			IFNULL(h.nickname, '未知') AS hunterName,
+			IFNULL(m1.phone, '未知') AS hunterPhone,
+			IFNULL(m.phone, '未知') AS memberPhone,
+			IFNULL(o.total_price, 0) AS totalPrice,
+			DATE_FORMAT(o.receive_time,'%Y-%m-%d %H:%i') AS receiveTime,
+			DATE_FORMAT(o.agree_time,'%Y-%m-%d %H:%i') AS agreeTime,
+			DATE_FORMAT(o.send_time,'%Y-%m-%d %H:%i') AS sendTime2,
+			DATE_FORMAT(o.pay_time,'%Y-%m-%d %H:%i') AS payTime2
+		FROM
+			alq_order o
+		LEFT JOIN alq_hunter h ON h.id = o.hunter_id
+		LEFT JOIN alq_member m ON m.id = o.member_id
+		LEFT JOIN alq_member m1 ON h.id = m1.hunter_id
+		WHERE
+			o.id = #{id}
+	</select>
+
+	<select id="getLevel" resultType="Map">
+		SELECT p.agentLevelId,p.cityId,p.countyId from  ph_agent p,ph_permission_common_user pu
+		WHERE  pu.id=p.userId AND pu.id=#{id} AND p.isFormSystem = 1
+
+	</select>
+</mapper>

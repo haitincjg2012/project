@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.alqsoft.mybatis.dao.industrystype.IndustrysTypeDao">
+	
+	<select id="findIndustryTypeListMybatis" resultType="map" parameterType="map">
+		SELECT
+			 t.`id` as id,
+			 t.`name` as name,
+		 	 att.`address` as address,
+		 	 IFNULL(t.is_top,0) top
+		 FROM 
+		     alq_industry_type t,alq_attachment att 
+		 WHERE
+		     t.`attachment_id`=att.`id` AND t.`parent_id` IS NULL  AND (t.is_delete IS NULL OR t.is_delete=0) 
+		     ORDER BY t.`is_top` DESC,
+		      t.top_date DESC,t.created_time DESC  
+		     LIMIT #{startIndex},#{endIndex}
+	</select>
+	
+		<select id="getIndustryTypeListCount" resultType="int" parameterType="map">
+		SELECT
+			count(*)
+		 FROM 
+		     alq_industry_type t,alq_attachment att 
+		 WHERE
+		     t.`attachment_id`=att.`id` AND t.`parent_id` IS NULL AND ifnull(t.is_delete,0)=0
+	</select>
+
+
+	<select id="getIndustryTypeList" resultType="java.util.Map"  parameterType="java.util.Map">
+		SELECT id,name FROM alq_industry_type it
+		<where>
+			<if test="pid != null">
+				and parent_id = #{pid,jdbcType=BIGINT}
+			</if>
+
+			<if test="pid == null">
+				and parent_id is  null
+			</if>
+			AND ifnull(it.is_delete,0)=0
+		</where>
+	</select>
+	
+	<select id="findSecondIndustryTypeByFirstId" resultType="java.util.Map" parameterType="java.lang.Long">
+		SELECT it.id AS id,it.name AS name,it.`sortnum` AS sortnum,
+		   	   IFNULL( (SELECT COUNT(*) FROM alq_hunter_industry_type WHERE it.id=industry_type_id),0) AS num
+	 	 FROM alq_industry_type AS it
+	   	 LEFT JOIN alq_hunter_industry_type AS hit ON it.id=hit.industry_type_id
+	 	 WHERE it.parent_id=#{firstid} AND (it.is_delete = 0 OR it.is_delete IS NULL) 
+		 GROUP BY it.id
+	 	 ORDER BY it.`sortnumtime` DESC, it.sortnum DESC,num DESC,it.created_time DESC 
+	</select>
+	
+</mapper>
